@@ -1,0 +1,98 @@
+.project-masonry {
+  position: relative;
+  width: 100%;
+  transition: height 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.project-masonry__item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: #23211f;
+  color: #ffffff;
+  box-shadow: 0 18px 44px rgba(17, 17, 17, 0.16);
+  cursor: default;
+  transform-origin: center;
+  will-change: transform, width, height, opacity, filter;
+}
+
+.project-masonry__item img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: saturate(0.72) contrast(1.04);
+  transition: filter 300ms ease;
+}
+
+.project-masonry__item:hover img {
+  filter: saturate(1) contrast(1.02);
+}
+
+.project-masonry__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 11, 10, 0.9), rgba(12, 11, 10, 0.02) 70%);
+}
+
+.project-masonry__content {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: clamp(18px, 2.5vw, 28px);
+}
+
+.project-masonry__content p,
+.project-masonry__content h3,
+.project-masonry__content span {
+  margin: 0;
+}
+
+.project-masonry__content p {
+  color: #ffb13b;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-masonry__content h3 {
+  margin-top: 8px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1.35rem, 2.6vw, 2.15rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.project-masonry__content span {
+  max-width: 36ch;
+  margin-top: 10px;
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+body[data-theme="dark"] .project-masonry__item {
+  border-color: rgba(246, 240, 232, 0.16);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42);
+}
+
+@media (max-width: 519px) {
+  .project-masonry__content span {
+    font-size: 0.84rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-masonry,
+  .project-masonry__item,
+  .project-masonry__item img {
+    transition: none;
+  }
+}

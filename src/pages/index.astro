@@ -1,4 +1,13 @@
 ---
+import "../styles/global.css";
+import TextPressure from "../components/TextPressure.jsx";
+import WorkExperienceList from "../components/WorkExperienceList.jsx";
+import ConnectSection from "../components/ConnectSection.jsx";
+import ProjectsSection from "../components/ProjectsSection.jsx";
+import DomeGallery from "../components/DomeGallery.jsx";
+import CurvedLoop from "../components/CurvedLoop.jsx";
+import DecryptedText from "../components/DecryptedText.jsx";
+
 const latestEvents = [
   {
     label: "01",
@@ -119,40 +128,51 @@ const accomplishments = [
 
       <section class="experiences-section" aria-labelledby="experiences-title">
         <div class="experiences-inner">
-          <h2 id="experiences-title" class="experiences-title">Experience</h2>
+          <TextPressure
+            client:load
+            id="experiences-title"
+            className="experiences-title"
+            text="Experience"
+          />
           <p class="experiences-subtitle">"Everything is a win when the goal is to experience."</p>
-          <nav class="line-sidebar experience-sidebar" aria-label="Experience categories">
-            <ul class="line-sidebar__list">
-              <li class="line-sidebar__item is-active" aria-current="true" data-sidebar-item>
-                <span class="line-sidebar__marker" aria-hidden="true"></span>
-                <button class="line-sidebar__label" type="button">
-                  <span class="line-sidebar__index">01</span>
-                  <span class="line-sidebar__text">Work</span>
-                </button>
-              </li>
-              <li class="line-sidebar__item" data-sidebar-item>
-                <span class="line-sidebar__marker" aria-hidden="true"></span>
-                <button class="line-sidebar__label" type="button">
-                  <span class="line-sidebar__index">02</span>
-                  <span class="line-sidebar__text">Content</span>
-                </button>
-              </li>
-              <li class="line-sidebar__item" data-sidebar-item>
-                <span class="line-sidebar__marker" aria-hidden="true"></span>
-                <button class="line-sidebar__label" type="button">
-                  <span class="line-sidebar__index">03</span>
-                  <span class="line-sidebar__text">Community</span>
-                </button>
-              </li>
-            </ul>
+          <nav class="experience-island" aria-label="Experience categories" data-experience-toggle data-active="work">
+            <span class="yin-yang-surface" aria-hidden="true">
+              <span class="yin-yang-white-field"></span>
+            </span>
+            <button class="yin-yang-option is-active" type="button" aria-pressed="true" data-experience-option="work">
+              Work
+            </button>
+            <button class="yin-yang-option" type="button" aria-pressed="false" data-experience-option="community">
+              Community
+            </button>
           </nav>
+          <div class="experience-panels">
+            <section class="experience-panel" data-experience-panel="work" aria-label="Work experience">
+              <WorkExperienceList client:visible />
+            </section>
+            <section class="experience-panel experience-coming-soon" data-experience-panel="community" aria-label="Community experience" hidden>
+              <p>Community experiences coming soon.</p>
+            </section>
+          </div>
         </div>
       </section>
 
+      <ProjectsSection client:load />
+
       <section class="carousel-section" aria-labelledby="carousel-title">
         <div class="carousel-heading">
+          <CurvedLoop
+            client:visible
+            id="carousel-title"
+            ariaLabel="Cool things I have done"
+            marqueeText="Cool things I have done ✦"
+            speed={0.65}
+            curveAmount={115}
+            direction="left"
+            interactive={false}
+            className="carousel-curved-text"
+          />
           <p class="section-kicker">Diverse experiences I am proud of :)</p>
-          <h2 id="carousel-title">Cool things I have done</h2>
         </div>
 
         <div class="carousel-track" aria-label="Accomplishment carousel">
@@ -172,33 +192,32 @@ const accomplishments = [
 
       <section class="world-section" aria-labelledby="world-title">
         <div class="world-heading">
-          <p class="section-kicker">places, motion, memory</p>
-          <h2 id="world-title">My World</h2>
+          <h2 id="world-title">
+            <DecryptedText
+              client:visible
+              text="My World"
+              speed={68}
+              sequential={true}
+              revealDirection="center"
+              animateOn="view"
+              parentClassName="world-decrypted-text"
+              className="world-decrypted__revealed"
+              encryptedClassName="world-decrypted__encrypted"
+            />
+          </h2>
+          <p class="world-subtitle">Places I’ve travelled to and called home.</p>
         </div>
-        <div
-          class="circular-gallery"
-          data-circular-gallery
-          tabindex="0"
-          role="region"
-          aria-label="Circular travel gallery. Use left and right arrow keys to navigate."
-        ></div>
-        <div class="world-modal" data-world-modal aria-hidden="true">
-          <button class="world-modal__backdrop" type="button" data-world-close aria-label="Close travel detail"></button>
-          <article class="world-modal__card" role="dialog" aria-modal="true" aria-labelledby="world-modal-title">
-            <button class="world-modal__close" type="button" data-world-close aria-label="Close travel detail">×</button>
-            <div class="world-modal__image" data-world-modal-image></div>
-            <p class="world-modal__eyebrow" data-world-modal-eyebrow></p>
-            <h3 id="world-modal-title" data-world-modal-title></h3>
-            <p data-world-modal-description></p>
-          </article>
+        <div class="dome-gallery-shell">
+          <DomeGallery client:visible />
         </div>
       </section>
+
+      <ConnectSection client:visible />
     </main>
 
     <script>
       import { gsap } from "gsap";
       import { ScrollTrigger } from "gsap/ScrollTrigger";
-      import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from "ogl";
 
       gsap.registerPlugin(ScrollTrigger);
       window.history.scrollRestoration = "manual";
@@ -229,609 +248,32 @@ const accomplishments = [
         window.localStorage.setItem("sethu-theme", nextTheme);
       });
 
-      const initExperienceSidebar = () => {
-        const sidebar = document.querySelector(".experience-sidebar");
-        const list = sidebar?.querySelector(".line-sidebar__list");
-        const items = [...(sidebar?.querySelectorAll("[data-sidebar-item]") ?? [])];
-        if (!sidebar || !list || items.length === 0) return;
+      const initExperienceToggle = () => {
+        const island = document.querySelector("[data-experience-toggle]");
+        if (!island) return;
 
-        const targets = items.map((item) => (item.classList.contains("is-active") ? 1 : 0));
-        const current = [...targets];
-        let activeIndex = targets.findIndex((value) => value === 1);
-        let rafId = 0;
-        let lastTime = 0;
+        const options = [...island.querySelectorAll("[data-experience-option]")];
+        const panels = [...document.querySelectorAll("[data-experience-panel]")];
+        options.forEach((option) => {
+          option.addEventListener("click", () => {
+            const value = option.dataset.experienceOption || "work";
+            island.dataset.active = value;
 
-        const startLoop = () => {
-          if (rafId) return;
-          lastTime = performance.now();
-          rafId = requestAnimationFrame(runFrame);
-        };
-
-        const runFrame = (now) => {
-          const delta = Math.min((now - lastTime) / 1000, 0.05);
-          lastTime = now;
-          const smoothing = 0.12;
-          const easing = 1 - Math.exp(-delta / smoothing);
-          let moving = false;
-
-          items.forEach((item, index) => {
-            const target = Math.max(targets[index] || 0, activeIndex === index ? 1 : 0);
-            const next = current[index] + (target - current[index]) * easing;
-            const value = Math.abs(target - next) < 0.0015 ? target : next;
-            current[index] = value;
-            item.style.setProperty("--effect", value.toFixed(4));
-            if (value !== target) moving = true;
-          });
-
-          rafId = moving ? requestAnimationFrame(runFrame) : 0;
-        };
-
-        list.addEventListener("pointermove", (event) => {
-          const rect = list.getBoundingClientRect();
-          const pointerY = event.clientY - rect.top;
-          const radius = 110;
-
-          items.forEach((item, index) => {
-            const center = item.offsetTop + item.offsetHeight / 2;
-            const distance = Math.abs(pointerY - center);
-            const proximity = Math.max(0, 1 - distance / radius);
-            targets[index] = proximity * proximity * (3 - 2 * proximity);
-          });
-
-          startLoop();
-        });
-
-        list.addEventListener("pointerleave", () => {
-          targets.fill(0);
-          startLoop();
-        });
-
-        items.forEach((item, index) => {
-          item.querySelector("button")?.addEventListener("click", () => {
-            activeIndex = index;
-            items.forEach((nextItem, nextIndex) => {
-              const isActive = nextIndex === index;
-              nextItem.classList.toggle("is-active", isActive);
-              if (isActive) {
-                nextItem.setAttribute("aria-current", "true");
-              } else {
-                nextItem.removeAttribute("aria-current");
-              }
+            options.forEach((nextOption) => {
+              const isActive = nextOption === option;
+              nextOption.classList.toggle("is-active", isActive);
+              nextOption.setAttribute("aria-pressed", String(isActive));
             });
-            startLoop();
-          });
-        });
 
-        startLoop();
-        window.addEventListener("pagehide", () => {
-          if (rafId) cancelAnimationFrame(rafId);
-        });
-      };
-
-      initExperienceSidebar();
-
-      const initExperienceTextPressure = () => {
-        const title = document.querySelector(".experiences-title");
-        if (!title || title.dataset.pressureReady === "true") return;
-
-        const text = title.textContent?.trim() || "";
-        title.textContent = "";
-        title.dataset.pressureReady = "true";
-
-        const spans = [...text].map((char) => {
-          const span = document.createElement("span");
-          span.className = "pressure-letter";
-          span.dataset.char = char;
-          span.textContent = char === " " ? "\u00A0" : char;
-          title.appendChild(span);
-          return span;
-        });
-
-        const pointer = { x: 0, y: 0 };
-        const eased = { x: 0, y: 0 };
-        let hoverStrength = 0;
-        let targetStrength = 0;
-        let rafId = 0;
-
-        const setToCenter = (immediate = true) => {
-          const rect = title.getBoundingClientRect();
-          pointer.x = rect.left + rect.width / 2;
-          pointer.y = rect.top + rect.height / 2;
-          if (immediate) {
-            eased.x = pointer.x;
-            eased.y = pointer.y;
-          }
-        };
-
-        const getInfluence = (distance, maxDistance) => {
-          const normalized = Math.max(0, 1 - distance / maxDistance);
-          return normalized * normalized;
-        };
-
-        const resetLetters = () => {
-          spans.forEach((span) => {
-            span.style.fontVariationSettings = "'wght' 760, 'wdth' 100, 'opsz' 144";
-            span.style.transform = "translateY(0)";
-          });
-        };
-
-        const animate = () => {
-          eased.x += (pointer.x - eased.x) / 18;
-          eased.y += (pointer.y - eased.y) / 18;
-          hoverStrength += (targetStrength - hoverStrength) / 14;
-
-          const titleRect = title.getBoundingClientRect();
-          const maxDistance = Math.max(titleRect.width * 0.55, 1);
-
-          spans.forEach((span) => {
-            const rect = span.getBoundingClientRect();
-            const center = {
-              x: rect.left + rect.width / 2,
-              y: rect.top + rect.height / 2,
-            };
-            const distance = Math.hypot(eased.x - center.x, eased.y - center.y);
-            const influence = getInfluence(distance, maxDistance) * hoverStrength;
-            const weight = Math.floor(760 + influence * 150);
-            const width = Math.floor(100 + influence * 18);
-            const lift = influence * 4;
-
-            span.style.fontVariationSettings = `'wght' ${weight}, 'wdth' ${width}, 'opsz' 144`;
-            span.style.transform = `translateY(${-lift}px)`;
-          });
-
-          if (hoverStrength < 0.002 && targetStrength === 0) {
-            hoverStrength = 0;
-          }
-
-          rafId = requestAnimationFrame(animate);
-        };
-
-        title.addEventListener("pointerenter", (event) => {
-          targetStrength = 1;
-          pointer.x = event.clientX;
-          pointer.y = event.clientY;
-        });
-
-        title.addEventListener("pointermove", (event) => {
-          pointer.x = event.clientX;
-          pointer.y = event.clientY;
-        });
-
-        title.addEventListener("pointerleave", () => {
-          targetStrength = 0;
-          setToCenter(false);
-        });
-
-        window.addEventListener("resize", setToCenter);
-        setToCenter();
-        resetLetters();
-        animate();
-
-        window.addEventListener("pagehide", () => {
-          cancelAnimationFrame(rafId);
-        });
-      };
-
-      initExperienceTextPressure();
-
-      const createTravelPlaceholder = (label, colorA, colorB, colorC) => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 900;
-        canvas.height = 650;
-        const context = canvas.getContext("2d");
-        const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, colorA);
-        gradient.addColorStop(0.55, colorB);
-        gradient.addColorStop(1, colorC);
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-
-        context.fillStyle = "rgba(255,255,255,0.16)";
-        for (let i = 0; i < 9; i += 1) {
-          context.beginPath();
-          context.arc(120 + i * 95, 120 + Math.sin(i) * 46, 92 + i * 8, 0, Math.PI * 2);
-          context.fill();
-        }
-
-        context.fillStyle = "rgba(17,17,17,0.32)";
-        context.fillRect(0, canvas.height - 118, canvas.width, 118);
-        context.fillStyle = "#fff7ee";
-        context.font = "900 58px Inter, system-ui, sans-serif";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(label, canvas.width / 2, canvas.height - 58);
-        return canvas.toDataURL("image/png");
-      };
-
-      const createTextTexture = (gl, text, font, color) => {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        context.font = font;
-        const width = Math.ceil(context.measureText(text).width) + 28;
-        const height = 72;
-        canvas.width = width;
-        canvas.height = height;
-        context.font = font;
-        context.fillStyle = color;
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(text, width / 2, height / 2);
-        const texture = new Texture(gl, { generateMipmaps: false });
-        texture.image = canvas;
-        return { texture, width, height };
-      };
-
-      class CircularGalleryApp {
-        constructor(container, items) {
-          this.container = container;
-          this.items = items.concat(items);
-          this.scroll = { current: 0, target: 0, last: 0, ease: 0.026 };
-          this.scrollSpeed = 0.9;
-          this.isDown = false;
-          this.didDrag = false;
-          this.createRenderer();
-          this.createCamera();
-          this.scene = new Transform();
-          this.geometry = new Plane(this.gl, { widthSegments: 80, heightSegments: 42 });
-          this.medias = [];
-          this.onResize();
-          this.createMedias();
-          this.addEvents();
-          this.update();
-        }
-
-        createRenderer() {
-          this.renderer = new Renderer({
-            alpha: true,
-            antialias: true,
-            dpr: Math.min(window.devicePixelRatio || 1, 2),
-          });
-          this.gl = this.renderer.gl;
-          this.gl.clearColor(0, 0, 0, 0);
-          this.container.appendChild(this.gl.canvas);
-        }
-
-        createCamera() {
-          this.camera = new Camera(this.gl);
-          this.camera.fov = 45;
-          this.camera.position.z = 20;
-        }
-
-        createProgram(image, borderRadius = 0.055) {
-          const texture = new Texture(this.gl, { generateMipmaps: true });
-          const program = new Program(this.gl, {
-            depthTest: false,
-            depthWrite: false,
-            transparent: true,
-            vertex: `
-              precision highp float;
-              attribute vec3 position;
-              attribute vec2 uv;
-              uniform mat4 modelViewMatrix;
-              uniform mat4 projectionMatrix;
-              uniform float uTime;
-              uniform float uSpeed;
-              varying vec2 vUv;
-              void main() {
-                vUv = uv;
-                vec3 p = position;
-                p.z = (sin(p.x * 4.0 + uTime) * 1.2 + cos(p.y * 2.0 + uTime) * 1.2) * (0.06 + abs(uSpeed) * 0.35);
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-              }
-            `,
-            fragment: `
-              precision highp float;
-              uniform vec2 uImageSizes;
-              uniform vec2 uPlaneSizes;
-              uniform sampler2D tMap;
-              uniform float uBorderRadius;
-              varying vec2 vUv;
-              float roundedBoxSDF(vec2 p, vec2 b, float r) {
-                vec2 d = abs(p) - b;
-                return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0) - r;
-              }
-              void main() {
-                vec2 ratio = vec2(
-                  min((uPlaneSizes.x / uPlaneSizes.y) / (uImageSizes.x / uImageSizes.y), 1.0),
-                  min((uPlaneSizes.y / uPlaneSizes.x) / (uImageSizes.y / uImageSizes.x), 1.0)
-                );
-                vec2 uv = vec2(
-                  vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
-                  vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
-                );
-                vec4 color = texture2D(tMap, uv);
-                float d = roundedBoxSDF(vUv - 0.5, vec2(0.5 - uBorderRadius), uBorderRadius);
-                float alpha = 1.0 - smoothstep(-0.002, 0.002, d);
-                gl_FragColor = vec4(color.rgb, alpha);
-              }
-            `,
-            uniforms: {
-              tMap: { value: texture },
-              uPlaneSizes: { value: [0, 0] },
-              uImageSizes: { value: [900, 650] },
-              uSpeed: { value: 0 },
-              uTime: { value: 100 * Math.random() },
-              uBorderRadius: { value: borderRadius },
-            },
-          });
-          const img = new Image();
-          img.onload = () => {
-            texture.image = img;
-            program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
-          };
-          img.src = image;
-          return program;
-        }
-
-        createLabel(plane, text) {
-          const { texture, width, height } = createTextTexture(
-            this.gl,
-            text,
-            "900 34px Inter, system-ui, sans-serif",
-            getComputedStyle(document.body).getPropertyValue("--ink").trim() || "#111111"
-          );
-          const program = new Program(this.gl, {
-            transparent: true,
-            vertex: `
-              attribute vec3 position;
-              attribute vec2 uv;
-              uniform mat4 modelViewMatrix;
-              uniform mat4 projectionMatrix;
-              varying vec2 vUv;
-              void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-              }
-            `,
-            fragment: `
-              precision highp float;
-              uniform sampler2D tMap;
-              varying vec2 vUv;
-              void main() {
-                vec4 color = texture2D(tMap, vUv);
-                if (color.a < 0.1) discard;
-                gl_FragColor = color;
-              }
-            `,
-            uniforms: { tMap: { value: texture } },
-          });
-          const mesh = new Mesh(this.gl, { geometry: new Plane(this.gl), program });
-          const labelHeight = plane.scale.y * 0.15;
-          mesh.scale.set(labelHeight * (width / height), labelHeight, 1);
-          mesh.position.y = -plane.scale.y * 0.64;
-          mesh.setParent(plane);
-          return { mesh, aspect: width / height };
-        }
-
-        createMedias() {
-          this.medias = this.items.map((item, index) => {
-            const plane = new Mesh(this.gl, {
-              geometry: this.geometry,
-              program: this.createProgram(item.image),
+            panels.forEach((panel) => {
+              panel.hidden = panel.dataset.experiencePanel !== value;
             });
-            plane.setParent(this.scene);
-            const label = this.createLabel(plane, item.text);
-            return { plane, label, index, extra: 0, width: 0, widthTotal: 0, x: 0 };
           });
-          this.onResize();
-        }
-
-        onResize = () => {
-          this.screen = {
-            width: this.container.clientWidth,
-            height: this.container.clientHeight,
-          };
-          this.renderer.setSize(this.screen.width, this.screen.height);
-          this.camera.perspective({ aspect: this.screen.width / this.screen.height });
-          const fov = (this.camera.fov * Math.PI) / 180;
-          const height = 2 * Math.tan(fov / 2) * this.camera.position.z;
-          this.viewport = { width: height * this.camera.aspect, height };
-          this.medias?.forEach((media) => {
-            media.plane.scale.y = this.viewport.height * 0.54;
-            media.plane.scale.x = this.viewport.width * 0.3;
-            media.plane.program.uniforms.uPlaneSizes.value = [media.plane.scale.x, media.plane.scale.y];
-            const labelHeight = media.plane.scale.y * 0.15;
-            media.label.mesh.scale.set(labelHeight * media.label.aspect, labelHeight, 1);
-            media.label.mesh.position.y = -media.plane.scale.y * 0.64;
-            media.width = media.plane.scale.x + 2.15;
-            media.widthTotal = media.width * this.medias.length;
-            media.x = media.width * media.index;
-          });
-        };
-
-        updateMedia(media, direction) {
-          media.plane.position.x = media.x - this.scroll.current - media.extra;
-          const x = media.plane.position.x;
-          const halfWidth = this.viewport.width / 2;
-          const bend = 3;
-          const radius = (halfWidth * halfWidth + bend * bend) / (2 * bend);
-          const effectiveX = Math.min(Math.abs(x), halfWidth);
-          const arc = radius - Math.sqrt(radius * radius - effectiveX * effectiveX);
-          media.plane.position.y = -arc * 0.78;
-          media.plane.rotation.z = -Math.sign(x) * Math.asin(effectiveX / radius) * 0.82;
-          media.plane.program.uniforms.uTime.value += 0.035;
-          media.plane.program.uniforms.uSpeed.value = this.scroll.current - this.scroll.last;
-
-          const planeOffset = media.plane.scale.x / 2;
-          const viewportOffset = this.viewport.width / 2;
-          if (direction === "right" && media.plane.position.x + planeOffset < -viewportOffset) {
-            media.extra -= media.widthTotal;
-          }
-          if (direction === "left" && media.plane.position.x - planeOffset > viewportOffset) {
-            media.extra += media.widthTotal;
-          }
-        }
-
-        onWheel = (event) => {
-          const delta = event.deltaY || event.wheelDelta || event.detail;
-          this.scroll.target += (delta > 0 ? this.scrollSpeed : -this.scrollSpeed) * 0.12;
-        };
-
-        onPointerDown = (event) => {
-          this.isDown = true;
-          this.didDrag = false;
-          this.scroll.position = this.scroll.current;
-          this.start = event.touches ? event.touches[0].clientX : event.clientX;
-        };
-
-        onPointerMove = (event) => {
-          if (!this.isDown) return;
-          const x = event.touches ? event.touches[0].clientX : event.clientX;
-          if (Math.abs(x - this.start) > 6) {
-            this.didDrag = true;
-          }
-          this.scroll.target = this.scroll.position + (this.start - x) * 0.024;
-        };
-
-        onPointerUp = () => {
-          this.isDown = false;
-          window.setTimeout(() => {
-            this.didDrag = false;
-          }, 0);
-        };
-
-        onKeyDown = (event) => {
-          if (event.key === "ArrowRight") {
-            this.scroll.target += this.scrollSpeed * 1.4;
-          }
-          if (event.key === "ArrowLeft") {
-            this.scroll.target -= this.scrollSpeed * 1.4;
-          }
-        };
-
-        addEvents() {
-          window.addEventListener("resize", this.onResize);
-          this.container.addEventListener("wheel", this.onWheel, { passive: true });
-          this.container.addEventListener("mousedown", this.onPointerDown);
-          window.addEventListener("mousemove", this.onPointerMove);
-          window.addEventListener("mouseup", this.onPointerUp);
-          this.container.addEventListener("touchstart", this.onPointerDown, { passive: true });
-          window.addEventListener("touchmove", this.onPointerMove, { passive: true });
-          window.addEventListener("touchend", this.onPointerUp);
-          this.container.addEventListener("keydown", this.onKeyDown);
-        }
-
-        update = () => {
-          this.scroll.current += (this.scroll.target - this.scroll.current) * this.scroll.ease;
-          const direction = this.scroll.current > this.scroll.last ? "right" : "left";
-          this.medias.forEach((media) => this.updateMedia(media, direction));
-          this.renderer.render({ scene: this.scene, camera: this.camera });
-          this.scroll.last = this.scroll.current;
-          this.raf = requestAnimationFrame(this.update);
-        };
-
-        getCenteredItem() {
-          const nearest = this.medias.reduce((closest, media) => {
-            const distance = Math.abs(media.plane.position.x);
-            return !closest || distance < closest.distance ? { media, distance } : closest;
-          }, null);
-          const originalIndex = nearest ? nearest.media.index % (this.items.length / 2) : 0;
-          return this.items[originalIndex];
-        }
-
-        destroy() {
-          cancelAnimationFrame(this.raf);
-          window.removeEventListener("resize", this.onResize);
-          this.container.removeEventListener("wheel", this.onWheel);
-          this.container.removeEventListener("mousedown", this.onPointerDown);
-          window.removeEventListener("mousemove", this.onPointerMove);
-          window.removeEventListener("mouseup", this.onPointerUp);
-          this.container.removeEventListener("touchstart", this.onPointerDown);
-          window.removeEventListener("touchmove", this.onPointerMove);
-          window.removeEventListener("touchend", this.onPointerUp);
-          this.container.removeEventListener("keydown", this.onKeyDown);
-          this.gl.canvas.remove();
-        }
-      }
-
-      const initCircularGallery = () => {
-        const container = document.querySelector("[data-circular-gallery]");
-        if (!container || container.dataset.ready === "true") return;
-        container.dataset.ready = "true";
-        const items = [
-          {
-            image: createTravelPlaceholder("Chicago", "#f25a1d", "#d42e7c", "#ffe0d2"),
-            text: "Chicago",
-            eyebrow: "city start",
-            description:
-              "A placeholder for the beginning of the California Zephyr story. Add a train station photo, a city memory, or the moment the trip started here.",
-          },
-          {
-            image: createTravelPlaceholder("California Zephyr", "#0d58cb", "#f25a1d", "#fff0d7"),
-            text: "California Zephyr",
-            eyebrow: "cross-country rail",
-            description:
-              "A coast-to-coast solo travel chapter: Chicago to San Francisco by train, long windows, changing landscapes, and cool people met along the way.",
-          },
-          {
-            image: createTravelPlaceholder("San Francisco", "#d42e7c", "#ffb13b", "#fff3e8"),
-            text: "San Francisco",
-            eyebrow: "west coast",
-            description:
-              "A placeholder for summer internship memories, city walks, and the feeling of arriving on the other side of the country.",
-          },
-          {
-            image: createTravelPlaceholder("New York", "#111111", "#d42e7c", "#f25a1d"),
-            text: "New York",
-            eyebrow: "east coast",
-            description:
-              "A future card for stories, people, and places from New York. Replace this with a favorite photo when ready.",
-          },
-          {
-            image: createTravelPlaceholder("Lehigh", "#ffb13b", "#f25a1d", "#d42e7c"),
-            text: "Lehigh",
-            eyebrow: "home base",
-            description:
-              "A home-base card for campus moments, community building, and the experiences that shaped the rest of the portfolio.",
-          },
-          {
-            image: createTravelPlaceholder("TBD", "#ffe0d2", "#f25a1d", "#0d58cb"),
-            text: "More soon",
-            eyebrow: "next stop",
-            description:
-              "A placeholder for wherever the next story lives. This can become a travel memory, a project location, or a visual scrapbook card.",
-          },
-        ];
-        const app = new CircularGalleryApp(container, items);
-
-        const modal = document.querySelector("[data-world-modal]");
-        const image = document.querySelector("[data-world-modal-image]");
-        const eyebrow = document.querySelector("[data-world-modal-eyebrow]");
-        const title = document.querySelector("[data-world-modal-title]");
-        const description = document.querySelector("[data-world-modal-description]");
-
-        const openDetail = (item) => {
-          if (!modal || !image || !eyebrow || !title || !description) return;
-          image.style.backgroundImage = `url(${item.image})`;
-          eyebrow.textContent = item.eyebrow;
-          title.textContent = item.text;
-          description.textContent = item.description;
-          modal.setAttribute("aria-hidden", "false");
-          document.body.classList.add("world-modal-open");
-        };
-
-        const closeDetail = () => {
-          modal?.setAttribute("aria-hidden", "true");
-          document.body.classList.remove("world-modal-open");
-        };
-
-        container.addEventListener("click", () => {
-          if (app.didDrag) return;
-          openDetail(app.getCenteredItem());
         });
-
-        document.querySelectorAll("[data-world-close]").forEach((button) => {
-          button.addEventListener("click", closeDetail);
-        });
-
-        window.addEventListener("keydown", (event) => {
-          if (event.key === "Escape") closeDetail();
-        });
-
-        window.addEventListener("pagehide", () => app.destroy(), { once: true });
       };
 
-      initCircularGallery();
+      initExperienceToggle();
+
 
       const typeInto = (element, delay = 0, instant = false) => {
         if (!element) return Promise.resolve();
@@ -1106,28 +548,64 @@ const accomplishments = [
           return;
         }
 
+        word.classList.add("text-type");
+        word.textContent = "";
+        const content = document.createElement("span");
+        content.className = "text-type__content";
+        const cursor = document.createElement("span");
+        cursor.className = "text-type__cursor identity-word__cursor";
+        cursor.textContent = "|";
+        word.append(content, cursor);
+
+        const cursorTween = gsap.to(cursor, {
+          opacity: 0,
+          duration: 0.5,
+          repeat: -1,
+          yoyo: true,
+          ease: "power2.inOut",
+        });
+        const timeouts = [];
+
+        const queue = (callback, delay) => {
+          const timeout = window.setTimeout(callback, delay);
+          timeouts.push(timeout);
+        };
+
         let index = 0;
         const typeCurrentWord = () => {
           const current = words[index];
-          const tl = gsap.timeline({
-            delay: 0.35,
-            onComplete: () => {
-              index = (index + 1) % words.length;
-              typeCurrentWord();
-            },
-          });
+          let charIndex = 0;
 
-          tl.set(word, { textContent: "" });
-          [...current].forEach((_, charIndex) => {
-            tl.set(word, { textContent: current.slice(0, charIndex + 1) }, charIndex === 0 ? 0 : "+=0.055");
-          });
-          tl.to({}, { duration: 1.05 });
-          [...current].forEach((_, charIndex) => {
-            tl.set(word, { textContent: current.slice(0, current.length - charIndex - 1) }, "+=0.035");
-          });
+          const typeNext = () => {
+            content.textContent = current.slice(0, charIndex + 1);
+            charIndex += 1;
+            if (charIndex < current.length) {
+              queue(typeNext, 48 + Math.random() * 42);
+              return;
+            }
+            queue(deleteCurrent, 1050);
+          };
+
+          const deleteCurrent = () => {
+            content.textContent = current.slice(0, charIndex - 1);
+            charIndex -= 1;
+            if (charIndex > 0) {
+              queue(deleteCurrent, 32);
+              return;
+            }
+            index = (index + 1) % words.length;
+            queue(typeCurrentWord, 240);
+          };
+
+          queue(typeNext, 350);
         };
 
         typeCurrentWord();
+
+        window.addEventListener("pagehide", () => {
+          timeouts.forEach((timeout) => window.clearTimeout(timeout));
+          cursorTween.kill();
+        });
       };
 
       const mm = gsap.matchMedia();
@@ -1263,7 +741,7 @@ const accomplishments = [
             .to(
               ".deck-card:nth-child(1)",
               {
-                y: -64,
+                y: -36,
                 scale: 0.952,
                 autoAlpha: 1,
                 minHeight: "clamp(150px, 13vw, 188px)",
@@ -1330,7 +808,7 @@ const accomplishments = [
             .to(
               ".deck-card:nth-child(2)",
               {
-                y: -64,
+                y: -36,
                 scale: 0.976,
                 autoAlpha: 1,
                 minHeight: "clamp(150px, 13vw, 188px)",
@@ -1434,7 +912,7 @@ const accomplishments = [
               "<0.16"
             )
             .fromTo(
-              ".experience-sidebar",
+              ".experience-island",
               { autoAlpha: 0, y: 28, scale: 0.96 },
               { autoAlpha: 1, y: 0, scale: 1, ease: "power1.out" },
               "<0.2"
@@ -1456,19 +934,26 @@ const accomplishments = [
             },
           });
 
-          gsap.from(".carousel-heading", {
-            autoAlpha: 0,
-            y: 40,
-            duration: 0.8,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: ".carousel-section",
-              start: "top 70%",
-              toggleActions: "play none none reverse",
-            },
-          });
-
           window.addEventListener("load", () => ScrollTrigger.refresh());
+          window.addEventListener("portfolio:layout-change", () => ScrollTrigger.refresh());
+
+          const projectsSection = document.querySelector(".projects-section");
+          if (projectsSection) {
+            let refreshFrame = 0;
+            const projectsObserver = new ResizeObserver(() => {
+              cancelAnimationFrame(refreshFrame);
+              refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+            });
+            projectsObserver.observe(projectsSection);
+            window.addEventListener(
+              "pagehide",
+              () => {
+                cancelAnimationFrame(refreshFrame);
+                projectsObserver.disconnect();
+              },
+              { once: true }
+            );
+          }
         }
       );
     </script>
@@ -1492,6 +977,12 @@ const accomplishments = [
     --control-bg: rgba(251, 250, 247, 0.72);
     --control-border: rgba(17, 17, 17, 0.16);
     --control-hover: rgba(17, 17, 17, 0.38);
+    --yin-yang-border: rgba(17, 17, 17, 0.34);
+    --yin-yang-shadow:
+      0 20px 42px rgba(17, 17, 17, 0.18),
+      0 5px 12px rgba(17, 17, 17, 0.12),
+      0 0 0 1px rgba(255, 255, 255, 0.7);
+    --yin-yang-inset: inset 0 1px 2px rgba(255, 255, 255, 0.28);
   }
 
   * {
@@ -1529,10 +1020,13 @@ const accomplishments = [
     --control-bg: rgba(31, 29, 27, 0.72);
     --control-border: rgba(246, 240, 232, 0.18);
     --control-hover: rgba(246, 240, 232, 0.44);
-  }
-
-  body.world-modal-open {
-    overflow: hidden;
+    --yin-yang-border: rgba(246, 240, 232, 0.34);
+    --yin-yang-shadow:
+      0 22px 48px rgba(0, 0, 0, 0.62),
+      0 6px 14px rgba(0, 0, 0, 0.42),
+      0 0 0 1px rgba(246, 240, 232, 0.22),
+      0 0 26px rgba(246, 240, 232, 0.08);
+    --yin-yang-inset: inset 0 1px 2px rgba(255, 255, 255, 0.22);
   }
 
   main {
@@ -1573,7 +1067,9 @@ const accomplishments = [
 
   .name-line {
     min-height: 1em;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: clamp(3.4rem, 10vw, 9rem);
+    font-weight: 900;
     line-height: 0.92;
     letter-spacing: 0;
     transform-origin: left center;
@@ -1586,8 +1082,9 @@ const accomplishments = [
     min-height: 1.45em;
     margin: 0;
     color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
     font-size: clamp(1.975rem, calc(3vw + 0.625rem), 2.875rem);
-    font-weight: 400;
+    font-weight: 900;
     letter-spacing: 0;
     opacity: 0;
     white-space: nowrap;
@@ -1599,7 +1096,14 @@ const accomplishments = [
     display: inline-block;
     margin-left: 0.12em;
     color: #f25a1d;
-    font-weight: 400;
+    font-weight: 900;
+  }
+
+  .identity-word__cursor {
+    position: absolute;
+    bottom: 0.02em;
+    left: calc(100% + 0.08em);
+    margin-left: 0;
   }
 
   .identity-word::after {
@@ -1965,7 +1469,8 @@ const accomplishments = [
     grid-row: 1;
     position: relative;
     justify-self: start;
-    width: min(58vw, 1040px);
+    width: 100%;
+    min-width: 0;
     max-width: 1040px;
     padding-top: clamp(28px, 3.8vh, 56px);
     opacity: 0;
@@ -1974,13 +1479,16 @@ const accomplishments = [
 
   h2 {
     margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: clamp(1.775rem, calc(6vw - 0.625rem), 5.175rem);
+    font-weight: 900;
     line-height: 0.95;
     letter-spacing: 0;
   }
 
   #latest-title {
     position: relative;
+    top: clamp(8px, 1.2vh, 14px);
     z-index: 40;
   }
 
@@ -1989,10 +1497,11 @@ const accomplishments = [
     z-index: 1;
     width: min(100%, 980px);
     min-height: clamp(360px, 34vw, 450px);
-    margin-top: 34px;
+    margin-top: clamp(92px, 7.2vw, 118px);
     margin-inline: auto 0;
     opacity: 0;
     perspective: 900px;
+    min-width: 0;
   }
 
   .deck-card {
@@ -2015,6 +1524,9 @@ const accomplishments = [
     opacity: 0;
     transform-origin: center top;
     will-change: transform, opacity, border-radius;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .deck-card:nth-child(1) {
@@ -2045,6 +1557,13 @@ const accomplishments = [
     align-items: baseline;
     gap: 12px;
     min-height: 1.25em;
+    min-width: 0;
+  }
+
+  .deck-card h3,
+  .deck-card span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .deck-card p {
@@ -2059,7 +1578,9 @@ const accomplishments = [
   .deck-card h3 {
     margin: 0;
     color: currentColor;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: clamp(1.15rem, 2vw, 1.62rem);
+    font-weight: 900;
     line-height: 1.08;
     letter-spacing: 0;
   }
@@ -2114,11 +1635,12 @@ const accomplishments = [
     width: min(1180px, 100%);
   }
 
-  .experiences-title {
+  :global(.experiences-title) {
     margin: 0;
     display: inline-flex;
-    font-size: clamp(4.8rem, 15.5vw, 14rem);
-    font-family: "Roboto Flex", Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(5.4rem, 16.5vw, 15rem);
+    font-family: "Roboto Flex Portfolio", Arial, Helvetica, sans-serif;
+    font-weight: 620;
     line-height: 0.82;
     letter-spacing: 0;
     text-align: left;
@@ -2128,18 +1650,14 @@ const accomplishments = [
     will-change: transform, opacity;
   }
 
-  .experiences-title .pressure-letter {
-    display: inline-block;
-    color: inherit;
-    font-variation-settings: "wght" 780, "wdth" 100, "opsz" 144;
-    transform: translateY(0);
-    transform-origin: center bottom;
-    transition:
-      color 180ms ease,
-      transform 240ms ease,
-      font-variation-settings 240ms ease;
-    will-change: transform, font-variation-settings;
-  }
+:global(.experiences-title .text-pressure-letter) {
+  display: inline-block;
+  flex: 0 0 auto;
+  text-align: center;
+  color: var(--ink);
+  font-variation-settings: "opsz" 144, "wght" 620, "wdth" 86, "slnt" 0;
+  will-change: font-variation-settings;
+}
 
   .experiences-subtitle {
     width: min(760px, 100%);
@@ -2152,108 +1670,244 @@ const accomplishments = [
     will-change: transform, opacity;
   }
 
-  .experience-sidebar {
-    --accent-color: #f25a1d;
-    --text-color: var(--muted);
-    --marker-color: color-mix(in srgb, var(--ink) 34%, transparent);
-    --marker-length: 68px;
-    --marker-gap: 12px;
-    --tick-scale: 0.48;
-    --max-shift: 28px;
-    --item-gap: clamp(18px, 2.2vw, 26px);
-    --font-size: clamp(1rem, 1.65vw, 1.32rem);
-
+  .experience-island {
     position: relative;
-    width: fit-content;
+    width: min(400px, 100%);
+    min-height: 82px;
+    max-width: 100%;
     margin: clamp(44px, 7vw, 82px) auto 0;
-    display: flex;
-    justify-content: center;
-    padding-left: calc(var(--marker-length) + var(--marker-gap));
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    padding: 0;
+    border: 1px solid var(--yin-yang-border);
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: var(--yin-yang-shadow);
     opacity: 0;
     will-change: transform, opacity;
+    isolation: isolate;
   }
 
-  .line-sidebar__list {
+  .yin-yang-surface {
+    --curve-size: 41px;
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #171717;
+    box-shadow: var(--yin-yang-inset);
+  }
+
+  .yin-yang-white-field {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 58%;
+    border-radius: 0 999px 999px 0;
+    background: #fffdf8;
+    transition: left 620ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: left;
+  }
+
+  .yin-yang-white-field::before,
+  .yin-yang-white-field::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--curve-size) * -0.5);
+    width: var(--curve-size);
+    height: var(--curve-size);
+    border-radius: 50%;
+  }
+
+  .yin-yang-white-field::before {
+    top: 0;
+    background: #171717;
+  }
+
+  .yin-yang-white-field::after {
+    bottom: 0;
+    background: #fffdf8;
+  }
+
+  .experience-island[data-active="community"] .yin-yang-white-field {
+    left: 38%;
+  }
+
+  .yin-yang-option {
+    position: relative;
+    z-index: 4;
+    min-height: 82px;
+    border: 0;
+    border-radius: 999px;
+    padding: 16px clamp(22px, 2.6vw, 34px);
+    background: transparent;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(0.88rem, 1.2vw, 1.02rem);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    outline: none;
+    transition:
+      color 300ms ease,
+      opacity 300ms ease,
+      transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .yin-yang-option[data-experience-option="work"] {
+    color: #fffdf8;
+  }
+
+  .yin-yang-option[data-experience-option="community"] {
+    color: #171717;
+  }
+
+  .yin-yang-option:not(.is-active) {
+    opacity: 1;
+    transform: scale(0.98);
+  }
+
+  .yin-yang-option.is-active {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+
+  .experience-island[data-active="work"]
+    .yin-yang-option[data-experience-option="community"] {
+    transform: translateX(14px) scale(0.98);
+  }
+
+  .yin-yang-option:focus-visible {
+    box-shadow: inset 0 0 0 3px #f25a1d;
+  }
+
+  .yin-yang-option:active {
+    transform: scale(0.97);
+  }
+
+  .yin-yang-option:focus-visible {
+    outline: 2px solid color-mix(in srgb, #f25a1d 54%, transparent);
+    outline-offset: 5px;
+  }
+
+  .experience-panels {
+    width: min(900px, 100%);
+    margin: clamp(42px, 6vw, 72px) auto 0;
+  }
+
+  .experience-panel[hidden] {
+    display: none;
+  }
+
+  .work-experience__meta {
     display: flex;
     flex-direction: column;
-    gap: var(--item-gap);
-    margin: 0;
-    padding: 1rem 0;
-    list-style: none;
-  }
-
-  .line-sidebar__item {
-    --effect: 0;
-    position: relative;
-    cursor: pointer;
-  }
-
-  .line-sidebar__item::before {
-    position: absolute;
-    inset: -8px -52px;
-    content: "";
-  }
-
-  .line-sidebar__label {
-    position: relative;
-    display: inline-flex;
-    align-items: baseline;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: color-mix(
-      in srgb,
-      var(--accent-color) calc(var(--effect, 0) * 100%),
-      var(--text-color)
-    );
-    font: inherit;
-    font-size: var(--font-size);
-    font-weight: 850;
-    line-height: 1.2;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    transform: translateX(calc(var(--effect, 0) * var(--max-shift)));
-    cursor: pointer;
-  }
-
-  .line-sidebar__index {
-    margin-right: 0.74rem;
+    gap: 8px;
+    color: var(--muted);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    font-size: 0.78em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .work-experience__content {
+    min-width: 0;
+  }
+
+  .work-experience__company,
+  .work-experience__content h3,
+  .work-experience__content > p:last-child {
+    margin: 0;
+  }
+
+  .work-experience__company {
+    color: var(--accent);
+    font-size: 0.82rem;
     font-weight: 800;
-    opacity: calc(0.55 + var(--effect, 0) * 0.45);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
-  .line-sidebar__marker {
-    position: absolute;
-    top: 50%;
-    left: calc(-1 * var(--marker-length) - var(--marker-gap));
-    width: var(--marker-length);
-    height: 1px;
-    background: color-mix(
-      in srgb,
-      var(--accent-color) calc(var(--effect, 0) * 100%),
-      var(--marker-color)
-    );
-    transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.5));
-    transform-origin: left center;
+  .work-experience__content h3 {
+    margin-top: 7px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(1.35rem, 2.6vw, 2rem);
+    font-weight: 900;
+    letter-spacing: 0;
+    line-height: 1.05;
   }
 
-  .line-sidebar__item:not(:last-child)::after {
-    position: absolute;
-    top: calc(100% + var(--item-gap) / 2);
-    left: calc(-1 * var(--marker-length) - var(--marker-gap));
-    width: calc(var(--marker-length) * var(--tick-scale));
-    height: 1px;
-    content: "";
-    background: var(--marker-color);
-    opacity: 0.5;
-    transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.6));
-    transform-origin: left center;
+  .work-experience__content > p:last-child {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+    line-height: 1.5;
   }
 
-  .line-sidebar__item.is-active .line-sidebar__label {
-    color: var(--accent-color);
+  .experience-coming-soon {
+    min-height: 300px;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  :global(.projects-section) {
+    width: 100%;
+    min-height: 100svh;
+    padding: clamp(64px, 9vw, 132px) clamp(20px, 5vw, 72px);
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  :global(.projects-heading) {
+    width: min(1180px, 100%);
+    margin: 0 auto clamp(42px, 6vw, 76px);
+  }
+
+  :global(.projects-heading > p),
+  :global(.projects-heading > h2),
+  :global(.projects-heading > span) {
+    margin: 0;
+  }
+
+  :global(.projects-heading > p) {
+    color: var(--accent);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  :global(.projects-heading > h2) {
+    margin-top: 12px;
+    margin-bottom: -0.16em;
+    padding-bottom: 0.16em;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(4rem, 11vw, 10rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: 0;
+  }
+
+  :global(.projects-heading > span) {
+    max-width: 48ch;
+    margin-top: 24px;
+    display: block;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.7vw, 1.3rem);
+    line-height: 1.5;
+  }
+
+  :global(.projects-section .project-masonry) {
+    width: min(1180px, 100%);
+    margin-inline: auto;
   }
 
   .carousel-section {
@@ -2262,18 +1916,35 @@ const accomplishments = [
     flex-direction: column;
     justify-content: center;
     gap: clamp(28px, 5vw, 54px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding: clamp(28px, 5vw, 72px);
     background: #111111;
     color: #fbfaf7;
   }
 
   .carousel-heading {
-    width: min(920px, 100%);
+    width: 100%;
     flex: 0 0 auto;
+    text-align: center;
   }
 
   .carousel-heading .section-kicker {
+    width: fit-content;
+    margin: clamp(4px, 1vw, 12px) auto 0;
     color: #f5d76e;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(0.95rem, 1.45vw, 1.14rem);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.35;
+    text-align: center;
+    text-transform: none;
+  }
+
+  :global(.carousel-heading .curved-loop) {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    color: #fbfaf7;
   }
 
   .carousel-track {
@@ -2307,7 +1978,9 @@ const accomplishments = [
 
   .achievement-card h3 {
     margin: 18px 4px 8px;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 900;
     line-height: 1;
     letter-spacing: 0;
   }
@@ -2329,13 +2002,89 @@ const accomplishments = [
     overflow: hidden;
   }
 
+  :global(.connect-section) {
+    min-height: 82svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(52px, 8vw, 100px);
+    padding: clamp(72px, 10vw, 140px) 0 clamp(30px, 5vw, 58px);
+    border-top: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  :global(.connect-links) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+  }
+
+  :global(.connect-links a) {
+    width: 50px;
+    aspect-ratio: 1;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface-strong);
+    color: var(--ink);
+    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.08);
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  :global(.connect-links a:hover),
+  :global(.connect-links a:focus-visible) {
+    border-color: var(--control-hover);
+    box-shadow: 0 15px 30px rgba(17, 17, 17, 0.14);
+    transform: translateY(-3px);
+  }
+
+  :global(.connect-links a:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  :global(.connect-links svg) {
+    width: 21px;
+    height: 21px;
+    fill: none;
+  }
+
+  :global(.connect-links .connect-github-icon) {
+    fill: currentColor;
+  }
+
+  :global(.connect-icon-text) {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  :global(body[data-theme="dark"] .connect-links a) {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+  }
+
+  :global(.connect-signoff) {
+    margin: auto clamp(24px, 5vw, 72px) 0;
+    color: var(--muted);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-align: right;
+    text-transform: uppercase;
+  }
+
   .world-heading {
     width: min(920px, 100%);
     flex: 0 0 auto;
-  }
-
-  .world-heading .section-kicker {
-    color: #f25a1d;
   }
 
   .world-heading h2 {
@@ -2345,132 +2094,26 @@ const accomplishments = [
     letter-spacing: 0;
   }
 
-  .circular-gallery {
+  .world-subtitle {
+    margin: clamp(18px, 2.2vw, 28px) 0 0;
+    color: var(--muted);
+    font-size: clamp(1.05rem, 2vw, 1.5rem);
+    line-height: 1.35;
+  }
+
+  .dome-gallery-shell {
     position: relative;
     width: 100vw;
-    min-height: clamp(520px, 66svh, 760px);
+    height: 100svh;
     margin-inline: calc(50% - 50vw);
     flex: 1 1 auto;
     overflow: hidden;
-    cursor: grab;
-    outline: none;
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      #000 9%,
-      #000 91%,
-      transparent 100%
-    );
   }
 
-  .circular-gallery canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
+  :global(body.dg-scroll-lock) {
+    overflow: hidden;
   }
 
-  .circular-gallery:active {
-    cursor: grabbing;
-  }
-
-  .circular-gallery:focus-visible {
-    outline: 2px solid #f25a1d;
-    outline-offset: 4px;
-  }
-
-  .world-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 80;
-    display: grid;
-    place-items: center;
-    padding: clamp(18px, 4vw, 44px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 220ms ease;
-  }
-
-  .world-modal[aria-hidden="false"] {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .world-modal__backdrop {
-    position: absolute;
-    inset: 0;
-    border: 0;
-    background: color-mix(in srgb, var(--paper) 42%, transparent);
-    backdrop-filter: blur(18px) saturate(1.08);
-    cursor: pointer;
-  }
-
-  .world-modal__card {
-    position: relative;
-    width: min(920px, 100%);
-    display: grid;
-    grid-template-columns: minmax(260px, 0.95fr) minmax(280px, 1fr);
-    gap: clamp(22px, 4vw, 46px);
-    align-items: center;
-    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-    border-radius: 8px;
-    padding: clamp(16px, 2.8vw, 28px);
-    background: color-mix(in srgb, var(--surface-strong) 86%, transparent);
-    box-shadow: 0 32px 90px rgba(17, 17, 17, 0.24);
-    transform: translateY(18px) scale(0.98);
-    transition: transform 220ms ease;
-  }
-
-  .world-modal[aria-hidden="false"] .world-modal__card {
-    transform: translateY(0) scale(1);
-  }
-
-  .world-modal__close {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 38px;
-    aspect-ratio: 1;
-    border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
-    border-radius: 999px;
-    background: var(--surface);
-    color: var(--ink);
-    font-size: 1.35rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .world-modal__image {
-    min-height: clamp(280px, 42vw, 460px);
-    border-radius: 8px;
-    background-position: center;
-    background-size: cover;
-    box-shadow: 0 18px 50px rgba(17, 17, 17, 0.18);
-  }
-
-  .world-modal__eyebrow {
-    margin: 0 0 12px;
-    color: #f25a1d;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    font-size: 0.86rem;
-    font-weight: 850;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .world-modal__card h3 {
-    margin: 0;
-    font-size: clamp(2.4rem, 6vw, 5.5rem);
-    line-height: 0.88;
-    letter-spacing: 0;
-  }
-
-  .world-modal__card p:last-child {
-    margin: 22px 0 0;
-    max-width: 54ch;
-    color: var(--muted);
-    font-size: clamp(1rem, 1.8vw, 1.24rem);
-    line-height: 1.55;
-  }
 
   @media (max-width: 760px) {
     .opening-pin {
@@ -2533,16 +2176,33 @@ const accomplishments = [
       padding-inline: 18px;
     }
 
-    .experiences-title {
-      font-size: clamp(3.6rem, 18vw, 7rem);
+    :global(.experiences-title) {
+      font-size: clamp(4.25rem, 20vw, 8rem);
       text-align: left;
     }
 
-    .experience-sidebar {
-      --marker-length: 46px;
-      --marker-gap: 10px;
-      --max-shift: 14px;
-      --font-size: clamp(0.92rem, 4vw, 1.12rem);
+    .experience-island {
+      width: min(100%, 340px);
+      min-height: 68px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-radius: 999px;
+      padding: 0;
+    }
+
+    .yin-yang-option {
+      min-height: 68px;
+      padding-inline: 14px;
+      font-size: 0.78rem;
+    }
+
+    .experience-island[data-active="work"]
+      .yin-yang-option[data-experience-option="community"] {
+      transform: translateX(10px) scale(0.98);
+    }
+
+    .yin-yang-surface {
+      --curve-size: 34px;
+      inset: 0;
     }
 
     .carousel-section {
@@ -2553,25 +2213,6 @@ const accomplishments = [
       padding-inline: 18px;
     }
 
-    .circular-gallery {
-      min-height: 520px;
-      mask-image: linear-gradient(
-        90deg,
-        transparent 0%,
-        #000 5%,
-        #000 95%,
-        transparent 100%
-      );
-    }
-
-    .world-modal__card {
-      grid-template-columns: 1fr;
-      gap: 22px;
-    }
-
-    .world-modal__image {
-      min-height: 280px;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
