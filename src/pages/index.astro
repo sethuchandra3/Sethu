@@ -117,6 +117,38 @@ const accomplishments = [
         </div>
       </section>
 
+      <section class="experiences-section" aria-labelledby="experiences-title">
+        <div class="experiences-inner">
+          <h2 id="experiences-title" class="experiences-title">Experience</h2>
+          <p class="experiences-subtitle">"Everything is a win when the goal is to experience."</p>
+          <nav class="line-sidebar experience-sidebar" aria-label="Experience categories">
+            <ul class="line-sidebar__list">
+              <li class="line-sidebar__item is-active" aria-current="true" data-sidebar-item>
+                <span class="line-sidebar__marker" aria-hidden="true"></span>
+                <button class="line-sidebar__label" type="button">
+                  <span class="line-sidebar__index">01</span>
+                  <span class="line-sidebar__text">Work</span>
+                </button>
+              </li>
+              <li class="line-sidebar__item" data-sidebar-item>
+                <span class="line-sidebar__marker" aria-hidden="true"></span>
+                <button class="line-sidebar__label" type="button">
+                  <span class="line-sidebar__index">02</span>
+                  <span class="line-sidebar__text">Content</span>
+                </button>
+              </li>
+              <li class="line-sidebar__item" data-sidebar-item>
+                <span class="line-sidebar__marker" aria-hidden="true"></span>
+                <button class="line-sidebar__label" type="button">
+                  <span class="line-sidebar__index">03</span>
+                  <span class="line-sidebar__text">Community</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </section>
+
       <section class="carousel-section" aria-labelledby="carousel-title">
         <div class="carousel-heading">
           <p class="section-kicker">Diverse experiences I am proud of :)</p>
@@ -137,11 +169,36 @@ const accomplishments = [
           }
         </div>
       </section>
+
+      <section class="world-section" aria-labelledby="world-title">
+        <div class="world-heading">
+          <p class="section-kicker">places, motion, memory</p>
+          <h2 id="world-title">My World</h2>
+        </div>
+        <div
+          class="circular-gallery"
+          data-circular-gallery
+          tabindex="0"
+          role="region"
+          aria-label="Circular travel gallery. Use left and right arrow keys to navigate."
+        ></div>
+        <div class="world-modal" data-world-modal aria-hidden="true">
+          <button class="world-modal__backdrop" type="button" data-world-close aria-label="Close travel detail"></button>
+          <article class="world-modal__card" role="dialog" aria-modal="true" aria-labelledby="world-modal-title">
+            <button class="world-modal__close" type="button" data-world-close aria-label="Close travel detail">×</button>
+            <div class="world-modal__image" data-world-modal-image></div>
+            <p class="world-modal__eyebrow" data-world-modal-eyebrow></p>
+            <h3 id="world-modal-title" data-world-modal-title></h3>
+            <p data-world-modal-description></p>
+          </article>
+        </div>
+      </section>
     </main>
 
     <script>
       import { gsap } from "gsap";
       import { ScrollTrigger } from "gsap/ScrollTrigger";
+      import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from "ogl";
 
       gsap.registerPlugin(ScrollTrigger);
       window.history.scrollRestoration = "manual";
@@ -172,20 +229,697 @@ const accomplishments = [
         window.localStorage.setItem("sethu-theme", nextTheme);
       });
 
+      const initExperienceSidebar = () => {
+        const sidebar = document.querySelector(".experience-sidebar");
+        const list = sidebar?.querySelector(".line-sidebar__list");
+        const items = [...(sidebar?.querySelectorAll("[data-sidebar-item]") ?? [])];
+        if (!sidebar || !list || items.length === 0) return;
+
+        const targets = items.map((item) => (item.classList.contains("is-active") ? 1 : 0));
+        const current = [...targets];
+        let activeIndex = targets.findIndex((value) => value === 1);
+        let rafId = 0;
+        let lastTime = 0;
+
+        const startLoop = () => {
+          if (rafId) return;
+          lastTime = performance.now();
+          rafId = requestAnimationFrame(runFrame);
+        };
+
+        const runFrame = (now) => {
+          const delta = Math.min((now - lastTime) / 1000, 0.05);
+          lastTime = now;
+          const smoothing = 0.12;
+          const easing = 1 - Math.exp(-delta / smoothing);
+          let moving = false;
+
+          items.forEach((item, index) => {
+            const target = Math.max(targets[index] || 0, activeIndex === index ? 1 : 0);
+            const next = current[index] + (target - current[index]) * easing;
+            const value = Math.abs(target - next) < 0.0015 ? target : next;
+            current[index] = value;
+            item.style.setProperty("--effect", value.toFixed(4));
+            if (value !== target) moving = true;
+          });
+
+          rafId = moving ? requestAnimationFrame(runFrame) : 0;
+        };
+
+        list.addEventListener("pointermove", (event) => {
+          const rect = list.getBoundingClientRect();
+          const pointerY = event.clientY - rect.top;
+          const radius = 110;
+
+          items.forEach((item, index) => {
+            const center = item.offsetTop + item.offsetHeight / 2;
+            const distance = Math.abs(pointerY - center);
+            const proximity = Math.max(0, 1 - distance / radius);
+            targets[index] = proximity * proximity * (3 - 2 * proximity);
+          });
+
+          startLoop();
+        });
+
+        list.addEventListener("pointerleave", () => {
+          targets.fill(0);
+          startLoop();
+        });
+
+        items.forEach((item, index) => {
+          item.querySelector("button")?.addEventListener("click", () => {
+            activeIndex = index;
+            items.forEach((nextItem, nextIndex) => {
+              const isActive = nextIndex === index;
+              nextItem.classList.toggle("is-active", isActive);
+              if (isActive) {
+                nextItem.setAttribute("aria-current", "true");
+              } else {
+                nextItem.removeAttribute("aria-current");
+              }
+            });
+            startLoop();
+          });
+        });
+
+        startLoop();
+        window.addEventListener("pagehide", () => {
+          if (rafId) cancelAnimationFrame(rafId);
+        });
+      };
+
+      initExperienceSidebar();
+
+      const initExperienceTextPressure = () => {
+        const title = document.querySelector(".experiences-title");
+        if (!title || title.dataset.pressureReady === "true") return;
+
+        const text = title.textContent?.trim() || "";
+        title.textContent = "";
+        title.dataset.pressureReady = "true";
+
+        const spans = [...text].map((char) => {
+          const span = document.createElement("span");
+          span.className = "pressure-letter";
+          span.dataset.char = char;
+          span.textContent = char === " " ? "\u00A0" : char;
+          title.appendChild(span);
+          return span;
+        });
+
+        const pointer = { x: 0, y: 0 };
+        const eased = { x: 0, y: 0 };
+        let hoverStrength = 0;
+        let targetStrength = 0;
+        let rafId = 0;
+
+        const setToCenter = (immediate = true) => {
+          const rect = title.getBoundingClientRect();
+          pointer.x = rect.left + rect.width / 2;
+          pointer.y = rect.top + rect.height / 2;
+          if (immediate) {
+            eased.x = pointer.x;
+            eased.y = pointer.y;
+          }
+        };
+
+        const getInfluence = (distance, maxDistance) => {
+          const normalized = Math.max(0, 1 - distance / maxDistance);
+          return normalized * normalized;
+        };
+
+        const resetLetters = () => {
+          spans.forEach((span) => {
+            span.style.fontVariationSettings = "'wght' 760, 'wdth' 100, 'opsz' 144";
+            span.style.transform = "translateY(0)";
+          });
+        };
+
+        const animate = () => {
+          eased.x += (pointer.x - eased.x) / 18;
+          eased.y += (pointer.y - eased.y) / 18;
+          hoverStrength += (targetStrength - hoverStrength) / 14;
+
+          const titleRect = title.getBoundingClientRect();
+          const maxDistance = Math.max(titleRect.width * 0.55, 1);
+
+          spans.forEach((span) => {
+            const rect = span.getBoundingClientRect();
+            const center = {
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2,
+            };
+            const distance = Math.hypot(eased.x - center.x, eased.y - center.y);
+            const influence = getInfluence(distance, maxDistance) * hoverStrength;
+            const weight = Math.floor(760 + influence * 150);
+            const width = Math.floor(100 + influence * 18);
+            const lift = influence * 4;
+
+            span.style.fontVariationSettings = `'wght' ${weight}, 'wdth' ${width}, 'opsz' 144`;
+            span.style.transform = `translateY(${-lift}px)`;
+          });
+
+          if (hoverStrength < 0.002 && targetStrength === 0) {
+            hoverStrength = 0;
+          }
+
+          rafId = requestAnimationFrame(animate);
+        };
+
+        title.addEventListener("pointerenter", (event) => {
+          targetStrength = 1;
+          pointer.x = event.clientX;
+          pointer.y = event.clientY;
+        });
+
+        title.addEventListener("pointermove", (event) => {
+          pointer.x = event.clientX;
+          pointer.y = event.clientY;
+        });
+
+        title.addEventListener("pointerleave", () => {
+          targetStrength = 0;
+          setToCenter(false);
+        });
+
+        window.addEventListener("resize", setToCenter);
+        setToCenter();
+        resetLetters();
+        animate();
+
+        window.addEventListener("pagehide", () => {
+          cancelAnimationFrame(rafId);
+        });
+      };
+
+      initExperienceTextPressure();
+
+      const createTravelPlaceholder = (label, colorA, colorB, colorC) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 900;
+        canvas.height = 650;
+        const context = canvas.getContext("2d");
+        const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, colorA);
+        gradient.addColorStop(0.55, colorB);
+        gradient.addColorStop(1, colorC);
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        context.fillStyle = "rgba(255,255,255,0.16)";
+        for (let i = 0; i < 9; i += 1) {
+          context.beginPath();
+          context.arc(120 + i * 95, 120 + Math.sin(i) * 46, 92 + i * 8, 0, Math.PI * 2);
+          context.fill();
+        }
+
+        context.fillStyle = "rgba(17,17,17,0.32)";
+        context.fillRect(0, canvas.height - 118, canvas.width, 118);
+        context.fillStyle = "#fff7ee";
+        context.font = "900 58px Inter, system-ui, sans-serif";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(label, canvas.width / 2, canvas.height - 58);
+        return canvas.toDataURL("image/png");
+      };
+
+      const createTextTexture = (gl, text, font, color) => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        context.font = font;
+        const width = Math.ceil(context.measureText(text).width) + 28;
+        const height = 72;
+        canvas.width = width;
+        canvas.height = height;
+        context.font = font;
+        context.fillStyle = color;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(text, width / 2, height / 2);
+        const texture = new Texture(gl, { generateMipmaps: false });
+        texture.image = canvas;
+        return { texture, width, height };
+      };
+
+      class CircularGalleryApp {
+        constructor(container, items) {
+          this.container = container;
+          this.items = items.concat(items);
+          this.scroll = { current: 0, target: 0, last: 0, ease: 0.026 };
+          this.scrollSpeed = 0.9;
+          this.isDown = false;
+          this.didDrag = false;
+          this.createRenderer();
+          this.createCamera();
+          this.scene = new Transform();
+          this.geometry = new Plane(this.gl, { widthSegments: 80, heightSegments: 42 });
+          this.medias = [];
+          this.onResize();
+          this.createMedias();
+          this.addEvents();
+          this.update();
+        }
+
+        createRenderer() {
+          this.renderer = new Renderer({
+            alpha: true,
+            antialias: true,
+            dpr: Math.min(window.devicePixelRatio || 1, 2),
+          });
+          this.gl = this.renderer.gl;
+          this.gl.clearColor(0, 0, 0, 0);
+          this.container.appendChild(this.gl.canvas);
+        }
+
+        createCamera() {
+          this.camera = new Camera(this.gl);
+          this.camera.fov = 45;
+          this.camera.position.z = 20;
+        }
+
+        createProgram(image, borderRadius = 0.055) {
+          const texture = new Texture(this.gl, { generateMipmaps: true });
+          const program = new Program(this.gl, {
+            depthTest: false,
+            depthWrite: false,
+            transparent: true,
+            vertex: `
+              precision highp float;
+              attribute vec3 position;
+              attribute vec2 uv;
+              uniform mat4 modelViewMatrix;
+              uniform mat4 projectionMatrix;
+              uniform float uTime;
+              uniform float uSpeed;
+              varying vec2 vUv;
+              void main() {
+                vUv = uv;
+                vec3 p = position;
+                p.z = (sin(p.x * 4.0 + uTime) * 1.2 + cos(p.y * 2.0 + uTime) * 1.2) * (0.06 + abs(uSpeed) * 0.35);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+              }
+            `,
+            fragment: `
+              precision highp float;
+              uniform vec2 uImageSizes;
+              uniform vec2 uPlaneSizes;
+              uniform sampler2D tMap;
+              uniform float uBorderRadius;
+              varying vec2 vUv;
+              float roundedBoxSDF(vec2 p, vec2 b, float r) {
+                vec2 d = abs(p) - b;
+                return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0) - r;
+              }
+              void main() {
+                vec2 ratio = vec2(
+                  min((uPlaneSizes.x / uPlaneSizes.y) / (uImageSizes.x / uImageSizes.y), 1.0),
+                  min((uPlaneSizes.y / uPlaneSizes.x) / (uImageSizes.y / uImageSizes.x), 1.0)
+                );
+                vec2 uv = vec2(
+                  vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
+                  vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
+                );
+                vec4 color = texture2D(tMap, uv);
+                float d = roundedBoxSDF(vUv - 0.5, vec2(0.5 - uBorderRadius), uBorderRadius);
+                float alpha = 1.0 - smoothstep(-0.002, 0.002, d);
+                gl_FragColor = vec4(color.rgb, alpha);
+              }
+            `,
+            uniforms: {
+              tMap: { value: texture },
+              uPlaneSizes: { value: [0, 0] },
+              uImageSizes: { value: [900, 650] },
+              uSpeed: { value: 0 },
+              uTime: { value: 100 * Math.random() },
+              uBorderRadius: { value: borderRadius },
+            },
+          });
+          const img = new Image();
+          img.onload = () => {
+            texture.image = img;
+            program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
+          };
+          img.src = image;
+          return program;
+        }
+
+        createLabel(plane, text) {
+          const { texture, width, height } = createTextTexture(
+            this.gl,
+            text,
+            "900 34px Inter, system-ui, sans-serif",
+            getComputedStyle(document.body).getPropertyValue("--ink").trim() || "#111111"
+          );
+          const program = new Program(this.gl, {
+            transparent: true,
+            vertex: `
+              attribute vec3 position;
+              attribute vec2 uv;
+              uniform mat4 modelViewMatrix;
+              uniform mat4 projectionMatrix;
+              varying vec2 vUv;
+              void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `,
+            fragment: `
+              precision highp float;
+              uniform sampler2D tMap;
+              varying vec2 vUv;
+              void main() {
+                vec4 color = texture2D(tMap, vUv);
+                if (color.a < 0.1) discard;
+                gl_FragColor = color;
+              }
+            `,
+            uniforms: { tMap: { value: texture } },
+          });
+          const mesh = new Mesh(this.gl, { geometry: new Plane(this.gl), program });
+          const labelHeight = plane.scale.y * 0.15;
+          mesh.scale.set(labelHeight * (width / height), labelHeight, 1);
+          mesh.position.y = -plane.scale.y * 0.64;
+          mesh.setParent(plane);
+          return { mesh, aspect: width / height };
+        }
+
+        createMedias() {
+          this.medias = this.items.map((item, index) => {
+            const plane = new Mesh(this.gl, {
+              geometry: this.geometry,
+              program: this.createProgram(item.image),
+            });
+            plane.setParent(this.scene);
+            const label = this.createLabel(plane, item.text);
+            return { plane, label, index, extra: 0, width: 0, widthTotal: 0, x: 0 };
+          });
+          this.onResize();
+        }
+
+        onResize = () => {
+          this.screen = {
+            width: this.container.clientWidth,
+            height: this.container.clientHeight,
+          };
+          this.renderer.setSize(this.screen.width, this.screen.height);
+          this.camera.perspective({ aspect: this.screen.width / this.screen.height });
+          const fov = (this.camera.fov * Math.PI) / 180;
+          const height = 2 * Math.tan(fov / 2) * this.camera.position.z;
+          this.viewport = { width: height * this.camera.aspect, height };
+          this.medias?.forEach((media) => {
+            media.plane.scale.y = this.viewport.height * 0.54;
+            media.plane.scale.x = this.viewport.width * 0.3;
+            media.plane.program.uniforms.uPlaneSizes.value = [media.plane.scale.x, media.plane.scale.y];
+            const labelHeight = media.plane.scale.y * 0.15;
+            media.label.mesh.scale.set(labelHeight * media.label.aspect, labelHeight, 1);
+            media.label.mesh.position.y = -media.plane.scale.y * 0.64;
+            media.width = media.plane.scale.x + 2.15;
+            media.widthTotal = media.width * this.medias.length;
+            media.x = media.width * media.index;
+          });
+        };
+
+        updateMedia(media, direction) {
+          media.plane.position.x = media.x - this.scroll.current - media.extra;
+          const x = media.plane.position.x;
+          const halfWidth = this.viewport.width / 2;
+          const bend = 3;
+          const radius = (halfWidth * halfWidth + bend * bend) / (2 * bend);
+          const effectiveX = Math.min(Math.abs(x), halfWidth);
+          const arc = radius - Math.sqrt(radius * radius - effectiveX * effectiveX);
+          media.plane.position.y = -arc * 0.78;
+          media.plane.rotation.z = -Math.sign(x) * Math.asin(effectiveX / radius) * 0.82;
+          media.plane.program.uniforms.uTime.value += 0.035;
+          media.plane.program.uniforms.uSpeed.value = this.scroll.current - this.scroll.last;
+
+          const planeOffset = media.plane.scale.x / 2;
+          const viewportOffset = this.viewport.width / 2;
+          if (direction === "right" && media.plane.position.x + planeOffset < -viewportOffset) {
+            media.extra -= media.widthTotal;
+          }
+          if (direction === "left" && media.plane.position.x - planeOffset > viewportOffset) {
+            media.extra += media.widthTotal;
+          }
+        }
+
+        onWheel = (event) => {
+          const delta = event.deltaY || event.wheelDelta || event.detail;
+          this.scroll.target += (delta > 0 ? this.scrollSpeed : -this.scrollSpeed) * 0.12;
+        };
+
+        onPointerDown = (event) => {
+          this.isDown = true;
+          this.didDrag = false;
+          this.scroll.position = this.scroll.current;
+          this.start = event.touches ? event.touches[0].clientX : event.clientX;
+        };
+
+        onPointerMove = (event) => {
+          if (!this.isDown) return;
+          const x = event.touches ? event.touches[0].clientX : event.clientX;
+          if (Math.abs(x - this.start) > 6) {
+            this.didDrag = true;
+          }
+          this.scroll.target = this.scroll.position + (this.start - x) * 0.024;
+        };
+
+        onPointerUp = () => {
+          this.isDown = false;
+          window.setTimeout(() => {
+            this.didDrag = false;
+          }, 0);
+        };
+
+        onKeyDown = (event) => {
+          if (event.key === "ArrowRight") {
+            this.scroll.target += this.scrollSpeed * 1.4;
+          }
+          if (event.key === "ArrowLeft") {
+            this.scroll.target -= this.scrollSpeed * 1.4;
+          }
+        };
+
+        addEvents() {
+          window.addEventListener("resize", this.onResize);
+          this.container.addEventListener("wheel", this.onWheel, { passive: true });
+          this.container.addEventListener("mousedown", this.onPointerDown);
+          window.addEventListener("mousemove", this.onPointerMove);
+          window.addEventListener("mouseup", this.onPointerUp);
+          this.container.addEventListener("touchstart", this.onPointerDown, { passive: true });
+          window.addEventListener("touchmove", this.onPointerMove, { passive: true });
+          window.addEventListener("touchend", this.onPointerUp);
+          this.container.addEventListener("keydown", this.onKeyDown);
+        }
+
+        update = () => {
+          this.scroll.current += (this.scroll.target - this.scroll.current) * this.scroll.ease;
+          const direction = this.scroll.current > this.scroll.last ? "right" : "left";
+          this.medias.forEach((media) => this.updateMedia(media, direction));
+          this.renderer.render({ scene: this.scene, camera: this.camera });
+          this.scroll.last = this.scroll.current;
+          this.raf = requestAnimationFrame(this.update);
+        };
+
+        getCenteredItem() {
+          const nearest = this.medias.reduce((closest, media) => {
+            const distance = Math.abs(media.plane.position.x);
+            return !closest || distance < closest.distance ? { media, distance } : closest;
+          }, null);
+          const originalIndex = nearest ? nearest.media.index % (this.items.length / 2) : 0;
+          return this.items[originalIndex];
+        }
+
+        destroy() {
+          cancelAnimationFrame(this.raf);
+          window.removeEventListener("resize", this.onResize);
+          this.container.removeEventListener("wheel", this.onWheel);
+          this.container.removeEventListener("mousedown", this.onPointerDown);
+          window.removeEventListener("mousemove", this.onPointerMove);
+          window.removeEventListener("mouseup", this.onPointerUp);
+          this.container.removeEventListener("touchstart", this.onPointerDown);
+          window.removeEventListener("touchmove", this.onPointerMove);
+          window.removeEventListener("touchend", this.onPointerUp);
+          this.container.removeEventListener("keydown", this.onKeyDown);
+          this.gl.canvas.remove();
+        }
+      }
+
+      const initCircularGallery = () => {
+        const container = document.querySelector("[data-circular-gallery]");
+        if (!container || container.dataset.ready === "true") return;
+        container.dataset.ready = "true";
+        const items = [
+          {
+            image: createTravelPlaceholder("Chicago", "#f25a1d", "#d42e7c", "#ffe0d2"),
+            text: "Chicago",
+            eyebrow: "city start",
+            description:
+              "A placeholder for the beginning of the California Zephyr story. Add a train station photo, a city memory, or the moment the trip started here.",
+          },
+          {
+            image: createTravelPlaceholder("California Zephyr", "#0d58cb", "#f25a1d", "#fff0d7"),
+            text: "California Zephyr",
+            eyebrow: "cross-country rail",
+            description:
+              "A coast-to-coast solo travel chapter: Chicago to San Francisco by train, long windows, changing landscapes, and cool people met along the way.",
+          },
+          {
+            image: createTravelPlaceholder("San Francisco", "#d42e7c", "#ffb13b", "#fff3e8"),
+            text: "San Francisco",
+            eyebrow: "west coast",
+            description:
+              "A placeholder for summer internship memories, city walks, and the feeling of arriving on the other side of the country.",
+          },
+          {
+            image: createTravelPlaceholder("New York", "#111111", "#d42e7c", "#f25a1d"),
+            text: "New York",
+            eyebrow: "east coast",
+            description:
+              "A future card for stories, people, and places from New York. Replace this with a favorite photo when ready.",
+          },
+          {
+            image: createTravelPlaceholder("Lehigh", "#ffb13b", "#f25a1d", "#d42e7c"),
+            text: "Lehigh",
+            eyebrow: "home base",
+            description:
+              "A home-base card for campus moments, community building, and the experiences that shaped the rest of the portfolio.",
+          },
+          {
+            image: createTravelPlaceholder("TBD", "#ffe0d2", "#f25a1d", "#0d58cb"),
+            text: "More soon",
+            eyebrow: "next stop",
+            description:
+              "A placeholder for wherever the next story lives. This can become a travel memory, a project location, or a visual scrapbook card.",
+          },
+        ];
+        const app = new CircularGalleryApp(container, items);
+
+        const modal = document.querySelector("[data-world-modal]");
+        const image = document.querySelector("[data-world-modal-image]");
+        const eyebrow = document.querySelector("[data-world-modal-eyebrow]");
+        const title = document.querySelector("[data-world-modal-title]");
+        const description = document.querySelector("[data-world-modal-description]");
+
+        const openDetail = (item) => {
+          if (!modal || !image || !eyebrow || !title || !description) return;
+          image.style.backgroundImage = `url(${item.image})`;
+          eyebrow.textContent = item.eyebrow;
+          title.textContent = item.text;
+          description.textContent = item.description;
+          modal.setAttribute("aria-hidden", "false");
+          document.body.classList.add("world-modal-open");
+        };
+
+        const closeDetail = () => {
+          modal?.setAttribute("aria-hidden", "true");
+          document.body.classList.remove("world-modal-open");
+        };
+
+        container.addEventListener("click", () => {
+          if (app.didDrag) return;
+          openDetail(app.getCenteredItem());
+        });
+
+        document.querySelectorAll("[data-world-close]").forEach((button) => {
+          button.addEventListener("click", closeDetail);
+        });
+
+        window.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeDetail();
+        });
+
+        window.addEventListener("pagehide", () => app.destroy(), { once: true });
+      };
+
+      initCircularGallery();
+
       const typeInto = (element, delay = 0, instant = false) => {
+        if (!element) return Promise.resolve();
+        element._typewriterCleanup?.();
+
         const text = element.dataset.text ?? "";
         const shouldMakeInteractive = element.classList.contains("name-line");
         element.textContent = "";
+        element.classList.add("text-type");
 
-        [...text].forEach((char, index) => {
+        const content = document.createElement("span");
+        content.className = "text-type__content";
+        element.appendChild(content);
+
+        const appendChar = (char) => {
           const span = document.createElement("span");
           span.textContent = char === " " ? "\u00A0" : char;
-          span.style.opacity = instant ? "1" : "0";
           if (shouldMakeInteractive && char !== " ") {
             span.className = "name-letter";
             span.dataset.letter = char;
             span.tabIndex = 0;
           }
+          content.appendChild(span);
+        };
+
+        if (instant) {
+          [...text].forEach(appendChar);
+          return Promise.resolve();
+        }
+
+        const cursor = document.createElement("span");
+        cursor.className = "text-type__cursor";
+        cursor.textContent = "|";
+        element.appendChild(cursor);
+
+        const timeouts = [];
+        const cursorTween = gsap.to(cursor, {
+          opacity: 0,
+          duration: 0.5,
+          repeat: -1,
+          yoyo: true,
+          ease: "power2.inOut",
+        });
+
+        element._typewriterCleanup = () => {
+          timeouts.forEach((timeout) => clearTimeout(timeout));
+          cursorTween.kill();
+          cursor.remove();
+        };
+
+        return new Promise((resolve) => {
+          let index = 0;
+
+          const typeNext = () => {
+            if (index >= text.length) {
+              gsap.to(cursor, {
+                autoAlpha: 0,
+                duration: 0.22,
+                delay: 0.12,
+                onComplete: () => {
+                  element._typewriterCleanup?.();
+                  element._typewriterCleanup = null;
+                  resolve();
+                },
+              });
+              return;
+            }
+
+            appendChar(text[index]);
+            index += 1;
+            const speed = 48 + Math.random() * 42;
+            timeouts.push(setTimeout(typeNext, speed));
+          };
+
+          timeouts.push(setTimeout(typeNext, delay * 1000));
+        });
+      };
+
+      const revealInto = (element, delay = 0, instant = false) => {
+        if (!element) return;
+        const text = element.dataset.text ?? "";
+        element.textContent = "";
+        element.classList.remove("text-type");
+
+        [...text].forEach((char, index) => {
+          const span = document.createElement("span");
+          span.textContent = char === " " ? "\u00A0" : char;
+          span.style.opacity = instant ? "1" : "0";
           element.appendChild(span);
 
           if (!instant) {
@@ -408,7 +1142,7 @@ const accomplishments = [
           const introLines = gsap.utils.toArray(".typed-line");
 
           if (reduceMotion) {
-            typeInto(document.querySelector(".glitch-line"), 0, true);
+            revealInto(document.querySelector(".glitch-line"), 0, true);
             typeInto(document.querySelector(".name-line"), 0, true);
             activateLetterHover();
             startIdentityWords(true);
@@ -419,9 +1153,8 @@ const accomplishments = [
             return;
           }
 
-          typeInto(document.querySelector(".glitch-line"), 0.2);
-          typeInto(document.querySelector(".name-line"), 0.86);
-          activateLetterHover();
+          revealInto(document.querySelector(".glitch-line"), 0.2);
+          typeInto(document.querySelector(".name-line"), 0.86).then(activateLetterHover);
           startIdentityWords();
 
           const openingTimeline = gsap.timeline({
@@ -679,6 +1412,34 @@ const accomplishments = [
           const cards = gsap.utils.toArray(".achievement-card");
           gsap.set(cards, { autoAlpha: 1 });
 
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: ".experiences-section",
+              start: "top 82%",
+              end: "center center",
+              scrub: 1,
+              invalidateOnRefresh: true,
+            },
+            defaults: { ease: "none" },
+          })
+            .fromTo(
+              ".experiences-title",
+              { autoAlpha: 0, xPercent: 110 },
+              { autoAlpha: 1, xPercent: 0 }
+            )
+            .fromTo(
+              ".experiences-subtitle",
+              { autoAlpha: 0, xPercent: -80 },
+              { autoAlpha: 1, xPercent: 0 },
+              "<0.16"
+            )
+            .fromTo(
+              ".experience-sidebar",
+              { autoAlpha: 0, y: 28, scale: 0.96 },
+              { autoAlpha: 1, y: 0, scale: 1, ease: "power1.out" },
+              "<0.2"
+            );
+
           gsap.to(".carousel-track", {
             x: () => {
               const track = document.querySelector(".carousel-track");
@@ -715,6 +1476,8 @@ const accomplishments = [
 </html>
 
 <style>
+  @import url("https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap");
+
   :root {
     color-scheme: light;
     --ink: #111111;
@@ -768,6 +1531,10 @@ const accomplishments = [
     --control-hover: rgba(246, 240, 232, 0.44);
   }
 
+  body.world-modal-open {
+    overflow: hidden;
+  }
+
   main {
     overflow: hidden;
   }
@@ -775,6 +1542,22 @@ const accomplishments = [
   .typed-line {
     margin: 0;
     white-space: nowrap;
+  }
+
+  .text-type {
+    display: inline-block;
+    white-space: pre-wrap;
+  }
+
+  .text-type__content {
+    display: inline;
+  }
+
+  .text-type__cursor {
+    display: inline-block;
+    margin-left: 0.12em;
+    color: currentColor;
+    opacity: 1;
   }
 
   .glitch-line {
@@ -1316,6 +2099,163 @@ const accomplishments = [
       0 1px 0 rgba(255, 255, 255, 0.12) inset;
   }
 
+  .experiences-section {
+    min-height: 82svh;
+    display: grid;
+    place-items: start center;
+    padding: clamp(28px, 5vw, 72px);
+    padding-top: clamp(34px, 6vh, 74px);
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .experiences-inner {
+    width: min(1180px, 100%);
+  }
+
+  .experiences-title {
+    margin: 0;
+    display: inline-flex;
+    font-size: clamp(4.8rem, 15.5vw, 14rem);
+    font-family: "Roboto Flex", Inter, ui-sans-serif, system-ui, sans-serif;
+    line-height: 0.82;
+    letter-spacing: 0;
+    text-align: left;
+    opacity: 0;
+    cursor: default;
+    user-select: none;
+    will-change: transform, opacity;
+  }
+
+  .experiences-title .pressure-letter {
+    display: inline-block;
+    color: inherit;
+    font-variation-settings: "wght" 780, "wdth" 100, "opsz" 144;
+    transform: translateY(0);
+    transform-origin: center bottom;
+    transition:
+      color 180ms ease,
+      transform 240ms ease,
+      font-variation-settings 240ms ease;
+    will-change: transform, font-variation-settings;
+  }
+
+  .experiences-subtitle {
+    width: min(760px, 100%);
+    margin: clamp(24px, 3vw, 40px) 0 0 auto;
+    color: var(--muted);
+    font-size: clamp(1.1rem, 2.4vw, 2rem);
+    line-height: 1.25;
+    text-align: right;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .experience-sidebar {
+    --accent-color: #f25a1d;
+    --text-color: var(--muted);
+    --marker-color: color-mix(in srgb, var(--ink) 34%, transparent);
+    --marker-length: 68px;
+    --marker-gap: 12px;
+    --tick-scale: 0.48;
+    --max-shift: 28px;
+    --item-gap: clamp(18px, 2.2vw, 26px);
+    --font-size: clamp(1rem, 1.65vw, 1.32rem);
+
+    position: relative;
+    width: fit-content;
+    margin: clamp(44px, 7vw, 82px) auto 0;
+    display: flex;
+    justify-content: center;
+    padding-left: calc(var(--marker-length) + var(--marker-gap));
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .line-sidebar__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-gap);
+    margin: 0;
+    padding: 1rem 0;
+    list-style: none;
+  }
+
+  .line-sidebar__item {
+    --effect: 0;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .line-sidebar__item::before {
+    position: absolute;
+    inset: -8px -52px;
+    content: "";
+  }
+
+  .line-sidebar__label {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: color-mix(
+      in srgb,
+      var(--accent-color) calc(var(--effect, 0) * 100%),
+      var(--text-color)
+    );
+    font: inherit;
+    font-size: var(--font-size);
+    font-weight: 850;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    transform: translateX(calc(var(--effect, 0) * var(--max-shift)));
+    cursor: pointer;
+  }
+
+  .line-sidebar__index {
+    margin-right: 0.74rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.78em;
+    font-weight: 800;
+    opacity: calc(0.55 + var(--effect, 0) * 0.45);
+  }
+
+  .line-sidebar__marker {
+    position: absolute;
+    top: 50%;
+    left: calc(-1 * var(--marker-length) - var(--marker-gap));
+    width: var(--marker-length);
+    height: 1px;
+    background: color-mix(
+      in srgb,
+      var(--accent-color) calc(var(--effect, 0) * 100%),
+      var(--marker-color)
+    );
+    transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.5));
+    transform-origin: left center;
+  }
+
+  .line-sidebar__item:not(:last-child)::after {
+    position: absolute;
+    top: calc(100% + var(--item-gap) / 2);
+    left: calc(-1 * var(--marker-length) - var(--marker-gap));
+    width: calc(var(--marker-length) * var(--tick-scale));
+    height: 1px;
+    content: "";
+    background: var(--marker-color);
+    opacity: 0.5;
+    transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.6));
+    transform-origin: left center;
+  }
+
+  .line-sidebar__item.is-active .line-sidebar__label {
+    color: var(--accent-color);
+  }
+
   .carousel-section {
     min-height: 100svh;
     display: flex;
@@ -1378,6 +2318,160 @@ const accomplishments = [
     line-height: 1.5;
   }
 
+  .world-section {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(24px, 4vw, 44px);
+    padding: clamp(28px, 5vw, 72px);
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .world-heading {
+    width: min(920px, 100%);
+    flex: 0 0 auto;
+  }
+
+  .world-heading .section-kicker {
+    color: #f25a1d;
+  }
+
+  .world-heading h2 {
+    margin: 0;
+    font-size: clamp(4rem, 12vw, 11rem);
+    line-height: 0.86;
+    letter-spacing: 0;
+  }
+
+  .circular-gallery {
+    position: relative;
+    width: 100vw;
+    min-height: clamp(520px, 66svh, 760px);
+    margin-inline: calc(50% - 50vw);
+    flex: 1 1 auto;
+    overflow: hidden;
+    cursor: grab;
+    outline: none;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      #000 9%,
+      #000 91%,
+      transparent 100%
+    );
+  }
+
+  .circular-gallery canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .circular-gallery:active {
+    cursor: grabbing;
+  }
+
+  .circular-gallery:focus-visible {
+    outline: 2px solid #f25a1d;
+    outline-offset: 4px;
+  }
+
+  .world-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: clamp(18px, 4vw, 44px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+
+  .world-modal[aria-hidden="false"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .world-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--paper) 42%, transparent);
+    backdrop-filter: blur(18px) saturate(1.08);
+    cursor: pointer;
+  }
+
+  .world-modal__card {
+    position: relative;
+    width: min(920px, 100%);
+    display: grid;
+    grid-template-columns: minmax(260px, 0.95fr) minmax(280px, 1fr);
+    gap: clamp(22px, 4vw, 46px);
+    align-items: center;
+    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    border-radius: 8px;
+    padding: clamp(16px, 2.8vw, 28px);
+    background: color-mix(in srgb, var(--surface-strong) 86%, transparent);
+    box-shadow: 0 32px 90px rgba(17, 17, 17, 0.24);
+    transform: translateY(18px) scale(0.98);
+    transition: transform 220ms ease;
+  }
+
+  .world-modal[aria-hidden="false"] .world-modal__card {
+    transform: translateY(0) scale(1);
+  }
+
+  .world-modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .world-modal__image {
+    min-height: clamp(280px, 42vw, 460px);
+    border-radius: 8px;
+    background-position: center;
+    background-size: cover;
+    box-shadow: 0 18px 50px rgba(17, 17, 17, 0.18);
+  }
+
+  .world-modal__eyebrow {
+    margin: 0 0 12px;
+    color: #f25a1d;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.86rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .world-modal__card h3 {
+    margin: 0;
+    font-size: clamp(2.4rem, 6vw, 5.5rem);
+    line-height: 0.88;
+    letter-spacing: 0;
+  }
+
+  .world-modal__card p:last-child {
+    margin: 22px 0 0;
+    max-width: 54ch;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.8vw, 1.24rem);
+    line-height: 1.55;
+  }
+
   @media (max-width: 760px) {
     .opening-pin {
       grid-template-columns: 1fr;
@@ -1435,8 +2529,48 @@ const accomplishments = [
       padding-top: 34vh;
     }
 
+    .experiences-section {
+      padding-inline: 18px;
+    }
+
+    .experiences-title {
+      font-size: clamp(3.6rem, 18vw, 7rem);
+      text-align: left;
+    }
+
+    .experience-sidebar {
+      --marker-length: 46px;
+      --marker-gap: 10px;
+      --max-shift: 14px;
+      --font-size: clamp(0.92rem, 4vw, 1.12rem);
+    }
+
     .carousel-section {
       padding-inline: 18px;
+    }
+
+    .world-section {
+      padding-inline: 18px;
+    }
+
+    .circular-gallery {
+      min-height: 520px;
+      mask-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        #000 5%,
+        #000 95%,
+        transparent 100%
+      );
+    }
+
+    .world-modal__card {
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    .world-modal__image {
+      min-height: 280px;
     }
   }
 
