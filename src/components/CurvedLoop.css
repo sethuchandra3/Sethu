@@ -1,70 +1,23 @@
-.curved-loop {
-  position: relative;
-  width: 100%;
-  min-height: 220px;
+.curved-loop-jacket {
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  overflow: hidden;
-  cursor: default;
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 2.5%,
-    #000 97.5%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 2.5%,
-    #000 97.5%,
-    transparent 100%
-  );
-}
-
-.curved-loop[data-interactive="true"] {
-  cursor: grab;
-}
-
-.curved-loop[data-dragging="true"] {
-  cursor: grabbing;
-}
-
-.curved-loop__svg {
-  display: block;
+  justify-content: center;
   width: 100%;
-  height: auto;
-  min-height: 220px;
-  overflow: visible;
-  fill: currentColor;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(7rem, 18vw, 11rem);
-  font-weight: 900;
-  letter-spacing: 0;
-  line-height: 1;
+}
+
+.curved-loop-svg {
   user-select: none;
-  will-change: transform;
-}
-
-.carousel-curved-text {
-  fill: currentColor;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 900;
-  letter-spacing: 0;
-}
-
-@media (max-width: 760px) {
-  .curved-loop,
-  .curved-loop__svg {
-    min-height: 170px;
-  }
-
-  .curved-loop__svg {
-    font-size: clamp(7rem, 36vw, 10rem);
-  }
-
-  .curved-loop {
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 5%, #000 95%, transparent 100%);
-  }
+  width: 100%;
+  aspect-ratio: 100 / 12;
+  overflow: visible;
+  display: block;
+  font-size: 6rem;
+  fill: #ffffff;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1;
 }

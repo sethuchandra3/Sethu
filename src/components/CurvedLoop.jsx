@@ -1,147 +1,169 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import "./CurvedLoop.css";
+import { useRef, useEffect, useState, useMemo, useId } from 'react';
+import './CurvedLoop.css';
 
-export default function CurvedLoop({
-  id,
-  marqueeText = "",
-  speed = 1,
+const CurvedLoop = ({
+  marqueeText = '',
+  speed = 2,
   className,
-  curveAmount = 120,
-  direction = "left",
-  interactive = false,
-  ariaLabel = marqueeText,
-}) {
-  const text = useMemo(() => `${marqueeText.trimEnd()}\u00A0`, [marqueeText]);
+  curveAmount = 400,
+  direction = 'left',
+  interactive = true,
+  scrollDriven = false
+}) => {
+  const text = useMemo(() => {
+    const hasTrailing = /\s|\u00A0$/.test(marqueeText);
+    return (hasTrailing ? marqueeText.replace(/\s+$/, '') : marqueeText) + '\u00A0';
+  }, [marqueeText]);
+
   const measureRef = useRef(null);
   const textPathRef = useRef(null);
+  const pathRef = useRef(null);
   const [spacing, setSpacing] = useState(0);
-  const [dragging, setDragging] = useState(false);
-  const [hasEntered, setHasEntered] = useState(false);
-  const uid = useId().replaceAll(":", "");
+  const [offset, setOffset] = useState(0);
+  const uid = useId();
   const pathId = `curve-${uid}`;
-  const pathD = `M0,34 Q560,${34 + curveAmount} 1560,34`;
+  const pathD = `M-100,40 Q500,${40 + curveAmount} 1540,40`;
+
   const dragRef = useRef(false);
   const lastXRef = useRef(0);
-  const directionRef = useRef(direction);
-  const velocityRef = useRef(0);
+  const dirRef = useRef(direction);
+  const velRef = useRef(0);
+  const scrollBoostRef = useRef(0);
 
-  const repeatedText = spacing
-    ? Array(Math.ceil(1900 / spacing) + 2).fill(text).join("")
+  const textLength = spacing;
+  const totalText = textLength
+    ? Array(Math.ceil(1800 / textLength) + 2)
+        .fill(text)
+        .join('')
     : text;
+  const ready = spacing > 0;
 
   useEffect(() => {
-    if (!measureRef.current) return;
-    setSpacing(measureRef.current.getComputedTextLength());
-  }, [className, text]);
+    if (measureRef.current) setSpacing(measureRef.current.getComputedTextLength());
+  }, [text, className]);
 
   useEffect(() => {
-    if (!spacing || !textPathRef.current) return;
-    textPathRef.current.setAttribute("startOffset", "0px");
+    if (!spacing) return;
+    if (textPathRef.current) {
+      const initial = -spacing;
+      textPathRef.current.setAttribute('startOffset', initial + 'px');
+      setOffset(initial);
+    }
   }, [spacing]);
 
   useEffect(() => {
-    const element = textPathRef.current?.closest(".curved-loop");
-    if (!spacing || !element) return undefined;
-    let startTimer = 0;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        textPathRef.current?.setAttribute("startOffset", "0px");
-        startTimer = window.setTimeout(() => setHasEntered(true), 700);
-        observer.disconnect();
-      },
-      { threshold: 0.2 }
-    );
-
-    observer.observe(element);
-    return () => {
-      window.clearTimeout(startTimer);
-      observer.disconnect();
-    };
-  }, [spacing]);
-
-  useEffect(() => {
-    if (!spacing || !hasEntered) return undefined;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) return undefined;
-
+    if (!spacing || !ready) return;
     let frame = 0;
     const step = () => {
       if (!dragRef.current && textPathRef.current) {
-        const delta = directionRef.current === "right" ? speed : -speed;
-        const current = Number.parseFloat(textPathRef.current.getAttribute("startOffset") || "0");
-        let next = current + delta;
-        if (next <= -spacing) next += spacing;
-        if (next > 0) next -= spacing;
-        textPathRef.current.setAttribute("startOffset", `${next}px`);
+        const boost = scrollDriven
+          ? Math.min(speed * 0.9, scrollBoostRef.current * 0.018)
+          : 0;
+        const delta = (dirRef.current === 'right' ? 1 : -1) * (speed + boost);
+        const currentOffset = parseFloat(textPathRef.current.getAttribute('startOffset') || '0');
+        let newOffset = currentOffset + delta;
+
+        const wrapPoint = spacing;
+        if (newOffset <= -wrapPoint) newOffset += wrapPoint;
+        if (newOffset > 0) newOffset -= wrapPoint;
+
+        textPathRef.current.setAttribute('startOffset', newOffset + 'px');
+        setOffset(newOffset);
+
+        if (scrollDriven) scrollBoostRef.current *= 0.9;
       }
       frame = requestAnimationFrame(step);
     };
-
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [hasEntered, spacing, speed]);
+  }, [spacing, speed, ready, scrollDriven]);
 
-  const onPointerDown = (event) => {
+  useEffect(() => {
+    if (!spacing || !ready || !scrollDriven) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    let lastScrollY = window.scrollY;
+    const updateFromScroll = () => {
+      const currentScrollY = window.scrollY;
+      const deltaY = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+
+      const rect = textPathRef.current?.ownerSVGElement?.getBoundingClientRect();
+      const isVisible = rect && rect.bottom >= 0 && rect.top <= window.innerHeight;
+      if (!isVisible || !deltaY) return;
+
+      scrollBoostRef.current = Math.min(
+        72,
+        scrollBoostRef.current + Math.abs(deltaY) * 0.32,
+      );
+    };
+
+    window.addEventListener('scroll', updateFromScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', updateFromScroll);
+      scrollBoostRef.current = 0;
+    };
+  }, [ready, scrollDriven, spacing]);
+
+  const onPointerDown = e => {
     if (!interactive) return;
     dragRef.current = true;
-    setDragging(true);
-    lastXRef.current = event.clientX;
-    velocityRef.current = 0;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    lastXRef.current = e.clientX;
+    velRef.current = 0;
+    e.target.setPointerCapture(e.pointerId);
   };
 
-  const onPointerMove = (event) => {
-    if (!interactive || !dragRef.current || !textPathRef.current || !spacing) return;
-    const delta = event.clientX - lastXRef.current;
-    lastXRef.current = event.clientX;
-    velocityRef.current = delta;
-    const current = Number.parseFloat(textPathRef.current.getAttribute("startOffset") || "0");
-    let next = current + delta;
-    if (next <= -spacing) next += spacing;
-    if (next > 0) next -= spacing;
-    textPathRef.current.setAttribute("startOffset", `${next}px`);
+  const onPointerMove = e => {
+    if (!interactive || !dragRef.current || !textPathRef.current) return;
+    const dx = e.clientX - lastXRef.current;
+    lastXRef.current = e.clientX;
+    velRef.current = dx;
+
+    const currentOffset = parseFloat(textPathRef.current.getAttribute('startOffset') || '0');
+    let newOffset = currentOffset + dx;
+
+    const wrapPoint = spacing;
+    if (newOffset <= -wrapPoint) newOffset += wrapPoint;
+    if (newOffset > 0) newOffset -= wrapPoint;
+
+    textPathRef.current.setAttribute('startOffset', newOffset + 'px');
+    setOffset(newOffset);
   };
 
   const endDrag = () => {
     if (!interactive) return;
     dragRef.current = false;
-    setDragging(false);
-    directionRef.current = velocityRef.current > 0 ? "right" : "left";
+    dirRef.current = velRef.current > 0 ? 'right' : 'left';
   };
+
+  const cursorStyle = interactive ? (dragRef.current ? 'grabbing' : 'grab') : 'auto';
 
   return (
     <div
-      id={id}
-      className="curved-loop"
-      role="heading"
-      aria-level="2"
-      aria-label={ariaLabel}
-      data-interactive={interactive ? "true" : "false"}
-      data-dragging={dragging ? "true" : "false"}
-      style={{ visibility: spacing ? "visible" : "hidden" }}
+      className="curved-loop-jacket"
+      style={{ visibility: ready ? 'visible' : 'hidden', cursor: cursorStyle }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
-      onPointerCancel={endDrag}
       onPointerLeave={endDrag}
     >
-      <svg className="curved-loop__svg" viewBox="0 0 1440 180" aria-hidden="true">
-        <text ref={measureRef} className={className} style={{ visibility: "hidden" }}>
+      <svg className="curved-loop-svg" viewBox="0 0 1440 120">
+        <text ref={measureRef} xmlSpace="preserve" style={{ visibility: 'hidden', opacity: 0, pointerEvents: 'none' }}>
           {text}
         </text>
         <defs>
-          <path id={pathId} d={pathD} fill="none" />
+          <path ref={pathRef} id={pathId} d={pathD} fill="none" stroke="transparent" />
         </defs>
-        {spacing > 0 && (
-          <text className={className}>
-            <textPath ref={textPathRef} href={`#${pathId}`}>
-              {repeatedText}
+        {ready && (
+          <text fontWeight="bold" xmlSpace="preserve" className={className}>
+            <textPath ref={textPathRef} href={`#${pathId}`} startOffset={offset + 'px'} xmlSpace="preserve">
+              {totalText}
             </textPath>
           </text>
         )}
       </svg>
     </div>
   );
-}
+};
+
+export default CurvedLoop;

@@ -1,0 +1,68 @@
+@media (hover: hover) and (pointer: fine) {
+  html.has-dot-cursor,
+  html.has-dot-cursor body,
+  html.has-dot-cursor body * {
+    cursor: none !important;
+  }
+}
+
+.cursor-dot {
+  position: fixed;
+  z-index: 10000;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  will-change: transform;
+}
+
+.cursor-dot[data-visible="true"] {
+  opacity: 1;
+}
+
+.cursor-dot__core {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #756cff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.94),
+    0 0 0 2px rgba(18, 15, 23, 0.34),
+    0 0 14px rgba(117, 108, 255, 0.52);
+  transform: translate(-50%, -50%) scale(1);
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms ease;
+  will-change: transform;
+}
+
+.cursor-dot[data-interactive="true"] .cursor-dot__core {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.98),
+    0 0 0 3px rgba(117, 108, 255, 0.24),
+    0 0 18px rgba(117, 108, 255, 0.62);
+  transform: translate(-50%, -50%) scale(1.55);
+}
+
+.cursor-dot[data-pressed="true"] .cursor-dot__core {
+  transform: translate(-50%, -50%) scale(0.76);
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cursor-dot {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot,
+  .cursor-dot__core {
+    transition: none;
+  }
+}

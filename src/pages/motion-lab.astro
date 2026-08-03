@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+import TextPressure from "../components/TextPressure.jsx";
+import ScrollFloat from "../components/ScrollFloat.jsx";
+import CurvedLoop from "../components/CurvedLoop.jsx";
+import DomeGallery from "../components/DomeGallery.jsx";
+import geistUrl from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
+import robotoFlexUrl from "@fontsource-variable/roboto-flex/files/roboto-flex-latin-full-normal.woff2?url";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex" />
+    <link rel="preload" href={geistUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href={robotoFlexUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    <title>Motion Lab | Sethu Chandra</title>
+  </head>
+  <body>
+    <main class="motion-lab">
+      <section class="lab-panel pressure-panel" aria-labelledby="pressure-title">
+        <TextPressure client:load id="pressure-title" className="lab-pressure" text="Experience" />
+      </section>
+
+      <section class="lab-panel float-panel" aria-labelledby="float-title">
+        <ScrollFloat
+          client:visible
+          id="float-title"
+          animationDuration={1}
+          ease="power2.out"
+          scrollStart="top 85%"
+          scrollEnd="center 58%"
+          stagger={0.045}
+        >
+          Projects
+        </ScrollFloat>
+      </section>
+
+      <section class="lab-panel curve-panel" aria-label="Curved loop preview">
+        <CurvedLoop
+          client:visible
+          ariaLabel="Cool things I have done"
+          marqueeText="Cool things I have done ✦"
+          speed={0.65}
+          curveAmount={115}
+          direction="left"
+          interactive={false}
+          className="lab-curve"
+        />
+      </section>
+
+      <section class="lab-panel dome-panel" aria-label="Dome gallery preview">
+        <DomeGallery client:only="react" />
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  :global(*) { box-sizing: border-box; }
+  :global(body) { margin: 0; background: #fbfaf7; color: #111; font-family: "Geist Variable", Arial, sans-serif; }
+  .motion-lab { width: 100%; overflow: hidden; }
+  .lab-panel { position: relative; min-height: 100svh; display: grid; place-items: center; padding: clamp(24px, 5vw, 72px); border-bottom: 1px solid rgba(17,17,17,.14); }
+  :global(.lab-pressure) { margin: 0; display: inline-flex; color: #111; font-family: "Roboto Flex Portfolio", Arial, sans-serif; font-size: clamp(5rem, 17vw, 15rem); font-weight: 620; line-height: .86; }
+  :global(.lab-pressure .text-pressure-letter) { display: inline-block; flex: 0 0 auto; font-variation-settings: "opsz" 144, "wght" 620, "wdth" 86, "slnt" 0; }
+  :global(.float-panel .scroll-float) { margin: 0; padding-bottom: .16em; overflow: hidden; font-family: Arial, sans-serif; font-size: clamp(5rem, 15vw, 13rem); font-weight: 900; line-height: .9; }
+  .curve-panel { padding-inline: 0; background: #111; color: #fbfaf7; }
+  :global(.curve-panel .curved-loop-jacket) { width: 100vw; color: #fbfaf7; }
+  .dome-panel { height: 100svh; padding: 0; background: #120f17; overflow: hidden; }
+</style>

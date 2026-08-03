@@ -5,7 +5,7 @@
 }
 
 .animated-list__scroll {
-  max-height: min(56svh, 520px);
+  max-height: min(66svh, 640px);
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-snap-type: y proximity;
@@ -41,14 +41,22 @@
   display: none;
 }
 
+.animated-list__scroll.is-page-driven {
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  scroll-snap-type: none;
+  touch-action: pan-y;
+}
+
 .animated-list__item {
+  box-sizing: border-box;
   width: 100%;
   min-height: 128px;
   margin: 0 0 14px;
   display: grid;
-  grid-template-columns: minmax(90px, 0.28fr) minmax(0, 1fr);
-  gap: clamp(18px, 4vw, 54px);
-  align-items: start;
+  grid-template-columns: clamp(48px, 7vw, 68px) minmax(0, 1fr) auto;
+  gap: clamp(16px, 2.5vw, 30px);
+  align-items: center;
   padding: clamp(20px, 3vw, 30px);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -123,9 +131,10 @@ body[data-theme="dark"] .animated-list__item.is-selected {
   }
 
   .animated-list__item {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    min-height: 150px;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 14px;
+    min-height: 128px;
+    padding: 18px 16px;
   }
 
   .animated-list__gradient {

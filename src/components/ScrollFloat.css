@@ -10,6 +10,7 @@
 
 .scroll-float__char {
   display: inline-block;
+  opacity: 0;
   will-change: opacity, transform;
 }
 

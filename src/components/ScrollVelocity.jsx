@@ -1,82 +1,89 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import {
-  motion,
-  useAnimationFrame,
-  useInView,
-  useMotionValue,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-  useVelocity,
-} from "motion/react";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import "./ScrollVelocity.css";
 
-function useElementWidth(ref) {
-  const [width, setWidth] = useState(0);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-  useLayoutEffect(() => {
-    const element = ref.current;
-    if (!element) return undefined;
-
-    const updateWidth = () => setWidth(element.offsetWidth);
-    updateWidth();
-
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [ref]);
-
-  return width;
-}
-
-const wrap = (min, max, value) => {
-  const range = max - min;
-  return ((((value - min) % range) + range) % range) + min;
-};
-
-function VelocityRow({ children, baseVelocity, numCopies, damping, stiffness, velocityMapping, variant }) {
+function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, variant }) {
   const rowRef = useRef(null);
-  const copyRef = useRef(null);
-  const baseX = useMotionValue(0);
-  const copyWidth = useElementWidth(copyRef);
-  const isInView = useInView(rowRef, { margin: "180px 0px" });
-  const reducedMotion = useReducedMotion();
-  const { scrollY } = useScroll();
-  const scrollVelocity = useVelocity(scrollY);
-  const smoothVelocity = useSpring(scrollVelocity, { damping, stiffness });
-  const velocityFactor = useTransform(
-    smoothVelocity,
-    velocityMapping.input,
-    velocityMapping.output,
-    { clamp: false },
+  const trackRef = useRef(null);
+  const duration = Math.max(9, 680 / Math.max(1, Math.abs(velocity)));
+
+  useGSAP(
+    () => {
+      const row = rowRef.current;
+      if (!row || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const section = row.closest(".connect-section") || row;
+      gsap.fromTo(
+        row,
+        { xPercent: 8.5 },
+        {
+          xPercent: -8.5,
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 0.24,
+            invalidateOnRefresh: true,
+          },
+        },
+      );
+    },
+    { scope: rowRef },
   );
-  const direction = useRef(1);
 
-  const x = useTransform(baseX, (value) =>
-    copyWidth === 0 ? "0px" : `${wrap(-copyWidth, 0, value)}px`,
-  );
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return undefined;
+    }
 
-  useAnimationFrame((_, delta) => {
-    if (!isInView || reducedMotion || copyWidth === 0) return;
+    let lastScrollY = window.scrollY;
+    let targetRate = 1;
+    let currentRate = 1;
+    let animationFrame = 0;
 
-    const factor = velocityFactor.get();
-    if (factor < 0) direction.current = -1;
-    if (factor > 0) direction.current = 1;
+    const onScroll = () => {
+      const delta = window.scrollY - lastScrollY;
+      lastScrollY = window.scrollY;
+      const scrollBoost = Math.min(4.2, Math.abs(delta) * 0.075);
+      const boostScale = scrollBoostVelocity / Math.max(1, Math.abs(velocity));
+      targetRate = 1 + scrollBoost * boostScale;
+    };
 
-    const baseMove = direction.current * baseVelocity * (delta / 1000);
-    baseX.set(baseX.get() + baseMove * (1 + Math.abs(factor)));
-  });
+    const updatePlaybackRate = () => {
+      targetRate += (1 - targetRate) * 0.055;
+      currentRate += (targetRate - currentRate) * 0.24;
+      const [animation] = track.getAnimations();
+      if (animation) animation.playbackRate = currentRate;
+      animationFrame = window.requestAnimationFrame(updatePlaybackRate);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    animationFrame = window.requestAnimationFrame(updatePlaybackRate);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, []);
 
   return (
     <div ref={rowRef} className={`scroll-velocity__row is-${variant}`} aria-hidden="true">
-      <motion.div className="scroll-velocity__track" style={{ x }}>
+      <div
+        ref={trackRef}
+        className="scroll-velocity__track"
+        style={{ "--scroll-velocity-duration": `${duration}s` }}
+      >
         {Array.from({ length: numCopies }, (_, index) => (
-          <span ref={index === 0 ? copyRef : null} className="scroll-velocity__copy" key={index}>
+          <span className="scroll-velocity__copy" key={index}>
             {children}
           </span>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -84,6 +91,7 @@ function VelocityRow({ children, baseVelocity, numCopies, damping, stiffness, ve
 export default function ScrollVelocity({
   texts = [],
   velocity = 30,
+  scrollBoostVelocity = velocity,
   damping = 50,
   stiffness = 300,
   numCopies = 6,
@@ -95,11 +103,9 @@ export default function ScrollVelocity({
       {texts.map((text, index) => (
         <VelocityRow
           key={text}
-          baseVelocity={index % 2 === 0 ? velocity : -velocity}
-          damping={damping}
-          stiffness={stiffness}
           numCopies={numCopies}
-          velocityMapping={velocityMapping}
+          velocity={velocity}
+          scrollBoostVelocity={scrollBoostVelocity}
           variant={index === 0 ? "primary" : "secondary"}
         >
           {text}

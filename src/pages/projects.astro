@@ -1,0 +1,199 @@
+---
+import "../styles/global.css";
+import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Projects by Sethu Chandra. More case studies are coming soon."
+    />
+    <title>Projects | Sethu Chandra</title>
+  </head>
+  <body>
+    <FluidGlassCursor client:load />
+    <header class="projects-placeholder-header">
+      <a class="projects-placeholder-brand" href="/">Sethu Chandra</a>
+      <a class="projects-placeholder-back" href="/#projects">
+        <span aria-hidden="true">←</span>
+        Back home
+      </a>
+    </header>
+
+    <main class="projects-placeholder-main">
+      <p class="projects-placeholder-kicker">Projects</p>
+      <h1
+        class="projects-placeholder-title"
+        data-typewriter
+        data-text="More coming soon..."
+        aria-label="More coming soon..."
+      ></h1>
+    </main>
+
+    <script>
+      const title = document.querySelector("[data-typewriter]");
+      const text = title?.getAttribute("data-text") || "";
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (title) {
+        const content = document.createElement("span");
+        content.className = "projects-placeholder-title__content";
+        const cursor = document.createElement("span");
+        cursor.className = "projects-placeholder-title__cursor";
+        cursor.setAttribute("aria-hidden", "true");
+        cursor.textContent = "|";
+        title.append(content, cursor);
+
+        if (reduceMotion) {
+          content.textContent = text;
+          cursor.hidden = true;
+        } else {
+          let index = 0;
+          const typeNext = () => {
+            content.textContent = text.slice(0, index + 1);
+            index += 1;
+            if (index < text.length) {
+              window.setTimeout(typeNext, 62 + Math.random() * 34);
+            } else {
+              cursor.classList.add("is-complete");
+            }
+          };
+          window.setTimeout(typeNext, 420);
+        }
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  :global(html) {
+    background: #0d0d0d;
+  }
+
+  :global(body) {
+    min-width: 320px;
+    min-height: 100svh;
+    margin: 0;
+    background: #0d0d0d;
+    color: #fbfaf7;
+  }
+
+  .projects-placeholder-header {
+    position: fixed;
+    z-index: 2;
+    top: clamp(16px, 3vw, 28px);
+    right: clamp(16px, 3vw, 28px);
+    left: clamp(16px, 3vw, 28px);
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 0 22px;
+    background: rgba(13, 13, 13, 0.76);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px);
+  }
+
+  .projects-placeholder-brand,
+  .projects-placeholder-back {
+    color: inherit;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .projects-placeholder-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    color: rgba(251, 250, 247, 0.7);
+    transition: color 180ms ease, transform 180ms ease;
+  }
+
+  .projects-placeholder-back:hover,
+  .projects-placeholder-back:focus-visible {
+    color: #fbfaf7;
+    transform: translateX(-3px);
+  }
+
+  .projects-placeholder-brand:focus-visible,
+  .projects-placeholder-back:focus-visible {
+    border-radius: 4px;
+    outline: 2px solid #f25a1d;
+    outline-offset: 5px;
+  }
+
+  .projects-placeholder-main {
+    min-height: 100svh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: clamp(18px, 3vw, 28px);
+    padding: 120px clamp(20px, 5vw, 72px) 56px;
+    text-align: center;
+  }
+
+  .projects-placeholder-kicker {
+    margin: 0;
+    color: #f25a1d;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(0.78rem, 1.2vw, 0.95rem);
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .projects-placeholder-title {
+    min-height: 1em;
+    margin: 0;
+    color: #fbfaf7;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(3.2rem, 9vw, 8.5rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    text-align: left;
+  }
+
+  :global(.projects-placeholder-title__content) {
+    display: inline;
+  }
+
+  :global(.projects-placeholder-title__cursor) {
+    display: inline-block;
+    margin-left: 0.08em;
+    color: #f25a1d;
+    font-weight: 700;
+    animation: projects-cursor-blink 0.82s steps(1, end) infinite;
+  }
+
+  :global(.projects-placeholder-title__cursor.is-complete) {
+    animation-duration: 1.05s;
+  }
+
+  @keyframes projects-cursor-blink {
+    0%, 48% { opacity: 1; }
+    49%, 100% { opacity: 0; }
+  }
+
+  @media (max-width: 560px) {
+    .projects-placeholder-header {
+      min-height: 54px;
+      padding-inline: 18px;
+    }
+
+    .projects-placeholder-title {
+      max-width: 8ch;
+      font-size: clamp(3.25rem, 16vw, 5rem);
+    }
+  }
+</style>

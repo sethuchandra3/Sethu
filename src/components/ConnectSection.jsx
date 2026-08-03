@@ -1,10 +1,11 @@
 import { Mail } from "lucide-react";
 import ScrollVelocity from "./ScrollVelocity.jsx";
+import InterestVelocity from "./InterestVelocity.jsx";
 
 const contactLinks = [
   {
     label: "LinkedIn",
-    href: "https://www.linkedin.com/in/sethu-chandra",
+    href: "https://www.linkedin.com/in/sethu-chandra/",
     icon: "linkedin",
     external: true,
   },
@@ -29,11 +30,37 @@ export default function ConnectSection() {
       </h2>
 
       <ScrollVelocity
-        texts={["Let's connect", "startups, public speaking, philosophy, dance"]}
-        velocity={28}
+        texts={["Let's connect"]}
+        velocity={56}
+        scrollBoostVelocity={48}
         damping={52}
         stiffness={280}
         numCopies={6}
+      />
+
+      <InterestVelocity
+        text="startups, public speaking, philosophy, dance, taekwondo, solo travelling, playing the drums, film making, music, anime, fun UI/UX, cultural experiences"
+        highlightWords={[
+          "startups",
+          "public speaking",
+          "philosophy",
+          "dance",
+          "taekwondo",
+          "solo travelling",
+          "playing the drums",
+          "film making",
+          "music",
+          "anime",
+          "fun UI/UX",
+          "cultural experiences",
+        ]}
+        highlightClass="is-interest"
+        velocity={32}
+        damping={44}
+        stiffness={460}
+        numCopies={4}
+        velocityMapping={{ input: [0, 1000], output: [0, 8] }}
+        fontSize="clamp(1.5rem, 4vw, 3.2rem)"
       />
 
       <nav className="connect-links" aria-label="Contact Sethu Chandra">

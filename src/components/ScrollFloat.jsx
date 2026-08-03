@@ -6,6 +6,7 @@ import "./ScrollFloat.css";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollFloat({
+  as: Tag = "h2",
   id,
   children,
   containerClassName = "",
@@ -15,15 +16,21 @@ export default function ScrollFloat({
   scrollStart = "top 88%",
   scrollEnd = "top 42%",
   stagger = 0.045,
+  once = false,
+  preserveShape = false,
 }) {
   const containerRef = useRef(null);
   const characters = useMemo(() => {
     const text = typeof children === "string" ? children : "";
-    return [...text].map((character, index) => (
-      <span className="scroll-float__char" key={`${character}-${index}`}>
-        {character === " " ? "\u00A0" : character}
-      </span>
-    ));
+    return [...text].map((character, index) =>
+      character === "\n" ? (
+        <br key={`line-break-${index}`} />
+      ) : (
+        <span className="scroll-float__char" key={`${character}-${index}`}>
+          {character === " " ? "\u00A0" : character}
+        </span>
+      ),
+    );
   }, [children]);
 
   useEffect(() => {
@@ -37,14 +44,32 @@ export default function ScrollFloat({
         return;
       }
 
+      const scrollTrigger = once
+        ? {
+            trigger: element,
+            start: scrollStart,
+            once: true,
+            toggleActions: "play none none none",
+            invalidateOnRefresh: true,
+            refreshPriority: -10,
+          }
+        : {
+            trigger: element,
+            start: scrollStart,
+            end: scrollEnd,
+            scrub: 0.8,
+            invalidateOnRefresh: true,
+            refreshPriority: -10,
+          };
+
       gsap.fromTo(
         characterElements,
         {
           willChange: "opacity, transform",
           opacity: 0,
-          yPercent: 120,
-          scaleY: 2.3,
-          scaleX: 0.7,
+          yPercent: preserveShape ? (once ? 52 : 72) : once ? 72 : 120,
+          scaleY: preserveShape ? 1 : once ? 1.55 : 2.3,
+          scaleX: preserveShape ? 1 : once ? 0.84 : 0.7,
           transformOrigin: "50% 0%",
         },
         {
@@ -55,24 +80,17 @@ export default function ScrollFloat({
           scaleY: 1,
           scaleX: 1,
           stagger,
-          scrollTrigger: {
-            trigger: element,
-            start: scrollStart,
-            end: scrollEnd,
-            scrub: 0.8,
-            invalidateOnRefresh: true,
-            refreshPriority: -10,
-          },
+          scrollTrigger,
         }
       );
     }, containerRef);
 
     return () => context.revert();
-  }, [animationDuration, ease, scrollEnd, scrollStart, stagger]);
+  }, [animationDuration, ease, once, preserveShape, scrollEnd, scrollStart, stagger]);
 
   return (
-    <h2 id={id} ref={containerRef} className={`scroll-float ${containerClassName}`.trim()}>
+    <Tag id={id} ref={containerRef} className={`scroll-float ${containerClassName}`.trim()}>
       <span className={`scroll-float__text ${textClassName}`.trim()}>{characters}</span>
-    </h2>
+    </Tag>
   );
 }

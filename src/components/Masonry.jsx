@@ -1,13 +1,14 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import "./Masonry.css";
 
+gsap.registerPlugin(useGSAP);
+
 const COLUMN_QUERIES = [
-  "(min-width: 1120px)",
-  "(min-width: 760px)",
-  "(min-width: 520px)",
+  "(min-width: 700px)",
 ];
-const COLUMN_VALUES = [3, 2, 2];
+const COLUMN_VALUES = [2];
 
 function useMedia(queries, values, defaultValue) {
   const getValue = () => {
@@ -85,7 +86,7 @@ export default function Masonry({
   const { grid, height } = useMemo(() => {
     if (!width) return { grid: [], height: 0 };
 
-    const gap = width >= 760 ? 18 : 12;
+    const gap = width >= 700 ? 14 : 12;
     const columnWidth = (width - gap * (columns - 1)) / columns;
     const columnHeights = new Array(columns).fill(0);
 
@@ -121,7 +122,7 @@ export default function Masonry({
         const element = container.querySelector(`[data-project-key="${item.id}"]`);
         if (!element) return;
 
-        const destination = { x: item.x, y: item.y, width: item.w, height: item.h };
+        const destination = { x: item.x, y: item.y };
 
         if (!hasMounted.current) {
           const offsets = {
@@ -137,14 +138,10 @@ export default function Masonry({
             {
               opacity: 0,
               ...(offsets[animateFrom] ?? offsets.bottom),
-              width: item.w,
-              height: item.h,
-              filter: blurToFocus ? "blur(10px)" : "none",
             },
             {
               opacity: 1,
               ...destination,
-              filter: "blur(0px)",
               duration: 0.8,
               ease: "power3.out",
               delay: index * stagger,
@@ -158,7 +155,7 @@ export default function Masonry({
 
     hasMounted.current = true;
     return () => context.revert();
-  }, [animateFrom, blurToFocus, duration, ease, grid, height, imagesReady, stagger, width]);
+  }, [animateFrom, duration, ease, grid, height, imagesReady, stagger, width]);
 
   const setHoverScale = (element, scale) => {
     if (!scaleOnHover) return;
@@ -172,23 +169,37 @@ export default function Masonry({
       style={{ height: height ? `${height}px` : "420px" }}
       aria-label="Project gallery"
     >
-      {grid.map((item) => (
-        <article
-          key={item.id}
-          data-project-key={item.id}
-          className="project-masonry__item"
-          onMouseEnter={(event) => setHoverScale(event.currentTarget, hoverScale)}
-          onMouseLeave={(event) => setHoverScale(event.currentTarget, 1)}
-        >
-          <img src={item.img} alt="" loading="lazy" />
-          <div className="project-masonry__scrim" aria-hidden="true" />
-          <div className="project-masonry__content">
-            <p>{item.category}</p>
-            <h3>{item.title}</h3>
-            <span>{item.description}</span>
-          </div>
-        </article>
-      ))}
+      {grid.map((item) => {
+        const ItemTag = item.href ? "a" : "article";
+
+        return (
+          <ItemTag
+            key={item.id}
+            data-project-key={item.id}
+            data-cursor-label={item.cursorLabel || "View case study"}
+            className="project-masonry__item"
+            style={{ width: `${item.w}px`, height: `${item.h}px` }}
+            href={item.href}
+            target={item.href ? "_blank" : undefined}
+            rel={item.href ? "noreferrer" : undefined}
+            aria-label={item.href ? `${item.title}, visit website (opens in a new tab)` : undefined}
+            onMouseEnter={(event) => {
+              setHoverScale(event.currentTarget, hoverScale);
+            }}
+            onMouseLeave={(event) => {
+              setHoverScale(event.currentTarget, 1);
+            }}
+          >
+            <img src={item.img} alt="" loading="lazy" />
+            <div className="project-masonry__scrim" aria-hidden="true" />
+            <div className="project-masonry__content">
+              <p>{item.category}</p>
+              <h3>{item.title}</h3>
+              <span>{item.description}</span>
+            </div>
+          </ItemTag>
+        );
+      })}
     </div>
   );
 }

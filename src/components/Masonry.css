@@ -10,13 +10,28 @@
   left: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  border-radius: 4px;
   background: #23211f;
   color: #ffffff;
   box-shadow: 0 18px 44px rgba(17, 17, 17, 0.16);
   cursor: default;
   transform-origin: center;
-  will-change: transform, width, height, opacity, filter;
+  will-change: transform, opacity;
+}
+
+.project-masonry__item[href] {
+  color: #ffffff;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.project-masonry__item[data-cursor-label] {
+  cursor: none;
+}
+
+.project-masonry__item[href]:focus-visible {
+  outline: 3px solid #ffb13b;
+  outline-offset: 4px;
 }
 
 .project-masonry__item img {
@@ -28,6 +43,10 @@
   transition: filter 300ms ease;
 }
 
+.project-masonry__item[data-project-key="project-01"] img {
+  object-position: left center;
+}
+
 .project-masonry__item:hover img {
   filter: saturate(1) contrast(1.02);
 }
@@ -35,7 +54,8 @@
 .project-masonry__scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(12, 11, 10, 0.9), rgba(12, 11, 10, 0.02) 70%);
+  background:
+    linear-gradient(to top, rgba(12, 11, 10, 0.94), rgba(12, 11, 10, 0.48) 38%, rgba(12, 11, 10, 0.02) 76%);
 }
 
 .project-masonry__content {
@@ -43,7 +63,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  padding: clamp(18px, 2.5vw, 28px);
+  padding: clamp(20px, 2.7vw, 32px);
 }
 
 .project-masonry__content p,
@@ -64,7 +84,7 @@
 .project-masonry__content h3 {
   margin-top: 8px;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(1.35rem, 2.6vw, 2.15rem);
+  font-size: clamp(1.45rem, 2.8vw, 2.35rem);
   font-weight: 900;
   line-height: 1;
 }
@@ -73,8 +93,8 @@
   max-width: 36ch;
   margin-top: 10px;
   display: block;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(0.86rem, 1.2vw, 0.98rem);
   line-height: 1.4;
 }
 
@@ -86,6 +106,12 @@ body[data-theme="dark"] .project-masonry__item {
 @media (max-width: 519px) {
   .project-masonry__content span {
     font-size: 0.84rem;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .project-masonry__item[data-cursor-label] {
+    cursor: pointer;
   }
 }
 

@@ -128,3 +128,77 @@
     @apply font-sans;
     }
 }
+
+html,
+body,
+body *,
+body *::before,
+body *::after {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.company-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24em;
+  color: #3157e6;
+  font: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.16em;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.company-link::after {
+  margin-left: 0.08em;
+  content: "↗";
+  display: inline-block;
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.company-link:hover::after { transform: translate(2px, -2px); }
+
+.company-link img {
+  width: 0.92em;
+  height: 0.92em;
+  flex: none;
+  object-fit: contain;
+}
+
+.company-link:hover {
+  color: #183ab7;
+}
+
+.company-link:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid #3157e6;
+  outline-offset: 3px;
+}
+
+.deck-card .company-link {
+  color: #172b75;
+}
+
+.deck-card .company-link:hover {
+  color: #07184d;
+}
+
+body[data-theme="dark"] .company-link {
+  color: #9bacff;
+}
+
+body[data-theme="dark"] .company-link:hover {
+  color: #c4ceff;
+}
+
+body[data-theme="dark"] .deck-card .company-link {
+  color: #172b75;
+}
+
+body[data-theme="dark"] .deck-card .company-link:hover {
+  color: #07184d;
+}

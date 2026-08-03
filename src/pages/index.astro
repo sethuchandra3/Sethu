@@ -1,66 +1,54 @@
 ---
 import "../styles/global.css";
-import TextPressure from "../components/TextPressure.jsx";
-import WorkExperienceList from "../components/WorkExperienceList.jsx";
 import ConnectSection from "../components/ConnectSection.jsx";
 import ProjectsSection from "../components/ProjectsSection.jsx";
 import DomeGallery from "../components/DomeGallery.jsx";
-import CurvedLoop from "../components/CurvedLoop.jsx";
 import DecryptedText from "../components/DecryptedText.jsx";
+import ExperienceSection from "../components/ExperienceSection.jsx";
+import CoolThingsSection from "../components/CoolThingsSection.jsx";
+import AboutSection from "../components/AboutSection.jsx";
+import HeaderDock from "../components/HeaderDock.jsx";
+import BlurText from "../components/BlurText.jsx";
+import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
+import geistUrl from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
+import robotoFlexUrl from "@fontsource-variable/roboto-flex/files/roboto-flex-latin-full-normal.woff2?url";
 
 const latestEvents = [
   {
     label: "01",
-    title: "Building growth systems at Mesh",
+    title: "Creating growth engines at Mesh",
+    titlePrefix: "Creating growth engines at ",
     description:
       "As a GTM Engineer at Mesh (YC W25), I build inbound and outbound growth engines for the future of enterprise finance teams.",
+    descriptionPrefix: "As a GTM Engineer at ",
+    descriptionSuffix:
+      " (YC W25), I build inbound and outbound growth engines for the future of enterprise finance teams.",
+    companyUrl: "https://www.usemesh.com/",
   },
   {
     label: "02",
-    title: "Cross-country solo travel",
+    title: "Investing in the future at Bouken Capital",
     description:
-      "Solo travelled across the United States from the east coast to the west coast on the California Zephyr.",
+      "Evaluated early-stage AI, FinTech, and SaaS startups through market research, founder outreach, due diligence, and investment memos.",
   },
   {
     label: "03",
-    title: "Launching Lehigh Product Society",
+    title: "Building Lehigh Product Society",
     description:
       "Built Lehigh University's first product management focused organization to over 50 members and ran an 8-week fellowship.",
   },
 ];
 
-const accomplishments = [
-  {
-    title: "Cross-country solo travel",
-    description:
-      "Took the California Zephyr from Chicago to San Francisco for my summer internship. Met a lot of cool people on the train.",
-    label: "01",
-    gradient: "linear-gradient(135deg, #f5d76e, #e85d75)",
-  },
-  {
-    title: "Eagle project",
-    description: "A service project I planned, led, and brought to life from idea to execution.",
-    label: "02",
-    gradient: "linear-gradient(135deg, #7bdff2, #246eb9)",
-  },
-  {
-    title: "Rappelling in front of my school",
-    description: "A memorable experience that pushed me outside my comfort zone in a very public way.",
-    label: "03",
-    gradient: "linear-gradient(135deg, #b8f2e6, #2f9c95)",
-  },
-  {
-    title: "TBD",
-    description: "I don't know what my fourth experience is yet, but I will decide soon.",
-    label: "04",
-    gradient: "linear-gradient(135deg, #f7a072, #5b2333)",
-  },
-];
+// Temporary launch flag: switch to true to restore My World exactly as authored.
+const SHOW_MY_WORLD = false;
+
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <link rel="preload" href={geistUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href={robotoFlexUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
@@ -72,52 +60,100 @@ const accomplishments = [
     <title>Sethu Chandra | Portfolio</title>
   </head>
   <body>
+    <FluidGlassCursor client:load />
+    <HeaderDock client:load />
     <main>
-      <section class="opening-stage" aria-labelledby="intro-title">
+      <section id="top" class="opening-stage" aria-labelledby="intro-title">
         <div class="opening-pin">
           <div class="name-lockup" id="intro-title">
             <p class="typed-line glitch-line" data-text="Hi! I'm,"></p>
             <h1 class="typed-line name-line" data-text="Sethu Chandra"></h1>
-            <p class="identity-line" aria-label="I'm a builder, learner, storyteller">
-              I'm a <span class="identity-word" aria-hidden="true">builder</span>
+            <p class="identity-line" aria-label="I'm a builder, storyteller, learner">
+              <span class="identity-prefix">I'm a</span>
+              <span class="identity-word" aria-hidden="true">
+                <span class="identity-word-typed">builder</span>
+                <span class="text-type__cursor identity-word__cursor">|</span>
+              </span>
             </p>
-            <img class="hello-mark" src="/assets/hello-transparent.gif" alt="" loading="eager" aria-hidden="true" />
             <span class="scroll-note">scroll</span>
           </div>
 
-          <nav class="social-links" aria-label="Social links and theme">
-            <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
-              <span class="theme-toggle-track" aria-hidden="true">
-                <span class="theme-toggle-thumb"></span>
-              </span>
-            </button>
-            <div class="social-icon-row">
-              <a href="#" aria-label="X"><span aria-hidden="true">X</span></a>
-              <a href="#" aria-label="LinkedIn"><span aria-hidden="true">in</span></a>
-              <a href="#" aria-label="GitHub">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.5v-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 5.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.95.68 1.92v2.85c0 .28.18.6.69.5A10.1 10.1 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"></path>
-                </svg>
-              </a>
-              <a href="#" aria-label="Substack">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M5 4h14v2H5V4Zm0 4h14v2H5V8Zm0 4h14v8l-7-3.9L5 20v-8Z"></path>
-                </svg>
-              </a>
-            </div>
-          </nav>
+          <span class="hello-mark" aria-hidden="true">
+            <img src="/assets/hello-transparent.gif" alt="" loading="eager" />
+          </span>
 
           <div class="latest-content">
-            <h2 id="latest-title">As of lately...</h2>
+            <h2 id="latest-title">
+              <BlurText
+                as="span"
+                text="As of lately..."
+                delay={150}
+                animateBy="words"
+                direction="top"
+                stepDuration={0.42}
+                threshold={0.1}
+                triggerEvent="latest-title-visibility"
+                className="latest-title-blur"
+                client:load
+              />
+            </h2>
             <div class="latest-deck" aria-label="Recent updates">
               {
                 latestEvents.map((event, index) => (
-                  <article class="deck-card" style={`--card-index: ${index}; --card-count: ${latestEvents.length}`}>
-                    <div class="deck-card-heading">
+                  <article
+                    class={`deck-card${index === 0 ? " deck-card--mesh" : ""}`}
+                    style={`--card-index: ${index}; --card-count: ${latestEvents.length}`}
+                  >
+                    <div class="deck-card-content">
+                      <div class="deck-card-heading">
+                        <p>{event.label}</p>
+                        <h3>
+                          {
+                            event.companyUrl ? (
+                              <>
+                                {event.titlePrefix}
+                                <a
+                                  class="company-link company-link--mesh"
+                                  href={event.companyUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Mesh
+                                  <img src="/assets/mesh-mark-blue.png" alt="" aria-hidden="true" />
+                                </a>
+                              </>
+                            ) : (
+                              event.title
+                            )
+                          }
+                        </h3>
+                      </div>
+                      <span>
+                        {
+                          event.companyUrl ? (
+                            <>
+                              {event.descriptionPrefix}
+                              <a
+                                class="company-link company-link--mesh"
+                                href={event.companyUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Mesh
+                                <img src="/assets/mesh-mark-blue.png" alt="" aria-hidden="true" />
+                              </a>
+                              {event.descriptionSuffix}
+                            </>
+                          ) : (
+                            event.description
+                          )
+                        }
+                      </span>
+                    </div>
+                    <div class="deck-card-peek" aria-hidden="true">
                       <p>{event.label}</p>
                       <h3>{event.title}</h3>
                     </div>
-                    <span>{event.description}</span>
                   </article>
                 ))
               }
@@ -126,154 +162,81 @@ const accomplishments = [
         </div>
       </section>
 
-      <section class="experiences-section" aria-labelledby="experiences-title">
-        <div class="experiences-inner">
-          <TextPressure
-            client:load
-            id="experiences-title"
-            className="experiences-title"
-            text="Experience"
-          />
-          <p class="experiences-subtitle">"Everything is a win when the goal is to experience."</p>
-          <nav class="experience-island" aria-label="Experience categories" data-experience-toggle data-active="work">
-            <span class="yin-yang-surface" aria-hidden="true">
-              <span class="yin-yang-white-field"></span>
-            </span>
-            <button class="yin-yang-option is-active" type="button" aria-pressed="true" data-experience-option="work">
-              Work
-            </button>
-            <button class="yin-yang-option" type="button" aria-pressed="false" data-experience-option="community">
-              Community
-            </button>
-          </nav>
-          <div class="experience-panels">
-            <section class="experience-panel" data-experience-panel="work" aria-label="Work experience">
-              <WorkExperienceList client:visible />
-            </section>
-            <section class="experience-panel experience-coming-soon" data-experience-panel="community" aria-label="Community experience" hidden>
-              <p>Community experiences coming soon.</p>
-            </section>
-          </div>
-        </div>
-      </section>
+      <AboutSection client:load />
+
+      <ExperienceSection client:load />
 
       <ProjectsSection client:load />
 
-      <section class="carousel-section" aria-labelledby="carousel-title">
-        <div class="carousel-heading">
-          <CurvedLoop
-            client:visible
-            id="carousel-title"
-            ariaLabel="Cool things I have done"
-            marqueeText="Cool things I have done ✦"
-            speed={0.65}
-            curveAmount={115}
-            direction="left"
-            interactive={false}
-            className="carousel-curved-text"
-          />
-          <p class="section-kicker">Diverse experiences I am proud of :)</p>
-        </div>
+      <CoolThingsSection client:load />
 
-        <div class="carousel-track" aria-label="Accomplishment carousel">
-          {
-            accomplishments.map((item) => (
-              <article class="achievement-card">
-                <div class="achievement-image" style={`background: ${item.gradient}`}>
-                  <span>{item.label}</span>
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </article>
-            ))
-          }
-        </div>
-      </section>
+      {
+        SHOW_MY_WORLD && (
+          <section class="world-section" aria-labelledby="world-title">
+            <div class="world-heading">
+              <h2 id="world-title">
+                <DecryptedText
+                  client:visible
+                  text="My World"
+                  speed={58}
+                  sequential={true}
+                  revealDirection="start"
+                  characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%"
+                  animateOn="view"
+                  parentClassName="world-decrypted-text"
+                  className="world-decrypted__revealed"
+                  encryptedClassName="world-decrypted__encrypted"
+                />
+              </h2>
+              <p class="world-subtitle">
+                <DecryptedText
+                  client:visible
+                  text="Places I’ve travelled to and called home."
+                  speed={30}
+                  sequential={true}
+                  revealDirection="start"
+                  characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!?@#$%"
+                  animateOn="view"
+                  parentClassName="world-subtitle-decrypted"
+                  className="world-decrypted__revealed"
+                  encryptedClassName="world-decrypted__encrypted"
+                />
+              </p>
+            </div>
+            <div class="dome-gallery-shell">
+              <DomeGallery
+                client:only="react"
+                fit={0.8}
+                minRadius={600}
+                maxVerticalRotationDeg={10}
+                segments={34}
+                grayscale={false}
+                imageFilter="saturate(0.94) contrast(1.03) brightness(0.96) sepia(0.08) hue-rotate(-6deg)"
+              />
+            </div>
+          </section>
+        )
+      }
 
-      <section class="world-section" aria-labelledby="world-title">
-        <div class="world-heading">
-          <h2 id="world-title">
-            <DecryptedText
-              client:visible
-              text="My World"
-              speed={68}
-              sequential={true}
-              revealDirection="center"
-              animateOn="view"
-              parentClassName="world-decrypted-text"
-              className="world-decrypted__revealed"
-              encryptedClassName="world-decrypted__encrypted"
-            />
-          </h2>
-          <p class="world-subtitle">Places I’ve travelled to and called home.</p>
-        </div>
-        <div class="dome-gallery-shell">
-          <DomeGallery client:visible />
-        </div>
-      </section>
-
-      <ConnectSection client:visible />
+      <ConnectSection client:load />
     </main>
 
     <script>
       import { gsap } from "gsap";
       import { ScrollTrigger } from "gsap/ScrollTrigger";
+      import { TextPlugin } from "gsap/TextPlugin";
 
-      gsap.registerPlugin(ScrollTrigger);
+      gsap.registerPlugin(ScrollTrigger, TextPlugin);
       window.history.scrollRestoration = "manual";
       if (window.location.hash) {
         window.history.replaceState(null, "", window.location.pathname);
       }
       window.scrollTo(0, 0);
 
-      const themeToggle = document.querySelector(".theme-toggle");
       const storedTheme = window.localStorage.getItem("sethu-theme");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
-
-      const setTheme = (theme) => {
-        document.body.dataset.theme = theme;
-        themeToggle?.setAttribute("aria-pressed", String(theme === "dark"));
-        themeToggle?.setAttribute(
-          "aria-label",
-          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-        );
-      };
-
-      setTheme(initialTheme);
-
-      themeToggle?.addEventListener("click", () => {
-        const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
-        setTheme(nextTheme);
-        window.localStorage.setItem("sethu-theme", nextTheme);
-      });
-
-      const initExperienceToggle = () => {
-        const island = document.querySelector("[data-experience-toggle]");
-        if (!island) return;
-
-        const options = [...island.querySelectorAll("[data-experience-option]")];
-        const panels = [...document.querySelectorAll("[data-experience-panel]")];
-        options.forEach((option) => {
-          option.addEventListener("click", () => {
-            const value = option.dataset.experienceOption || "work";
-            island.dataset.active = value;
-
-            options.forEach((nextOption) => {
-              const isActive = nextOption === option;
-              nextOption.classList.toggle("is-active", isActive);
-              nextOption.setAttribute("aria-pressed", String(isActive));
-            });
-
-            panels.forEach((panel) => {
-              panel.hidden = panel.dataset.experiencePanel !== value;
-            });
-          });
-        });
-      };
-
-      initExperienceToggle();
-
+      document.body.dataset.theme = initialTheme;
 
       const typeInto = (element, delay = 0, instant = false) => {
         if (!element) return Promise.resolve();
@@ -537,77 +500,6 @@ const accomplishments = [
         });
       };
 
-      const startIdentityWords = (reduceMotion = false) => {
-        const word = document.querySelector(".identity-word");
-        if (!word || word.dataset.ready === "true") return;
-        word.dataset.ready = "true";
-
-        const words = ["builder", "learner", "storyteller"];
-        if (reduceMotion) {
-          word.textContent = words.join(", ");
-          return;
-        }
-
-        word.classList.add("text-type");
-        word.textContent = "";
-        const content = document.createElement("span");
-        content.className = "text-type__content";
-        const cursor = document.createElement("span");
-        cursor.className = "text-type__cursor identity-word__cursor";
-        cursor.textContent = "|";
-        word.append(content, cursor);
-
-        const cursorTween = gsap.to(cursor, {
-          opacity: 0,
-          duration: 0.5,
-          repeat: -1,
-          yoyo: true,
-          ease: "power2.inOut",
-        });
-        const timeouts = [];
-
-        const queue = (callback, delay) => {
-          const timeout = window.setTimeout(callback, delay);
-          timeouts.push(timeout);
-        };
-
-        let index = 0;
-        const typeCurrentWord = () => {
-          const current = words[index];
-          let charIndex = 0;
-
-          const typeNext = () => {
-            content.textContent = current.slice(0, charIndex + 1);
-            charIndex += 1;
-            if (charIndex < current.length) {
-              queue(typeNext, 48 + Math.random() * 42);
-              return;
-            }
-            queue(deleteCurrent, 1050);
-          };
-
-          const deleteCurrent = () => {
-            content.textContent = current.slice(0, charIndex - 1);
-            charIndex -= 1;
-            if (charIndex > 0) {
-              queue(deleteCurrent, 32);
-              return;
-            }
-            index = (index + 1) % words.length;
-            queue(typeCurrentWord, 240);
-          };
-
-          queue(typeNext, 350);
-        };
-
-        typeCurrentWord();
-
-        window.addEventListener("pagehide", () => {
-          timeouts.forEach((timeout) => window.clearTimeout(timeout));
-          cursorTween.kill();
-        });
-      };
-
       const mm = gsap.matchMedia();
 
       mm.add(
@@ -618,321 +510,233 @@ const accomplishments = [
         (context) => {
           const { reduceMotion, isDesktop } = context.conditions;
           const introLines = gsap.utils.toArray(".typed-line");
+          const stackGap = isDesktop ? 22 : 18;
 
           if (reduceMotion) {
             revealInto(document.querySelector(".glitch-line"), 0, true);
             typeInto(document.querySelector(".name-line"), 0, true);
             activateLetterHover();
-            startIdentityWords(true);
-            gsap.set([".name-lockup", ".identity-line", ".hello-mark", ".social-links", ".latest-content", ".latest-deck", ".deck-card", ".achievement-card"], {
+            gsap.set([".name-lockup", ".identity-line", ".hello-mark", ".latest-content", ".latest-deck", ".deck-card", ".achievement-card"], {
               autoAlpha: 1,
               clearProps: "transform",
             });
+            gsap.set(".identity-word-typed", { text: "learner" });
+            gsap.set(".identity-word__cursor", { autoAlpha: 0 });
             return;
           }
 
           revealInto(document.querySelector(".glitch-line"), 0.2);
           typeInto(document.querySelector(".name-line"), 0.86).then(activateLetterHover);
-          startIdentityWords();
-
-          const openingTimeline = gsap.timeline({
+          gsap.to(".identity-word__cursor", {
+            autoAlpha: 0,
+            duration: 0.5,
+            repeat: -1,
+            yoyo: true,
+            ease: "power2.inOut",
+          });
+          let latestTitleVisible = false;
+          let openingTimeline;
+          openingTimeline = gsap.timeline({
               scrollTrigger: {
                 trigger: ".opening-stage",
                 start: "top top",
-                end: "+=2200",
+                end: () => `+=${Math.max(window.innerHeight * 4, 3400)}`,
                 scrub: 1.15,
                 pin: ".opening-pin",
                 invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                  const duration = openingTimeline.duration();
+                  const revealAt = duration
+                    ? (openingTimeline.labels.compose + 0.2) / duration
+                    : 1;
+                  const shouldReveal = self.progress >= revealAt;
+                  if (shouldReveal === latestTitleVisible) return;
+                  latestTitleVisible = shouldReveal;
+                  window.__blurTextTriggerState ??= {};
+                  window.__blurTextTriggerState["latest-title-visibility"] = shouldReveal;
+                  window.dispatchEvent(
+                    new CustomEvent("latest-title-visibility", {
+                      detail: { active: shouldReveal },
+                    })
+                  );
+                },
               },
               defaults: { ease: "power2.inOut" },
             });
 
           openingTimeline
-            .addLabel("settle", 0)
+            .addLabel("identity", 0)
+            .addLabel("compose", 2.05)
             .to(
-              [".glitch-line", ".scroll-note"],
+              ".glitch-line",
               {
                 autoAlpha: 0,
                 y: -18,
-                duration: 0.22,
+                duration: 0.24,
                 ease: "power1.out",
               },
-              "settle"
+              "identity"
             )
-            .fromTo(
-              ".name-lockup",
-              { left: "50%", top: "50%", xPercent: -50, yPercent: -50 },
-              {
-                left: isDesktop ? "28px" : "18px",
-                top: isDesktop ? "42px" : "34px",
-                xPercent: 0,
-                yPercent: 0,
-              }
-            )
-            .to(".name-lockup", { textAlign: "left", ease: "power1.out" }, "settle+=0.08")
             .to(
               ".name-line",
-              {
-                fontSize: isDesktop ? "clamp(2rem, 4.2vw, 4.25rem)" : "clamp(2.35rem, 13vw, 3.8rem)",
-              },
-              "settle"
+              { autoAlpha: 0, duration: 0.28, ease: "power1.out" },
+              "identity+=0.1"
             )
             .fromTo(
               ".identity-line",
-              { autoAlpha: 0, y: 12 },
-              { autoAlpha: 1, y: 0, ease: "power2.out" },
-              "settle+=0.32"
+              { autoAlpha: 0, y: 8, left: "50%", xPercent: -50, scale: 1 },
+              { autoAlpha: 1, y: -18, duration: 0.46, ease: "power2.out" },
+              "identity+=0.14"
+            )
+            .set(".identity-word-typed", { text: "" }, "identity")
+            .to(
+              ".identity-word-typed",
+              { text: "builder", duration: 0.36, ease: "none" },
+              "identity+=0.26"
+            )
+            .to(
+              ".identity-word-typed",
+              { text: "", duration: 0.18, ease: "none" },
+              "identity+=0.7"
+            )
+            .to(
+              ".identity-word-typed",
+              { text: "storyteller", duration: 0.46, ease: "none" },
+              "identity+=0.88"
+            )
+            .to(
+              ".identity-word-typed",
+              { text: "", duration: 0.2, ease: "none" },
+              "identity+=1.42"
+            )
+            .to(
+              ".identity-word-typed",
+              { text: "learner", duration: 0.34, ease: "none" },
+              "identity+=1.62"
+            )
+            .to(
+              ".scroll-note",
+              { autoAlpha: 1, y: 0, duration: 0.36, ease: "power2.out" },
+              "identity+=0.2"
+            )
+            .set(
+              ".name-lockup",
+              {
+                x: () => window.innerWidth / 2 - (isDesktop ? 28 : 18),
+                y: () => window.innerHeight / 2 - (isDesktop ? 42 : 34),
+                xPercent: -50,
+                yPercent: -50,
+              },
+              "identity"
+            )
+            .to(
+              ".name-lockup",
+              { autoAlpha: 0, y: "-=22", duration: 0.48, ease: "power2.inOut" },
+              "compose"
+            )
+            .to(
+              ".scroll-note",
+              { autoAlpha: 0, y: -10, duration: 0.24, ease: "power1.out" },
+              "compose"
             )
             .fromTo(
               ".hello-mark",
-              { autoAlpha: 0, y: 14 },
-              { autoAlpha: 1, y: 0, ease: "power2.out" },
-              "settle+=0.4"
-            )
-            .fromTo(
-              ".social-links",
-              { autoAlpha: 0, x: 34 },
-              { autoAlpha: 1, x: 0, ease: "power2.out" },
-              "settle+=0.3"
+              { autoAlpha: 0, y: 28, scale: 1.06 },
+              { autoAlpha: 1, y: 0, scale: 1, duration: 0.62, ease: "power2.out" },
+              "compose+=0.22"
             )
             .fromTo(
               ".latest-content",
               { autoAlpha: 0, x: isDesktop ? 220 : 80, y: isDesktop ? 42 : 24 },
               { autoAlpha: 1, x: 0, y: 0, ease: "power2.out" },
-              "settle+=0.24"
+              "compose+=0.28"
             )
             .fromTo(
               ".latest-deck",
               { autoAlpha: 0, y: 36 },
               { autoAlpha: 1, y: 0, duration: 0.3, ease: "power2.out" },
-              "settle+=0.54"
+              "compose+=0.66"
             )
-            .fromTo(
+            .set(
               ".deck-card",
               {
-                autoAlpha: 1,
-                y: (index) => (index === 0 ? 0 : 94 + (index - 1) * 94),
-                scale: (index) => 1 - index * 0.028,
-                minHeight: (index) => (index === 0 ? "clamp(190px, 16vw, 236px)" : "clamp(150px, 13vw, 188px)"),
-                paddingTop: (index) => (index === 0 ? "clamp(24px, 3.2vw, 40px)" : "clamp(112px, 11vw, 142px)"),
-                paddingBottom: (index) => (index === 0 ? "clamp(24px, 3.2vw, 40px)" : "18px"),
-                rowGap: (index) => (index === 0 ? "clamp(18px, 2.8vw, 32px)" : "0px"),
-                zIndex: (index) => (index === 0 ? 30 : 20 - index),
+                autoAlpha: 0,
+                y: (index) => index === 0 ? 36 : (isDesktop ? 440 : 350) + index * 24,
+                scale: 1,
+                zIndex: (index) => 20 + index * 10,
               },
+              "compose+=0.84"
+            )
+            .set(".deck-card .deck-card-content", { autoAlpha: 1 }, "compose+=0.9")
+            .set(".deck-card .deck-card-peek", { autoAlpha: 0 }, "compose+=0.9")
+            .to(
+              ".deck-card:nth-child(1)",
               {
                 autoAlpha: 1,
-                y: (index) => (index === 0 ? 0 : 94 + (index - 1) * 94),
-                scale: (index) => 1 - index * 0.024,
-                minHeight: (index) => (index === 0 ? "clamp(190px, 16vw, 236px)" : "clamp(150px, 13vw, 188px)"),
-                paddingTop: (index) => (index === 0 ? "clamp(24px, 3.2vw, 40px)" : "clamp(112px, 11vw, 142px)"),
-                paddingBottom: (index) => (index === 0 ? "clamp(24px, 3.2vw, 40px)" : "18px"),
-                rowGap: (index) => (index === 0 ? "clamp(18px, 2.8vw, 32px)" : "0px"),
-                stagger: 0.12,
-                duration: 0.34,
+                y: 0,
+                duration: 0.46,
                 ease: "power2.out",
               },
-              "settle+=0.78"
+              "compose+=0.9"
             )
-            .set(".deck-card:nth-child(1) span", { autoAlpha: 1, y: 0 }, "settle+=0.78")
-            .set(".deck-card:nth-child(2) span, .deck-card:nth-child(3) span", { autoAlpha: 0, y: 0 }, "settle+=0.78")
-            .set(".deck-card:nth-child(1) .deck-card-heading", { justifyContent: "flex-start" }, "settle+=0.78")
-            .set(".deck-card:nth-child(2) .deck-card-heading, .deck-card:nth-child(3) .deck-card-heading", { justifyContent: "flex-start" }, "settle+=0.78")
-            .to(".deck-card:nth-child(1) span", { autoAlpha: 0, duration: 0.18 }, "settle+=1.46")
             .to(
               ".deck-card:nth-child(1)",
               {
-                y: -36,
-                scale: 0.952,
+                y: 0,
+                scale: 0.97,
                 autoAlpha: 1,
-                minHeight: "clamp(150px, 13vw, 188px)",
-                paddingTop: "clamp(112px, 11vw, 142px)",
-                paddingBottom: "18px",
-                rowGap: "0px",
-                zIndex: 30,
-                duration: 0.46,
+                zIndex: 20,
+                duration: 0.78,
               },
-              "settle+=1.46"
+              "compose+=1.72"
             )
-            .set(".deck-card:nth-child(1)", { zIndex: 16 }, "settle+=1.91")
-            .set(".deck-card:nth-child(2)", { zIndex: 32 }, "settle+=1.91")
-            .set(".deck-card:nth-child(3)", { zIndex: 18 }, "settle+=1.91")
-            .set(".deck-card:nth-child(2) .deck-card-heading", { justifyContent: "flex-start" }, "settle+=1.91")
-            .set(".deck-card:nth-child(1) .deck-card-heading, .deck-card:nth-child(3) .deck-card-heading", { justifyContent: "flex-start" }, "settle+=1.91")
             .to(
               ".deck-card:nth-child(2)",
               {
-                y: 0,
+                y: stackGap,
                 scale: 1,
                 autoAlpha: 1,
-                minHeight: "clamp(190px, 16vw, 236px)",
-                paddingTop: "clamp(24px, 3.2vw, 40px)",
-                paddingBottom: "clamp(24px, 3.2vw, 40px)",
-                rowGap: "clamp(18px, 2.8vw, 32px)",
                 zIndex: 30,
-                duration: 0.52,
+                duration: 0.86,
+                ease: "power2.inOut",
               },
-              "settle+=1.94"
+              "compose+=1.72"
             )
             .to(
               ".deck-card:nth-child(1)",
               {
-                y: 188,
-                scale: 0.952,
+                y: 0,
+                scale: 0.94,
                 autoAlpha: 1,
-                minHeight: "clamp(150px, 13vw, 188px)",
-                paddingTop: "clamp(112px, 11vw, 142px)",
-                paddingBottom: "18px",
-                rowGap: "0px",
-                zIndex: 16,
-                duration: 0.32,
+                zIndex: 20,
+                duration: 0.76,
               },
-              "settle+=1.96"
+              "compose+=2.78"
             )
-            .to(".deck-card:nth-child(2) span", { autoAlpha: 1, duration: 0.3 }, "settle+=2.14")
+            .to(
+              ".deck-card:nth-child(2)",
+              {
+                y: stackGap,
+                scale: 0.97,
+                autoAlpha: 1,
+                zIndex: 30,
+                duration: 0.76,
+              },
+              "compose+=2.78"
+            )
             .to(
               ".deck-card:nth-child(3)",
               {
-                y: 94,
-                scale: 0.976,
-                autoAlpha: 1,
-                minHeight: "clamp(150px, 13vw, 188px)",
-                paddingTop: "clamp(112px, 11vw, 142px)",
-                paddingBottom: "18px",
-                rowGap: "0px",
-                zIndex: 18,
-                duration: 0.52,
-              },
-              "settle+=1.94"
-            )
-            .to(".deck-card:nth-child(2) span", { autoAlpha: 0, duration: 0.18 }, "settle+=2.52")
-            .to(
-              ".deck-card:nth-child(2)",
-              {
-                y: -36,
-                scale: 0.976,
-                autoAlpha: 1,
-                minHeight: "clamp(150px, 13vw, 188px)",
-                paddingTop: "clamp(112px, 11vw, 142px)",
-                paddingBottom: "18px",
-                rowGap: "0px",
-                zIndex: 30,
-                duration: 0.46,
-              },
-              "settle+=2.52"
-            )
-            .to(
-              ".deck-card:nth-child(1)",
-              {
-                y: 188,
-                scale: 0.952,
-                autoAlpha: 1,
-                minHeight: "clamp(150px, 13vw, 188px)",
-                paddingTop: "clamp(112px, 11vw, 142px)",
-                paddingBottom: "18px",
-                rowGap: "0px",
-                zIndex: 16,
-                duration: 0.2,
-              },
-              "settle+=2.52"
-            )
-            .set(".deck-card:nth-child(1)", { zIndex: 16 }, "settle+=2.97")
-            .set(".deck-card:nth-child(2)", { zIndex: 18 }, "settle+=2.97")
-            .set(".deck-card:nth-child(3)", { zIndex: 34 }, "settle+=2.97")
-            .set(".deck-card:nth-child(3) .deck-card-heading", { justifyContent: "flex-start" }, "settle+=2.97")
-            .set(".deck-card:nth-child(1) .deck-card-heading, .deck-card:nth-child(2) .deck-card-heading", { justifyContent: "flex-start" }, "settle+=2.97")
-            .to(
-              ".deck-card:nth-child(3)",
-              {
-                y: 0,
+                y: stackGap * 2,
                 scale: 1,
                 autoAlpha: 1,
-                minHeight: "clamp(190px, 16vw, 236px)",
-                paddingTop: "clamp(24px, 3.2vw, 40px)",
-                paddingBottom: "clamp(24px, 3.2vw, 40px)",
-                rowGap: "clamp(18px, 2.8vw, 32px)",
-                zIndex: 30,
-                duration: 0.52,
+                zIndex: 40,
+                duration: 0.9,
+                ease: "power2.inOut",
               },
-              "settle+=3"
+              "compose+=2.78"
             )
-            .to(
-              ".deck-card:nth-child(2)",
-              {
-                y: 94,
-                scale: 0.952,
-                autoAlpha: 1,
-                minHeight: "clamp(150px, 13vw, 188px)",
-                paddingTop: "clamp(112px, 11vw, 142px)",
-                paddingBottom: "18px",
-                rowGap: "0px",
-                zIndex: 18,
-                duration: 0.32,
-              },
-              "settle+=3.02"
-            )
-            .to(
-              ".deck-card:nth-child(1)",
-              {
-                y: 188,
-                scale: 0.936,
-                autoAlpha: 1,
-                minHeight: "clamp(150px, 13vw, 188px)",
-                paddingTop: "clamp(112px, 11vw, 142px)",
-                paddingBottom: "18px",
-                rowGap: "0px",
-                zIndex: 16,
-                duration: 0.32,
-              },
-              "settle+=3.02"
-            )
-            .to(".deck-card:nth-child(3) span", { autoAlpha: 1, duration: 0.3 }, "settle+=3.2");
-
-          const cards = gsap.utils.toArray(".achievement-card");
-          gsap.set(cards, { autoAlpha: 1 });
-
-          gsap.timeline({
-            scrollTrigger: {
-              trigger: ".experiences-section",
-              start: "top 82%",
-              end: "center center",
-              scrub: 1,
-              invalidateOnRefresh: true,
-            },
-            defaults: { ease: "none" },
-          })
-            .fromTo(
-              ".experiences-title",
-              { autoAlpha: 0, xPercent: 110 },
-              { autoAlpha: 1, xPercent: 0 }
-            )
-            .fromTo(
-              ".experiences-subtitle",
-              { autoAlpha: 0, xPercent: -80 },
-              { autoAlpha: 1, xPercent: 0 },
-              "<0.16"
-            )
-            .fromTo(
-              ".experience-island",
-              { autoAlpha: 0, y: 28, scale: 0.96 },
-              { autoAlpha: 1, y: 0, scale: 1, ease: "power1.out" },
-              "<0.2"
-            );
-
-          gsap.to(".carousel-track", {
-            x: () => {
-              const track = document.querySelector(".carousel-track");
-              return Math.min(0, window.innerWidth - track.scrollWidth - 24);
-            },
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".carousel-section",
-              start: "top top",
-              end: () => `+=${document.querySelector(".carousel-track").scrollWidth}`,
-              scrub: 1,
-              pin: true,
-              invalidateOnRefresh: true,
-            },
-          });
+            ;
 
           window.addEventListener("load", () => ScrollTrigger.refresh());
           window.addEventListener("portfolio:layout-change", () => ScrollTrigger.refresh());
@@ -961,8 +765,6 @@ const accomplishments = [
 </html>
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&display=swap");
-
   :root {
     color-scheme: light;
     --ink: #111111;
@@ -1055,6 +857,8 @@ const accomplishments = [
   }
 
   .glitch-line {
+    position: relative;
+    top: -20px;
     width: max-content;
     margin-inline: auto;
     min-height: 1.2em;
@@ -1068,45 +872,60 @@ const accomplishments = [
   .name-line {
     min-height: 1em;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(3.4rem, 10vw, 9rem);
+    font-size: var(--hero-statement-size);
     font-weight: 900;
     line-height: 0.92;
     letter-spacing: 0;
-    transform-origin: left center;
+    transform-origin: center center;
   }
 
   .identity-line {
     position: absolute;
-    top: calc(100% - clamp(2px, 0.35vw, 5px));
+    top: calc(100% - 0.92em);
     left: 0;
-    min-height: 1.45em;
+    min-height: 1em;
+    width: max-content;
     margin: 0;
-    color: var(--muted);
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.28em;
+    color: var(--ink);
     font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(1.975rem, calc(3vw + 0.625rem), 2.875rem);
+    font-size: var(--hero-statement-size);
     font-weight: 900;
+    line-height: 0.92;
     letter-spacing: 0;
     opacity: 0;
+    text-align: left;
     white-space: nowrap;
     will-change: opacity, transform;
   }
 
   .identity-word {
     position: relative;
-    display: inline-block;
-    margin-left: 0.12em;
+    min-width: 0;
+    margin-left: 0;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: flex-start;
     color: #f25a1d;
     font-weight: 900;
+    text-align: left;
+    vertical-align: baseline;
   }
 
-  .identity-word__cursor {
-    position: absolute;
-    bottom: 0.02em;
-    left: calc(100% + 0.08em);
-    margin-left: 0;
+  .identity-prefix {
+    flex: 0 0 auto;
   }
 
-  .identity-word::after {
+  .identity-word-typed {
+    position: relative;
+    display: inline-block;
+    min-height: 1em;
+  }
+
+  .identity-word-typed::after {
     position: absolute;
     right: 0;
     bottom: -0.16em;
@@ -1117,24 +936,44 @@ const accomplishments = [
     background: #f25a1d;
   }
 
+  .identity-word__cursor {
+    position: relative;
+    bottom: 0.02em;
+    flex: 0 0 auto;
+    margin-left: 0.08em;
+  }
+
   .hello-mark {
-    position: absolute;
-    top: calc(100% + clamp(74px, 7.6vw, 104px));
-    left: 0;
-    width: clamp(310px, 38vw, 520px);
-    max-width: min(45vw, 520px);
-    max-height: 64vh;
+    grid-column: 1;
+    grid-row: 1;
+    position: relative;
+    top: clamp(24px, 3svh, 38px);
+    align-self: center;
+    justify-self: center;
+    width: min(100%, var(--compose-width));
     height: auto;
-    object-fit: contain;
-    background: transparent;
+    aspect-ratio: 2 / 3;
+    max-width: 520px;
+    max-height: var(--compose-height);
+    display: block;
+    border: 0;
+    background: #fbfaf7;
+    box-shadow: none;
+    overflow: hidden;
     opacity: 0;
     pointer-events: none;
-    transform-origin: left top;
+    transform-origin: center center;
     will-change: opacity, transform;
   }
 
-  body[data-theme="dark"] .hello-mark {
-    background: #fbfaf7;
+  .hello-mark img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    transform: none;
   }
 
   .name-letter {
@@ -1288,22 +1127,30 @@ const accomplishments = [
   }
 
   .scroll-note {
+    position: absolute;
+    top: calc(100% + 92px);
+    left: 50%;
     display: block;
     margin: 0;
-    padding-top: 14px;
+    padding: 0;
     color: var(--muted);
     font-size: 0.8rem;
     font-weight: 750;
     text-transform: uppercase;
+    transform: translateX(-50%);
+    white-space: nowrap;
   }
 
   .opening-stage {
-    min-height: 240vh;
+    min-height: 400vh;
     background: var(--paper);
     transition: background-color 220ms ease;
   }
 
   .opening-pin {
+    --compose-height: clamp(560px, 70svh, 720px);
+    --compose-width: clamp(373px, 46.67svh, 480px);
+    --hero-statement-size: clamp(3.25rem, 6.5vw, 6.5rem);
     position: relative;
     min-height: 100svh;
     display: grid;
@@ -1315,8 +1162,8 @@ const accomplishments = [
 
   .name-lockup {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 42px;
+    left: 28px;
     width: max-content;
     max-width: min(92vw, 980px);
     text-align: center;
@@ -1468,11 +1315,16 @@ const accomplishments = [
     grid-column: 2;
     grid-row: 1;
     position: relative;
+    top: clamp(24px, 3svh, 38px);
+    align-self: center;
     justify-self: start;
     width: 100%;
+    height: var(--compose-height);
     min-width: 0;
     max-width: 1040px;
-    padding-top: clamp(28px, 3.8vh, 56px);
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
     opacity: 0;
     z-index: 1;
   }
@@ -1488,31 +1340,44 @@ const accomplishments = [
 
   #latest-title {
     position: relative;
-    top: clamp(8px, 1.2vh, 14px);
+    top: 0;
+    flex: 0 0 auto;
     z-index: 40;
   }
 
   .latest-deck {
+    --deck-stack-gap: 22px;
+    --deck-card-height: clamp(236px, 22vw, 300px);
     position: relative;
     z-index: 1;
     width: min(100%, 980px);
-    min-height: clamp(360px, 34vw, 450px);
-    margin-top: clamp(92px, 7.2vw, 118px);
+    height: calc(var(--deck-card-height) + var(--deck-stack-gap) + var(--deck-stack-gap));
+    min-height: 0;
+    flex: 0 0 auto;
+    margin-top: auto;
     margin-inline: auto 0;
     opacity: 0;
     perspective: 900px;
     min-width: 0;
   }
 
+  @media (min-width: 761px) {
+    /* Match the copy and stack to the visible subject inside the GIF canvas. */
+    #latest-title {
+      top: clamp(54px, 7svh, 72px);
+    }
+
+    .latest-deck {
+      margin-bottom: clamp(120px, 15svh, 150px);
+    }
+  }
+
   .deck-card {
     position: absolute;
     right: 0;
     left: 0;
-    min-height: clamp(190px, 16vw, 236px);
-    display: grid;
-    grid-template-rows: auto 1fr;
-    align-content: start;
-    gap: clamp(18px, 2.8vw, 32px);
+    height: var(--deck-card-height);
+    display: block;
     border: 0;
     border-radius: 28px;
     padding: clamp(24px, 3.2vw, 40px);
@@ -1560,6 +1425,31 @@ const accomplishments = [
     min-width: 0;
   }
 
+  .deck-card-content {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    align-content: start;
+    gap: clamp(18px, 2.8vw, 32px);
+    will-change: opacity;
+  }
+
+  .deck-card-peek {
+    position: absolute;
+    right: clamp(24px, 3.2vw, 40px);
+    bottom: 18px;
+    left: clamp(24px, 3.2vw, 40px);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    opacity: 0;
+    will-change: opacity;
+  }
+
+  .deck-card-peek p,
+  .deck-card-peek h3 {
+    margin: 0;
+  }
+
   .deck-card h3,
   .deck-card span {
     min-width: 0;
@@ -1585,6 +1475,26 @@ const accomplishments = [
     letter-spacing: 0;
   }
 
+  .deck-card .company-link--mesh {
+    gap: 0.08em;
+    color: #172b75;
+  }
+
+  .deck-card .company-link--mesh:hover {
+    color: #07184d;
+  }
+
+  .deck-card .company-link--mesh::after {
+    content: none;
+  }
+
+  @media (min-width: 761px) {
+    .deck-card--mesh .deck-card-heading h3 {
+      font-size: clamp(0.95rem, 1.65vw, 1.35rem);
+      white-space: nowrap;
+    }
+  }
+
   .deck-card span {
     display: block;
     max-width: 68ch;
@@ -1594,24 +1504,6 @@ const accomplishments = [
     transition:
       opacity 180ms ease,
       transform 180ms ease;
-  }
-
-  .deck-card:not(:first-child) span {
-    opacity: 0;
-    transform: none;
-  }
-
-  .deck-card:not(:first-child) {
-    min-height: clamp(150px, 13vw, 188px);
-    padding-top: clamp(112px, 11vw, 142px);
-    padding-bottom: 18px;
-    gap: 0;
-    overflow: hidden;
-  }
-
-  .deck-card:not(:first-child) .deck-card-heading {
-    justify-content: flex-start;
-    text-align: left;
   }
 
   body[data-theme="dark"] .deck-card {
@@ -1738,6 +1630,7 @@ const accomplishments = [
   .yin-yang-option {
     position: relative;
     z-index: 4;
+    isolation: isolate;
     min-height: 82px;
     border: 0;
     border-radius: 999px;
@@ -1757,6 +1650,40 @@ const accomplishments = [
       transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  .yin-yang-option::before {
+    position: absolute;
+    z-index: 0;
+    inset: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    content: "";
+    opacity: 0.24;
+    transform: translateY(1px) scale(0.97);
+    transition:
+      opacity 260ms ease,
+      transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 360ms ease;
+    pointer-events: none;
+  }
+
+  .yin-yang-option[data-experience-option="work"]::before {
+    background: linear-gradient(145deg, #2a2a2a, #111111);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  }
+
+  .yin-yang-option[data-experience-option="community"]::before {
+    border-color: rgba(17, 17, 17, 0.1);
+    background: linear-gradient(145deg, #ffffff, #e9e5dd);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  }
+
+  .yin-yang-option__label {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+  }
+
   .yin-yang-option[data-experience-option="work"] {
     color: #fffdf8;
   }
@@ -1766,13 +1693,36 @@ const accomplishments = [
   }
 
   .yin-yang-option:not(.is-active) {
-    opacity: 1;
+    opacity: 0.86;
     transform: scale(0.98);
   }
 
   .yin-yang-option.is-active {
     opacity: 1;
-    transform: scale(1.04);
+    transform: translateY(-3px) scale(1.035);
+  }
+
+  .yin-yang-option.is-active::before {
+    opacity: 1;
+    transform: translateY(-1px) scale(1);
+    box-shadow:
+      0 12px 20px rgba(0, 0, 0, 0.28),
+      0 3px 7px rgba(0, 0, 0, 0.2),
+      inset 0 1px 1px rgba(255, 255, 255, 0.28),
+      inset 0 -2px 3px rgba(0, 0, 0, 0.18);
+  }
+
+  .yin-yang-option:not(.is-active):hover {
+    opacity: 1;
+    transform: translateY(-2px) scale(1);
+  }
+
+  .yin-yang-option:not(.is-active):hover::before {
+    opacity: 0.72;
+    transform: translateY(-1px) scale(0.99);
+    box-shadow:
+      0 8px 14px rgba(0, 0, 0, 0.18),
+      inset 0 1px 1px rgba(255, 255, 255, 0.22);
   }
 
   .experience-island[data-active="work"]
@@ -1780,17 +1730,103 @@ const accomplishments = [
     transform: translateX(14px) scale(0.98);
   }
 
+  .experience-island[data-active="work"]
+    .yin-yang-option[data-experience-option="community"]:hover {
+    transform: translateX(14px) translateY(-2px) scale(1);
+  }
+
   .yin-yang-option:focus-visible {
     box-shadow: inset 0 0 0 3px #f25a1d;
   }
 
   .yin-yang-option:active {
-    transform: scale(0.97);
+    transform: translateY(1px) scale(0.98);
+  }
+
+  .yin-yang-option:active::before {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.28);
   }
 
   .yin-yang-option:focus-visible {
     outline: 2px solid color-mix(in srgb, #f25a1d 54%, transparent);
     outline-offset: 5px;
+  }
+
+  .experience-island {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: #171717;
+    box-shadow:
+      0 18px 30px rgba(0, 0, 0, 0.3),
+      0 5px 10px rgba(0, 0, 0, 0.24),
+      0 -1px 0 rgba(255, 255, 255, 0.12);
+    transition: box-shadow 320ms ease, transform 220ms ease;
+  }
+
+  .yin-yang-surface {
+    background: #171717;
+    box-shadow:
+      inset 0 3px 3px rgba(255, 255, 255, 0.17),
+      inset 0 -5px 8px rgba(0, 0, 0, 0.46);
+    transition: box-shadow 220ms ease, transform 220ms ease;
+  }
+
+  .yin-yang-white-field {
+    background: #fffdf8;
+    box-shadow:
+      inset 0 2px 2px rgba(255, 255, 255, 0.7),
+      inset 0 -2px 3px rgba(17, 17, 17, 0.08);
+  }
+
+  .yin-yang-white-field::before {
+    background: #171717;
+    box-shadow: none;
+  }
+
+  .yin-yang-white-field::after {
+    background: #fffdf8;
+    box-shadow: none;
+  }
+
+  .yin-yang-option::before {
+    content: none;
+    display: none;
+  }
+
+  .yin-yang-option,
+  .yin-yang-option.is-active,
+  .yin-yang-option:not(.is-active),
+  .yin-yang-option:not(.is-active):hover {
+    border-radius: 0;
+    opacity: 1;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .yin-yang-option.is-active .yin-yang-option__label {
+    transform: translateY(-1px) scale(1.025);
+    text-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .yin-yang-option:not(.is-active) .yin-yang-option__label { opacity: 0.78; }
+  .yin-yang-option:hover .yin-yang-option__label { opacity: 1; transform: translateY(-2px); }
+  .yin-yang-option:active .yin-yang-option__label { transform: translateY(1px) scale(0.985); }
+  .yin-yang-option__label { transition: opacity 240ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1), text-shadow 240ms ease; }
+  .yin-yang-option:focus-visible { outline: none; box-shadow: none; }
+  .yin-yang-option:focus-visible .yin-yang-option__label { outline: 2px solid #f25a1d; outline-offset: 5px; border-radius: 4px; }
+
+  .experience-island:has(.yin-yang-option:hover) {
+    box-shadow:
+      0 22px 36px rgba(0, 0, 0, 0.34),
+      0 7px 13px rgba(0, 0, 0, 0.25),
+      0 -1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .experience-island:has(.yin-yang-option:active) { transform: translateY(2px); }
+  .experience-island:has(.yin-yang-option:active) .yin-yang-surface {
+    box-shadow:
+      inset 0 2px 5px rgba(0, 0, 0, 0.34),
+      inset 0 -1px 2px rgba(255, 255, 255, 0.1);
   }
 
   .experience-panels {
@@ -1859,7 +1895,7 @@ const accomplishments = [
   :global(.projects-section) {
     width: 100%;
     min-height: 100svh;
-    padding: clamp(64px, 9vw, 132px) clamp(20px, 5vw, 72px);
+    padding: clamp(64px, 9vw, 132px) clamp(20px, 5vw, 72px) clamp(36px, 5vw, 72px);
     border-top: 1px solid var(--line);
     background: var(--paper);
     color: var(--ink);
@@ -1868,27 +1904,56 @@ const accomplishments = [
   :global(.projects-heading) {
     width: min(1180px, 100%);
     margin: 0 auto clamp(42px, 6vw, 76px);
+    position: relative;
+    display: grid;
+    gap: clamp(12px, 2vw, 22px);
   }
 
-  :global(.projects-heading > p),
-  :global(.projects-heading > h2),
-  :global(.projects-heading > span) {
-    margin: 0;
-  }
-
-  :global(.projects-heading > p) {
-    color: var(--accent);
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-    font-size: 0.8rem;
+  :global(.projects-see-all) {
+    position: absolute;
+    top: clamp(8px, 1.5vw, 22px);
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.72rem 1rem;
+    background: var(--surface-strong);
+    color: var(--ink);
+    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.08);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.9rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    line-height: 1;
+    text-decoration: none;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  :global(.projects-see-all:hover),
+  :global(.projects-see-all:focus-visible) {
+    border-color: var(--control-hover);
+    box-shadow: 0 15px 30px rgba(17, 17, 17, 0.14);
+    transform: translateY(-3px);
+  }
+
+  :global(.projects-see-all:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  :global(body[data-theme="dark"] .projects-see-all) {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38);
+  }
+
+  :global(.projects-heading > h2),
+  :global(.projects-heading > .projects-subtitle) {
+    margin: 0;
+    overflow: visible;
   }
 
   :global(.projects-heading > h2) {
-    margin-top: 12px;
-    margin-bottom: -0.16em;
-    padding-bottom: 0.16em;
+    padding: 0.08em 0 0.12em;
     font-family: Arial, Helvetica, sans-serif;
     font-size: clamp(4rem, 11vw, 10rem);
     font-weight: 900;
@@ -1896,9 +1961,8 @@ const accomplishments = [
     letter-spacing: 0;
   }
 
-  :global(.projects-heading > span) {
+  :global(.projects-heading > .projects-subtitle) {
     max-width: 48ch;
-    margin-top: 24px;
     display: block;
     color: var(--muted);
     font-size: clamp(1rem, 1.7vw, 1.3rem);
@@ -1910,105 +1974,26 @@ const accomplishments = [
     margin-inline: auto;
   }
 
-  .carousel-section {
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: clamp(28px, 5vw, 54px);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    padding: clamp(28px, 5vw, 72px);
-    background: #111111;
-    color: #fbfaf7;
-  }
-
-  .carousel-heading {
-    width: 100%;
-    flex: 0 0 auto;
-    text-align: center;
-  }
-
-  .carousel-heading .section-kicker {
-    width: fit-content;
-    margin: clamp(4px, 1vw, 12px) auto 0;
-    color: #f5d76e;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(0.95rem, 1.45vw, 1.14rem);
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1.35;
-    text-align: center;
-    text-transform: none;
-  }
-
-  :global(.carousel-heading .curved-loop) {
-    width: 100vw;
-    margin-inline: calc(50% - 50vw);
-    color: #fbfaf7;
-  }
-
-  .carousel-track {
-    display: flex;
-    gap: 18px;
-    width: max-content;
-    will-change: transform;
-  }
-
-  .achievement-card {
-    width: min(72vw, 420px);
-    min-width: 280px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 8px;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  .achievement-image {
-    min-height: 280px;
-    display: grid;
-    place-items: center;
-    border-radius: 6px;
-  }
-
-  .achievement-image span {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: clamp(4rem, 12vw, 8rem);
-    font-weight: 900;
-  }
-
-  .achievement-card h3 {
-    margin: 18px 4px 8px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(1.4rem, 3vw, 2rem);
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: 0;
-  }
-
-  .achievement-card p {
-    margin: 0 4px 8px;
-    color: rgba(251, 250, 247, 0.68);
-    line-height: 1.5;
-  }
-
   .world-section {
     min-height: 100svh;
     display: flex;
     flex-direction: column;
-    gap: clamp(24px, 4vw, 44px);
+    gap: clamp(10px, 1.6vw, 18px);
     padding: clamp(28px, 5vw, 72px);
+    padding-bottom: clamp(8px, 1.4vw, 16px);
     background: var(--paper);
     color: var(--ink);
     overflow: hidden;
   }
 
   :global(.connect-section) {
-    min-height: 82svh;
+    position: relative;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: clamp(52px, 8vw, 100px);
-    padding: clamp(72px, 10vw, 140px) 0 clamp(30px, 5vw, 58px);
+    gap: clamp(28px, 4vw, 56px);
+    padding: clamp(60px, 8vw, 110px) 0 clamp(54px, 7vw, 88px);
     border-top: 1px solid var(--line);
     background: var(--paper);
     color: var(--ink);
@@ -2097,8 +2082,56 @@ const accomplishments = [
   .world-subtitle {
     margin: clamp(18px, 2.2vw, 28px) 0 0;
     color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
     font-size: clamp(1.05rem, 2vw, 1.5rem);
+    font-style: italic;
+    font-weight: 700;
     line-height: 1.35;
+  }
+
+  :global(body:not([data-theme="dark"]) .world-section .sphere-root) {
+    --overlay-blur-color: #fbfaf7 !important;
+  }
+
+  :global(body:not([data-theme="dark"]) .world-section .overlay) {
+    background-image: none;
+  }
+
+  :global(body:not([data-theme="dark"]) .world-section .overlay--blur) {
+    -webkit-mask-image: none;
+    mask-image: none;
+    backdrop-filter: none;
+  }
+
+  :global(body:not([data-theme="dark"]) .world-section .edge-fade) {
+    background: transparent;
+  }
+
+  :global(body[data-theme="dark"] .world-section .sphere-root) {
+    --overlay-blur-color: #120f17 !important;
+  }
+
+  :global(body[data-theme="dark"] .world-section .overlay) {
+    background-image: radial-gradient(
+      rgba(18, 15, 23, 0) 62%,
+      rgba(18, 15, 23, 0.42) 82%,
+      #120f17 100%
+    );
+  }
+
+  :global(.world-decrypted-text),
+  :global(.world-subtitle-decrypted) {
+    display: inline-block;
+    white-space: pre-wrap;
+  }
+
+  :global(.world-decrypted__revealed),
+  :global(.world-decrypted__encrypted) {
+    color: inherit;
+  }
+
+  :global(.world-decrypted__encrypted) {
+    opacity: 0.62;
   }
 
   .dome-gallery-shell {
@@ -2117,12 +2150,15 @@ const accomplishments = [
 
   @media (max-width: 760px) {
     .opening-pin {
+      --hero-statement-size: clamp(3.15rem, 12.5vw, 4.5rem);
       grid-template-columns: 1fr;
       align-content: center;
       gap: 28px;
     }
 
     .name-lockup {
+      top: 34px;
+      left: 18px;
       align-self: center;
     }
 
@@ -2160,16 +2196,34 @@ const accomplishments = [
     }
 
     .hello-mark {
-      top: calc(100% + 64px);
-      width: min(76vw, 340px);
-      max-width: 76vw;
-      max-height: 46vh;
+      grid-column: 1;
+      grid-row: 1;
+      top: 3svh;
+      align-self: start;
+      width: min(68vw, 300px);
+      height: auto;
+      max-width: 68vw;
+      max-height: 42svh;
     }
 
     .latest-content {
       grid-column: 1;
+      top: 0;
+      height: auto;
       max-width: 100%;
+      display: block;
       padding-top: 34vh;
+    }
+
+    .latest-deck {
+      --deck-stack-gap: 18px;
+      height: 360px;
+      min-height: 360px;
+      margin-top: clamp(92px, 7.2vw, 118px);
+    }
+
+    .deck-card {
+      height: 290px;
     }
 
     .experiences-section {
@@ -2219,5 +2273,6 @@ const accomplishments = [
     html {
       scroll-behavior: auto;
     }
+
   }
 </style>

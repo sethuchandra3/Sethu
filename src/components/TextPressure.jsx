@@ -91,23 +91,40 @@ export default function TextPressure({ text, id, className = "" }) {
         letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${weight}, 'wdth' 86, 'slnt' 0`;
       });
 
+      if (targetStrength === 0 && strength < 0.002) {
+        strength = 0;
+        letters.forEach(resetLetter);
+        frameId = 0;
+        return;
+      }
+
       frameId = window.requestAnimationFrame(animate);
     };
 
-    const handlePointerEnter = (event) => {
-      pointer.x = event.clientX;
-      pointer.y = event.clientY;
-      targetStrength = 1;
+    const ensureAnimation = () => {
+      if (!frameId) frameId = window.requestAnimationFrame(animate);
     };
 
     const handlePointerMove = (event) => {
+      const rect = title.getBoundingClientRect();
+      const isInside =
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom;
+
       pointer.x = event.clientX;
       pointer.y = event.clientY;
+      targetStrength = isInside ? 1 : 0;
+
+      if (!isInside) centerPointer(false);
+      ensureAnimation();
     };
 
-    const handlePointerLeave = () => {
+    const handleWindowBlur = () => {
       targetStrength = 0;
       centerPointer(false);
+      ensureAnimation();
     };
 
     const handleResize = () => {
@@ -115,16 +132,15 @@ export default function TextPressure({ text, id, className = "" }) {
       resizeFrameId = window.requestAnimationFrame(measureLetters);
     };
 
-    const start = async () => {
-      await document.fonts?.ready;
-      if (disposed) return;
-
+    const start = () => {
       measureLetters();
-      title.addEventListener("pointerenter", handlePointerEnter);
-      title.addEventListener("pointermove", handlePointerMove);
-      title.addEventListener("pointerleave", handlePointerLeave);
+      window.addEventListener("pointermove", handlePointerMove, { passive: true });
+      window.addEventListener("blur", handleWindowBlur);
       window.addEventListener("resize", handleResize);
-      animate();
+
+      document.fonts?.ready.then(() => {
+        if (!disposed) measureLetters();
+      });
     };
 
     start();
@@ -133,9 +149,8 @@ export default function TextPressure({ text, id, className = "" }) {
       disposed = true;
       window.cancelAnimationFrame(frameId);
       window.cancelAnimationFrame(resizeFrameId);
-      title.removeEventListener("pointerenter", handlePointerEnter);
-      title.removeEventListener("pointermove", handlePointerMove);
-      title.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("blur", handleWindowBlur);
       window.removeEventListener("resize", handleResize);
     };
   }, [text]);
