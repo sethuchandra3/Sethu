@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import FluidGlass from "./FluidGlass.jsx";
 import Masonry from "./Masonry.jsx";
 import ScrollFloat from "./ScrollFloat.jsx";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const projectPlaceholders = [
   {
@@ -72,7 +77,13 @@ const projectGroups = [
 export default function ProjectsSection() {
   const [activeGroup, setActiveGroup] = useState(projectGroups[0].id);
   const [supportsFinePointer, setSupportsFinePointer] = useState(false);
+  const [glassReady, setGlassReady] = useState(false);
+  const [galleryRevealed, setGalleryRevealed] = useState(false);
   const galleryRef = useRef(null);
+  const galleryInnerRef = useRef(null);
+  const sliderRef = useRef(null);
+  const swipeRef = useRef({ active: false, dragging: false, x: 0, y: 0 });
+  const suppressClickRef = useRef(false);
 
   useEffect(() => {
     const pointerQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
@@ -82,10 +93,45 @@ export default function ProjectsSection() {
     return () => pointerQuery.removeEventListener?.("change", updatePointerSupport);
   }, []);
 
+  useGSAP(() => {
+    const galleryInner = galleryInnerRef.current;
+    if (!galleryInner) return undefined;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.set(galleryInner, { clearProps: "all" });
+      setGalleryRevealed(true);
+      return undefined;
+    }
+
+    const reveal = gsap.fromTo(
+      galleryInner,
+      { autoAlpha: 0, y: 30 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.9,
+        delay: 0.08,
+        ease: "power3.out",
+        clearProps: "transform,opacity,visibility",
+        onComplete: () => setGalleryRevealed(true),
+        scrollTrigger: {
+          trigger: galleryInner,
+          start: "top 88%",
+          once: true,
+        },
+      },
+    );
+
+    return () => reveal.kill();
+  }, { scope: galleryRef });
+
   useEffect(() => {
     const syncGroupFromHash = () => {
       const groupId = window.location.hash.replace("#projects-", "");
-      if (projectGroups.some(group => group.id === groupId)) setActiveGroup(groupId);
+      if (projectGroups.some(group => group.id === groupId)) {
+        setGlassReady(false);
+        setActiveGroup(groupId);
+      }
     };
     syncGroupFromHash();
     window.addEventListener("hashchange", syncGroupFromHash);
@@ -93,6 +139,8 @@ export default function ProjectsSection() {
   }, []);
 
   const selectGroup = groupId => {
+    if (groupId === activeGroup) return;
+    setGlassReady(false);
     window.history.replaceState(null, "", `#projects-${groupId}`);
     setActiveGroup(groupId);
   };
@@ -109,6 +157,66 @@ export default function ProjectsSection() {
     const nextGroup = projectGroups[nextIndex];
     selectGroup(nextGroup.id);
     document.getElementById(`projects-tab-${nextGroup.id}`)?.focus();
+  };
+
+  const resetSwipe = () => {
+    const slider = sliderRef.current;
+    if (slider) {
+      slider.style.removeProperty("--projects-drag-x");
+      slider.dataset.dragging = "false";
+    }
+    swipeRef.current = { active: false, dragging: false, x: 0, y: 0 };
+  };
+
+  const handleSliderPointerDown = event => {
+    if (event.button !== 0) return;
+    swipeRef.current = {
+      active: true,
+      dragging: false,
+      x: event.clientX,
+      y: event.clientY,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleSliderPointerMove = event => {
+    const swipe = swipeRef.current;
+    if (!swipe.active || !sliderRef.current) return;
+    const deltaX = event.clientX - swipe.x;
+    const deltaY = event.clientY - swipe.y;
+    if (!swipe.dragging && (Math.abs(deltaX) < 8 || Math.abs(deltaX) <= Math.abs(deltaY))) return;
+    swipe.dragging = true;
+    suppressClickRef.current = true;
+    sliderRef.current.dataset.dragging = "true";
+    sliderRef.current.style.setProperty(
+      "--projects-drag-x",
+      `${Math.max(-110, Math.min(110, deltaX))}px`,
+    );
+  };
+
+  const handleSliderPointerEnd = event => {
+    const swipe = swipeRef.current;
+    if (!swipe.active) return;
+    const deltaX = event.clientX - swipe.x;
+    const activeIndex = projectGroups.findIndex(group => group.id === activeGroup);
+    const threshold = Math.min(72, (sliderRef.current?.offsetWidth || 600) * 0.12);
+    resetSwipe();
+
+    if (swipe.dragging && Math.abs(deltaX) >= threshold) {
+      const nextIndex = deltaX < 0 ? activeIndex + 1 : activeIndex - 1;
+      const nextGroup = projectGroups[nextIndex];
+      if (nextGroup) selectGroup(nextGroup.id);
+    }
+
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+  };
+
+  const handleSliderClickCapture = event => {
+    if (!suppressClickRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   return (
@@ -149,8 +257,12 @@ export default function ProjectsSection() {
         </header>
       </div>
 
-      <div ref={galleryRef} className="projects-editorial-gallery">
-        <div className="projects-gallery-inner">
+      <div
+        ref={galleryRef}
+        className="projects-editorial-gallery"
+        data-glass-ready={glassReady ? "true" : "false"}
+      >
+        <div ref={galleryInnerRef} className="projects-gallery-inner">
           <div
             className="projects-category-tabs"
             data-active-group={activeGroup}
@@ -176,7 +288,17 @@ export default function ProjectsSection() {
             <span className="projects-category-tabs__indicator" aria-hidden="true" />
           </div>
 
-          <div className="projects-slider" data-active-group={activeGroup}>
+          <div
+            ref={sliderRef}
+            className="projects-slider"
+            data-active-group={activeGroup}
+            data-dragging="false"
+            onPointerDown={handleSliderPointerDown}
+            onPointerMove={handleSliderPointerMove}
+            onPointerUp={handleSliderPointerEnd}
+            onPointerCancel={resetSwipe}
+            onClickCapture={handleSliderClickCapture}
+          >
             {projectGroups.map((group, groupIndex) => {
               const items = projectPlaceholders.filter(project => project.group === group.id);
               const activeIndex = projectGroups.findIndex(item => item.id === activeGroup);
@@ -203,7 +325,7 @@ export default function ProjectsSection() {
           </div>
         </div>
 
-        {supportsFinePointer && (
+        {supportsFinePointer && galleryRevealed && (
           <div className="projects-glass-overlay" data-html2canvas-ignore="true" aria-hidden="true">
             <FluidGlass
               mode="lens"
@@ -211,6 +333,10 @@ export default function ProjectsSection() {
               trackingTargetRef={galleryRef}
               activeTargetRef={galleryRef}
               activeSelector=".project-masonry__media"
+              captureKey={activeGroup}
+              captureSettleDelay={760}
+              enabled={glassReady}
+              onCaptureReady={setGlassReady}
               lensProps={{
                 scale: 0.055,
                 ior: 1.15,

@@ -59,8 +59,10 @@ export default function FluidGlassCursor() {
         hasPosition = true;
       }
       const target = event.target instanceof Element ? event.target : null;
+      const projectMedia = target?.closest(".project-masonry__media");
+      const projectGallery = projectMedia?.closest(".projects-editorial-gallery");
       cursor.dataset.header = target?.closest(".site-header") ? "true" : "false";
-      cursor.dataset.glassActive = target?.closest(".project-masonry__media") ? "true" : "false";
+      cursor.dataset.glassActive = projectMedia && projectGallery?.dataset.glassReady === "true" ? "true" : "false";
       cursor.dataset.visible = "true";
       requestPositionRender();
     };

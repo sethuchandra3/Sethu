@@ -23,7 +23,11 @@ export default function FluidGlass({
   captureTargetRef,
   trackingTargetRef,
   activeTargetRef,
-  activeSelector
+  activeSelector,
+  captureKey,
+  captureSettleDelay = 0,
+  enabled = true,
+  onCaptureReady
 }) {
   const Wrapper = mode === 'bar' ? Bar : mode === 'cube' ? Cube : Lens;
   const rawOverrides = mode === 'bar' ? barProps : mode === 'cube' ? cubeProps : lensProps;
@@ -42,10 +46,14 @@ export default function FluidGlass({
     const target = captureTargetRef?.current;
     if (!target) return undefined;
 
+    setContentCanvas(null);
+    onCaptureReady?.(false);
     let cancelled = false;
     let timer = 0;
+    let idleCallback = 0;
     let resizeObserver;
     let intersectionObserver;
+    const captureNotBefore = performance.now() + captureSettleDelay;
 
     const waitForImages = () => Promise.all(
       [...target.querySelectorAll('img')]
@@ -88,16 +96,30 @@ export default function FluidGlass({
         height: target.offsetHeight
       });
 
-      if (!cancelled) setContentCanvas(snapshot);
+      if (!cancelled) {
+        setContentCanvas(snapshot);
+        onCaptureReady?.(true);
+      }
     };
 
     const scheduleCapture = (delay = 140) => {
       window.clearTimeout(timer);
+      if (idleCallback && "cancelIdleCallback" in window) window.cancelIdleCallback(idleCallback);
+      const settleRemaining = Math.max(0, captureNotBefore - performance.now());
+      const resolvedDelay = Math.max(delay, settleRemaining);
       timer = window.setTimeout(() => {
-        capture().catch(error => {
-          console.warn('Unable to refresh the FluidGlass project texture.', error);
-        });
-      }, delay);
+        const runCapture = () => {
+          idleCallback = 0;
+          capture().catch(error => {
+            console.warn('Unable to refresh the FluidGlass project texture.', error);
+          });
+        };
+        if ("requestIdleCallback" in window) {
+          idleCallback = window.requestIdleCallback(runCapture, { timeout: 450 });
+        } else {
+          runCapture();
+        }
+      }, resolvedDelay);
     };
 
     intersectionObserver = new IntersectionObserver(entries => {
@@ -108,17 +130,19 @@ export default function FluidGlass({
     resizeObserver = new ResizeObserver(() => scheduleCapture(220));
     resizeObserver.observe(target);
 
-    window.addEventListener('resize', scheduleCapture, { passive: true });
+    const handleResize = () => scheduleCapture(220);
+    window.addEventListener('resize', handleResize, { passive: true });
     scheduleCapture(0);
 
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
+      if (idleCallback && "cancelIdleCallback" in window) window.cancelIdleCallback(idleCallback);
       resizeObserver?.disconnect();
       intersectionObserver?.disconnect();
-      window.removeEventListener('resize', scheduleCapture);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [captureTargetRef]);
+  }, [captureTargetRef, captureKey, captureSettleDelay, onCaptureReady]);
 
   return (
     <Canvas camera={{ position: [0, 0, 20], fov: 15 }} gl={{ alpha: true }}>
@@ -129,6 +153,7 @@ export default function FluidGlass({
           trackingTargetRef={trackingTargetRef}
           activeTargetRef={activeTargetRef}
           activeSelector={activeSelector}
+          enabled={enabled && Boolean(contentCanvas)}
         >
           {contentCanvas && <DomSnapshot canvas={contentCanvas} />}
           <Preload />
@@ -148,6 +173,7 @@ const ModeWrapper = memo(function ModeWrapper({
   trackingTargetRef,
   activeTargetRef,
   activeSelector,
+  enabled = true,
   ...props
 }) {
   const ref = useRef();
@@ -225,7 +251,7 @@ const ModeWrapper = memo(function ModeWrapper({
       resolvedScale = Math.min(0.15, desired);
     }
 
-    const isActive = !activeTargetRef?.current || externalPointerRef.current.active;
+    const isActive = enabled && (!activeTargetRef?.current || externalPointerRef.current.active);
     const justActivated = isActive && !wasActiveRef.current;
 
     // The lens must begin exactly where the normal cursor currently sits.
