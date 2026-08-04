@@ -2,13 +2,13 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  height: clamp(270px, 34vh, 350px);
+  height: clamp(160px, 20vh, 210px);
   overflow: hidden;
 }
 
 .interest-velocity__viewport {
   position: absolute;
-  top: 28px;
+  top: 18px;
   right: 0;
   left: 0;
   overflow: hidden;
@@ -51,7 +51,7 @@
 
 .interest-velocity__word:nth-child(3n + 1) { background: #cf2f72; color: #fff; }
 .interest-velocity__word:nth-child(3n + 2) { background: #f25a1d; color: #fff; }
-.interest-velocity__word:nth-child(3n) { background: #fff4ee; color: #171717; }
+.interest-velocity__word:nth-child(3n) { background: #f7b6d2; color: #171717; }
 
 body[data-theme="dark"] .interest-velocity__word {
   border-color: rgba(255, 255, 255, 0.18);
@@ -59,8 +59,8 @@ body[data-theme="dark"] .interest-velocity__word {
 }
 
 @media (max-width: 640px) {
-  .interest-velocity { height: 320px; }
-  .interest-velocity__viewport { top: 22px; }
+  .interest-velocity { height: 190px; }
+  .interest-velocity__viewport { top: 18px; }
   .interest-velocity__word { font-size: clamp(1.15rem, 5vw, 1.65rem); }
 }
 

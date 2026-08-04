@@ -111,10 +111,11 @@ export default function CoolThingsSection() {
         <CurvedLoop
           marqueeText="Cool sidequests I have been on ✦ "
           speed={1.15}
-          curveAmount={150}
+          curveAmount={165}
           direction="left"
-          interactive={false}
+          interactive
           scrollDriven
+          wave
           className="sidequests-curve__text"
         />
       </div>

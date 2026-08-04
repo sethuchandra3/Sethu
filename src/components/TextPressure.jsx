@@ -1,10 +1,15 @@
 import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import robotoFlexUrl from "@fontsource-variable/roboto-flex/files/roboto-flex-latin-full-normal.woff2?url";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const RESTING_WEIGHT = 620;
-const MIN_HOVER_WEIGHT = 340;
-const MAX_HOVER_WEIGHT = 940;
+const RESTING_WIDTH = 86;
+const MIN_PRESSURE_WEIGHT = 280;
+const MAX_PRESSURE_WEIGHT = 980;
 
 export default function TextPressure({ text, id, className = "" }) {
   const titleRef = useRef(null);
@@ -18,12 +23,17 @@ export default function TextPressure({ text, id, className = "" }) {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const pointer = { x: 0, y: 0 };
     const easedPointer = { x: 0, y: 0 };
+    const scrollPointer = { x: 0, y: 0 };
+    const easedScrollPointer = { x: 0, y: 0 };
     let letterMetrics = [];
-    let strength = 0;
-    let targetStrength = 0;
+    let hoverStrength = 0;
+    let targetHoverStrength = 0;
+    let scrollStrength = 0;
+    let targetScrollStrength = 0;
     let frameId = 0;
     let resizeFrameId = 0;
     let disposed = false;
+    let pressureTrigger;
 
     const centerPointer = (immediate = false) => {
       const rect = title.getBoundingClientRect();
@@ -33,16 +43,22 @@ export default function TextPressure({ text, id, className = "" }) {
       if (immediate) {
         easedPointer.x = pointer.x;
         easedPointer.y = pointer.y;
+        scrollPointer.x = pointer.x;
+        scrollPointer.y = pointer.y;
+        easedScrollPointer.x = pointer.x;
+        easedScrollPointer.y = pointer.y;
       }
     };
 
     const resetLetter = (letter) => {
-      letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${RESTING_WEIGHT}, 'wdth' 86, 'slnt' 0`;
+      letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${RESTING_WEIGHT}, 'wdth' ${RESTING_WIDTH}, 'slnt' 0`;
     };
 
     const measureLetters = () => {
-      strength = 0;
-      targetStrength = 0;
+      hoverStrength = 0;
+      targetHoverStrength = 0;
+      scrollStrength = 0;
+      targetScrollStrength = 0;
 
       letters.forEach((letter) => {
         letter.style.width = "auto";
@@ -70,10 +86,18 @@ export default function TextPressure({ text, id, className = "" }) {
     const animate = () => {
       easedPointer.x += (pointer.x - easedPointer.x) / 8;
       easedPointer.y += (pointer.y - easedPointer.y) / 8;
-      strength += (targetStrength - strength) / 10;
+      easedScrollPointer.x += (scrollPointer.x - easedScrollPointer.x) / 6;
+      easedScrollPointer.y += (scrollPointer.y - easedScrollPointer.y) / 6;
+      hoverStrength += (targetHoverStrength - hoverStrength) / 7;
+      scrollStrength += (targetScrollStrength - scrollStrength) / 7;
 
       const titleRect = title.getBoundingClientRect();
-      const maxDistance = Math.max(titleRect.width * 0.5, 180);
+      const maxDistance = Math.max(titleRect.width * 0.38, 150);
+      const useHoverPressure = hoverStrength >= scrollStrength;
+      const activePointer = useHoverPressure ? easedPointer : easedScrollPointer;
+      const activeStrength = reducedMotion
+        ? 0
+        : clamp(Math.max(hoverStrength, scrollStrength), 0, 1.15);
 
       letters.forEach((letter, index) => {
         const metric = letterMetrics[index];
@@ -81,18 +105,29 @@ export default function TextPressure({ text, id, className = "" }) {
 
         const centerX = titleRect.left + metric.centerX;
         const centerY = titleRect.top + metric.centerY;
-        const distance = Math.hypot(easedPointer.x - centerX, easedPointer.y - centerY);
-        const proximity = Math.pow(clamp(1 - distance / maxDistance, 0, 1), 1.35);
-        const hoverWeight = MIN_HOVER_WEIGHT + proximity * (MAX_HOVER_WEIGHT - MIN_HOVER_WEIGHT);
-        const activeStrength = reducedMotion ? 0 : strength;
+        const distance = Math.hypot(activePointer.x - centerX, activePointer.y - centerY);
+        const proximity = Math.pow(clamp(1 - distance / maxDistance, 0, 1), 1.18);
+        const pressureWeight = MIN_PRESSURE_WEIGHT + proximity * (MAX_PRESSURE_WEIGHT - MIN_PRESSURE_WEIGHT);
+        const pressureWidth = 64 + proximity * 68;
+        const horizontalOffset = clamp((activePointer.x - centerX) / maxDistance, -1, 1);
         const weight = Math.round(
-          RESTING_WEIGHT + (hoverWeight - RESTING_WEIGHT) * activeStrength,
+          RESTING_WEIGHT + (pressureWeight - RESTING_WEIGHT) * activeStrength,
         );
-        letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${weight}, 'wdth' 86, 'slnt' 0`;
+        const width = Math.round(
+          RESTING_WIDTH + (pressureWidth - RESTING_WIDTH) * activeStrength,
+        );
+        const slant = Math.round(horizontalOffset * -7 * activeStrength * 10) / 10;
+        letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${weight}, 'wdth' ${width}, 'slnt' ${slant}`;
       });
 
-      if (targetStrength === 0 && strength < 0.002) {
-        strength = 0;
+      if (
+        targetHoverStrength === 0 &&
+        targetScrollStrength === 0 &&
+        hoverStrength < 0.002 &&
+        scrollStrength < 0.002
+      ) {
+        hoverStrength = 0;
+        scrollStrength = 0;
         letters.forEach(resetLetter);
         frameId = 0;
         return;
@@ -115,14 +150,14 @@ export default function TextPressure({ text, id, className = "" }) {
 
       pointer.x = event.clientX;
       pointer.y = event.clientY;
-      targetStrength = isInside ? 1 : 0;
+      targetHoverStrength = isInside ? 1.15 : 0;
 
       if (!isInside) centerPointer(false);
       ensureAnimation();
     };
 
     const handleWindowBlur = () => {
-      targetStrength = 0;
+      targetHoverStrength = 0;
       centerPointer(false);
       ensureAnimation();
     };
@@ -134,12 +169,38 @@ export default function TextPressure({ text, id, className = "" }) {
 
     const start = () => {
       measureLetters();
+      const section = title.closest(".experiences-section") || title;
+      pressureTrigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top 90%",
+        end: "top 20%",
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const progress = clamp(self.progress, 0, 1);
+          const rect = title.getBoundingClientRect();
+          targetScrollStrength = Math.sin(progress * Math.PI) * 1.08;
+          scrollPointer.x = rect.left + rect.width * (0.06 + progress * 0.88);
+          scrollPointer.y = rect.top + rect.height / 2;
+          ensureAnimation();
+        },
+        onLeave: () => {
+          targetScrollStrength = 0;
+          ensureAnimation();
+        },
+        onLeaveBack: () => {
+          targetScrollStrength = 0;
+          ensureAnimation();
+        },
+      });
       window.addEventListener("pointermove", handlePointerMove, { passive: true });
       window.addEventListener("blur", handleWindowBlur);
       window.addEventListener("resize", handleResize);
 
       document.fonts?.ready.then(() => {
-        if (!disposed) measureLetters();
+        if (!disposed) {
+          measureLetters();
+          ScrollTrigger.refresh();
+        }
       });
     };
 
@@ -149,6 +210,7 @@ export default function TextPressure({ text, id, className = "" }) {
       disposed = true;
       window.cancelAnimationFrame(frameId);
       window.cancelAnimationFrame(resizeFrameId);
+      pressureTrigger?.kill();
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("blur", handleWindowBlur);
       window.removeEventListener("resize", handleResize);

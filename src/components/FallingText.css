@@ -2,7 +2,7 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  height: clamp(270px, 34vh, 350px);
+  height: clamp(160px, 20vh, 210px);
   overflow: hidden;
   cursor: default;
   touch-action: pan-y;
@@ -12,7 +12,7 @@
 
 .falling-text-target {
   position: absolute;
-  top: 28px;
+  top: 18px;
   left: 0;
   width: max-content;
   display: flex;
@@ -23,6 +23,10 @@
 
 .falling-text-container.is-right .falling-text-target {
   animation-name: falling-marquee-right;
+}
+
+.falling-text-container.is-scroll-driven .falling-text-target {
+  animation: none;
 }
 
 .falling-text__set {
@@ -55,7 +59,7 @@
 
 .falling-text__word:nth-child(3n + 1) { background: #cf2f72; color: #fff; }
 .falling-text__word:nth-child(3n + 2) { background: #f25a1d; color: #fff; }
-.falling-text__word:nth-child(3n) { background: #fff4ee; color: #171717; }
+.falling-text__word:nth-child(3n) { background: #f7b6d2; color: #171717; }
 
 .falling-text-container.is-falling .falling-text-target {
   inset: 0;
@@ -72,6 +76,7 @@
 .falling-text-container.is-falling .falling-text__word {
   cursor: grab;
   touch-action: none;
+  will-change: transform;
 }
 
 .falling-text-container.is-falling .falling-text__word[data-dragging="true"] {
@@ -96,8 +101,8 @@ body[data-theme="dark"] .falling-text__word {
 }
 
 @media (max-width: 640px) {
-  .falling-text-container { height: 320px; }
-  .falling-text-target { top: 22px; }
+  .falling-text-container { height: 190px; }
+  .falling-text-target { top: 18px; }
   .falling-text__word { font-size: clamp(1.15rem, 5vw, 1.65rem); }
 }
 

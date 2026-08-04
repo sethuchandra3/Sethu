@@ -73,9 +73,12 @@ const getDataNumber = (el, name, fallback) => {
 };
 
 function buildItems(pool, seg, locations) {
-  const xCols = Array.from({ length: seg }, (_, i) => -37 + i * 2);
-  const evenYs = [-4, -2, 0, 2, 4];
-  const oddYs = [-3, -1, 1, 3, 5];
+  // Keep the longitude grid centred for every segment count. The previous
+  // fixed starting point only centred the sphere when `segments` was 38,
+  // which made wider/denser configurations visibly lean to one side.
+  const xCols = Array.from({ length: seg }, (_, i) => -(seg - 1) + i * 2);
+  const evenYs = [-5, -3, -1, 1, 3, 5];
+  const oddYs = [-4, -2, 0, 2, 4, 6];
 
   const coords = xCols.flatMap((x, c) => {
     const ys = c % 2 === 0 ? evenYs : oddYs;
@@ -371,6 +374,7 @@ export default function DomeGallery({
         stopInertia();
         const evt = event;
         draggingRef.current = true;
+        rootRef.current?.setAttribute('data-dragging', 'true');
         movedRef.current = false;
         startRotRef.current = { ...rotationRef.current };
         startPosRef.current = { x: evt.clientX, y: evt.clientY };
@@ -396,6 +400,7 @@ export default function DomeGallery({
         }
         if (last) {
           draggingRef.current = false;
+          rootRef.current?.removeAttribute('data-dragging');
           lastInteractionAtRef.current = performance.now();
           let [vMagX, vMagY] = velocity;
           const [dirX, dirY] = direction;
@@ -648,6 +653,7 @@ export default function DomeGallery({
   useEffect(() => {
     return () => {
       document.body.classList.remove('dg-scroll-lock');
+      rootRef.current?.removeAttribute('data-dragging');
     };
   }, []);
 

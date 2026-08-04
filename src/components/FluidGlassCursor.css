@@ -7,72 +7,47 @@
 }
 
 .fluid-glass-cursor {
+  --cursor-x: -100px;
+  --cursor-y: -100px;
+  display: contents;
+  pointer-events: none;
+}
+
+.fluid-glass-cursor__dot {
   position: fixed;
   z-index: 10000;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  mix-blend-mode: difference;
-  pointer-events: none;
-  transition: opacity 120ms ease;
-  will-change: transform;
-}
-
-.fluid-glass-cursor[data-visible="true"] {
-  opacity: 1;
-}
-
-.fluid-glass-cursor__lens {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 14px;
-  height: 14px;
-  display: grid;
-  place-items: center;
+  top: var(--cursor-y);
+  left: var(--cursor-x);
   border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
+}
+
+.fluid-glass-cursor__dot {
+  width: 20px;
+  height: 20px;
+  z-index: 10000;
   background: #fff;
-  color: #000;
+  mix-blend-mode: difference;
+  opacity: 0;
   transform: translate(-50%, -50%) scale(1);
   transition:
-    width 340ms cubic-bezier(0.22, 1, 0.36, 1),
-    height 340ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: width, height, transform;
+    opacity 220ms ease,
+    transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.fluid-glass-cursor__label {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  opacity: 0;
-  transform: scale(0.55);
-  transition:
-    opacity 150ms ease,
-    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.fluid-glass-cursor[data-project="true"] .fluid-glass-cursor__lens {
-  width: 118px;
-  height: 118px;
-}
-
-.fluid-glass-cursor[data-project="true"] .fluid-glass-cursor__label {
+.fluid-glass-cursor[data-visible="true"] .fluid-glass-cursor__dot {
   opacity: 1;
-  transform: scale(1);
-  transition-delay: 80ms;
 }
 
-.fluid-glass-cursor[data-pressed="true"] .fluid-glass-cursor__lens {
-  transform: translate(-50%, -50%) scale(0.78);
+.fluid-glass-cursor[data-glass-active="true"] .fluid-glass-cursor__dot {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(2.35);
 }
 
-.fluid-glass-cursor[data-project="true"][data-pressed="true"] .fluid-glass-cursor__lens {
-  transform: translate(-50%, -50%) scale(0.94);
+.fluid-glass-cursor[data-pressed="true"] .fluid-glass-cursor__dot {
+  transform: translate(-50%, -50%) scale(0.72);
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -82,8 +57,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fluid-glass-cursor,
-  .fluid-glass-cursor__lens {
+  .fluid-glass-cursor {
     transition: none;
   }
 }

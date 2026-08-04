@@ -232,6 +232,43 @@ body[data-theme="dark"] .site-header__socials a:focus-visible {
   body[data-theme="dark"] .site-header .theme-toggle-thumb { transform: translateX(16px); }
 }
 
+@media (max-width: 430px) {
+  .site-header__full {
+    height: 58px;
+    padding-inline: 12px 8px;
+  }
+
+  .site-header__navigation {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .site-header__brand,
+  .site-header__divider,
+  .site-header__socials {
+    display: none;
+  }
+
+  .site-header__navigation > a {
+    font-size: 0.78rem;
+  }
+
+  .site-header .theme-toggle,
+  .site-header .theme-toggle-track {
+    width: 42px;
+    height: 24px;
+  }
+
+  .site-header .theme-toggle-thumb {
+    width: 18px;
+  }
+
+  body[data-theme="dark"] .site-header .theme-toggle-thumb {
+    transform: translateX(18px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .site-header__socials a {
     transition: none;

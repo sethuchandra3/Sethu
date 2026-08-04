@@ -48,6 +48,12 @@
   touch-action: pan-y;
 }
 
+@media (min-width: 821px) {
+  .animated-list__scroll.is-page-driven {
+    overflow-y: hidden;
+  }
+}
+
 .animated-list__item {
   box-sizing: border-box;
   width: 100%;
@@ -140,6 +146,14 @@ body[data-theme="dark"] .animated-list__item.is-selected {
   .animated-list__gradient {
     right: 4px;
     left: 4px;
+  }
+}
+
+@media (max-width: 520px) {
+  .animated-list__item {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px 14px;
   }
 }
 

@@ -8,7 +8,8 @@ const CurvedLoop = ({
   curveAmount = 400,
   direction = 'left',
   interactive = true,
-  scrollDriven = false
+  scrollDriven = false,
+  wave = false
 }) => {
   const text = useMemo(() => {
     const hasTrailing = /\s|\u00A0$/.test(marqueeText);
@@ -20,9 +21,13 @@ const CurvedLoop = ({
   const pathRef = useRef(null);
   const [spacing, setSpacing] = useState(0);
   const [offset, setOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const uid = useId();
   const pathId = `curve-${uid}`;
-  const pathD = `M-100,40 Q500,${40 + curveAmount} 1540,40`;
+  const waveAmplitude = Math.min(82, Math.max(34, curveAmount * 0.42));
+  const pathD = wave
+    ? `M-200,110 Q50,${110 - waveAmplitude} 300,110 T800,110 T1300,110 T1800,110`
+    : `M-100,40 Q500,${40 + curveAmount} 1540,40`;
 
   const dragRef = useRef(false);
   const lastXRef = useRef(0);
@@ -68,7 +73,6 @@ const CurvedLoop = ({
         if (newOffset > 0) newOffset -= wrapPoint;
 
         textPathRef.current.setAttribute('startOffset', newOffset + 'px');
-        setOffset(newOffset);
 
         if (scrollDriven) scrollBoostRef.current *= 0.9;
       }
@@ -108,9 +112,10 @@ const CurvedLoop = ({
   const onPointerDown = e => {
     if (!interactive) return;
     dragRef.current = true;
+    setIsDragging(true);
     lastXRef.current = e.clientX;
     velRef.current = 0;
-    e.target.setPointerCapture(e.pointerId);
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const onPointerMove = e => {
@@ -127,16 +132,16 @@ const CurvedLoop = ({
     if (newOffset > 0) newOffset -= wrapPoint;
 
     textPathRef.current.setAttribute('startOffset', newOffset + 'px');
-    setOffset(newOffset);
   };
 
   const endDrag = () => {
     if (!interactive) return;
     dragRef.current = false;
+    setIsDragging(false);
     dirRef.current = velRef.current > 0 ? 'right' : 'left';
   };
 
-  const cursorStyle = interactive ? (dragRef.current ? 'grabbing' : 'grab') : 'auto';
+  const cursorStyle = interactive ? (isDragging ? 'grabbing' : 'grab') : 'auto';
 
   return (
     <div
@@ -146,8 +151,12 @@ const CurvedLoop = ({
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerLeave={endDrag}
+      onPointerCancel={endDrag}
     >
-      <svg className="curved-loop-svg" viewBox="0 0 1440 120">
+      <svg
+        className={`curved-loop-svg${wave ? ' curved-loop-svg--wave' : ''}`}
+        viewBox={wave ? '0 0 1440 220' : '0 0 1440 120'}
+      >
         <text ref={measureRef} xmlSpace="preserve" style={{ visibility: 'hidden', opacity: 0, pointerEvents: 'none' }}>
           {text}
         </text>

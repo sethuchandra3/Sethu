@@ -2,7 +2,7 @@
   min-height: 125svh;
   display: grid;
   align-items: center;
-  padding: clamp(72px, 11vh, 120px) clamp(24px, 5vw, 72px);
+  padding: clamp(72px, 11vh, 120px) var(--page-gutter);
   background: var(--paper);
   color: var(--ink);
   overflow: hidden;
@@ -14,7 +14,7 @@
 }
 
 .about-section .scroll-reveal-text {
-  font-size: clamp(1.75rem, 3.75vw, 3.8rem);
+  font-size: clamp(1.65rem, 3.45vw, 3.55rem);
   line-height: 1.1;
 }
 
@@ -89,7 +89,7 @@
 }
 
 .about-section__inner {
-  width: min(1120px, 100%);
+  width: min(var(--content-width), 100%);
   margin: 0 auto;
 }
 
@@ -97,13 +97,21 @@
   .about-section {
     min-height: 135svh;
     padding-block: clamp(56px, 9vh, 80px);
-    padding-inline: 20px;
+    padding-inline: var(--page-gutter);
   }
 
   .about-section .scroll-reveal-text {
-    font-size: clamp(1.45rem, 6.5vw, 2rem);
+    font-size: clamp(1.4rem, 6.1vw, 1.9rem);
     line-height: 1.12;
   }
 
   .about-section__copy { gap: 16px; }
+}
+
+@media (max-width: 430px) {
+  .about-section__country-pair,
+  .about-section__inline-pair,
+  .about-section__copy .about-section__mesh-link {
+    white-space: normal;
+  }
 }

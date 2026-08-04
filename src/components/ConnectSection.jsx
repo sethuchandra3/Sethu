@@ -2,6 +2,22 @@ import { Mail } from "lucide-react";
 import ScrollVelocity from "./ScrollVelocity.jsx";
 import InterestVelocity from "./InterestVelocity.jsx";
 
+const interestText = "startups, public speaking, philosophy, dance, taekwondo, solo travelling, playing the drums, film making, music, anime, fun UI/UX, cultural experiences";
+const interestWords = [
+  "startups",
+  "public speaking",
+  "philosophy",
+  "dance",
+  "taekwondo",
+  "solo travelling",
+  "playing the drums",
+  "film making",
+  "music",
+  "anime",
+  "fun UI/UX",
+  "cultural experiences",
+];
+
 const contactLinks = [
   {
     label: "LinkedIn",
@@ -31,36 +47,21 @@ export default function ConnectSection() {
 
       <ScrollVelocity
         texts={["Let's connect"]}
-        velocity={56}
-        scrollBoostVelocity={48}
+        velocity={66}
+        scrollBoostVelocity={52}
         damping={52}
         stiffness={280}
         numCopies={6}
       />
 
       <InterestVelocity
-        text="startups, public speaking, philosophy, dance, taekwondo, solo travelling, playing the drums, film making, music, anime, fun UI/UX, cultural experiences"
-        highlightWords={[
-          "startups",
-          "public speaking",
-          "philosophy",
-          "dance",
-          "taekwondo",
-          "solo travelling",
-          "playing the drums",
-          "film making",
-          "music",
-          "anime",
-          "fun UI/UX",
-          "cultural experiences",
-        ]}
+        text={interestText}
+        highlightWords={interestWords}
         highlightClass="is-interest"
-        velocity={32}
-        damping={44}
-        stiffness={460}
+        velocity={34}
         numCopies={4}
-        velocityMapping={{ input: [0, 1000], output: [0, 8] }}
-        fontSize="clamp(1.5rem, 4vw, 3.2rem)"
+        velocityMapping={{ input: [0, 1000], output: [0, 5.5] }}
+        fontSize="clamp(1.35rem, 2.6vw, 2.2rem)"
       />
 
       <nav className="connect-links" aria-label="Contact Sethu Chandra">

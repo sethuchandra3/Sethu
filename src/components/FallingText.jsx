@@ -103,13 +103,48 @@ export default function FallingText({
     const pageEnd = section.querySelector("[data-page-end-trigger]");
     let hasTriggered = false;
     let bottomFrame = 0;
-    let playbackFrame = 0;
-    let targetRate = 1;
-    let currentRate = 1;
+    let fallTimer = 0;
+    let marqueeFrame = 0;
+    const idleRate = 0.78;
+    const basePixelsPerSecond = 28;
+    const directionFactor = direction === "right" ? 1 : -1;
+    let targetRate = idleRate;
+    let currentRate = idleRate;
+    let copyWidth = 0;
+    let marqueeX = 0;
+    let previousFrameTime = performance.now();
     let mounted = true;
+
+    const normalizeMarqueeX = () => {
+      if (!copyWidth) return;
+      if (!Number.isFinite(marqueeX)) {
+        marqueeX = directionFactor > 0 ? -copyWidth : 0;
+      }
+      while (marqueeX >= 0) marqueeX -= copyWidth;
+      while (marqueeX < -copyWidth) marqueeX += copyWidth;
+    };
+
+    const renderMarquee = () => {
+      if (!hasTriggered) {
+        textElement.style.transform = `translate3d(${marqueeX}px, 0, 0)`;
+      }
+    };
+
+    const measureMarquee = () => {
+      const firstSet = textElement.querySelector(".falling-text__set:not(.is-clone)");
+      const nextWidth = firstSet?.getBoundingClientRect().width || 0;
+      if (!nextWidth) return;
+      const wasUnmeasured = copyWidth === 0;
+      copyWidth = nextWidth;
+      if (wasUnmeasured) marqueeX = directionFactor > 0 ? -copyWidth : 0;
+      normalizeMarqueeX();
+      renderMarquee();
+    };
 
     const startFalling = () => {
       if (hasTriggered) return;
+      window.clearTimeout(fallTimer);
+      fallTimer = 0;
       hasTriggered = true;
       const containerRect = container.getBoundingClientRect();
       const candidates = [...textElement.querySelectorAll(".falling-text__word")];
@@ -127,7 +162,6 @@ export default function FallingText({
       }
       capturedWordsRef.current = visibleWords;
       capturedRectsRef.current = visibleWords.map((word) => word.getBoundingClientRect());
-      textElement.getAnimations().forEach((animation) => animation.pause());
       setEffectStarted(true);
     };
 
@@ -135,7 +169,17 @@ export default function FallingText({
       const scrollingElement = document.scrollingElement || document.documentElement;
       const maxScroll = Math.max(0, scrollingElement.scrollHeight - scrollingElement.clientHeight);
       const currentScroll = scrollingElement.scrollTop;
-      if (currentScroll >= maxScroll - 24) startFalling();
+      const atBottom = currentScroll >= maxScroll - 12;
+
+      if (!atBottom) {
+        window.clearTimeout(fallTimer);
+        fallTimer = 0;
+        return;
+      }
+
+      if (!fallTimer && !hasTriggered) {
+        fallTimer = window.setTimeout(startFalling, 1100);
+      }
     };
 
     const requestBottomCheck = () => {
@@ -146,15 +190,37 @@ export default function FallingText({
       });
     };
 
-    const updatePlaybackRate = () => {
-      targetRate += (1 - targetRate) * 0.065;
-      currentRate += (targetRate - currentRate) * 0.2;
-      const [marqueeAnimation] = textElement.getAnimations();
-      if (marqueeAnimation && !hasTriggered) marqueeAnimation.playbackRate = currentRate;
-      playbackFrame = window.requestAnimationFrame(updatePlaybackRate);
+    const updateMarquee = (time) => {
+      marqueeFrame = 0;
+      const elapsed = (time - previousFrameTime) / 1000;
+      const deltaSeconds = Number.isFinite(elapsed) ? Math.min(Math.max(elapsed, 0), 0.05) : 0;
+      previousFrameTime = time;
+      if (!Number.isFinite(targetRate)) targetRate = idleRate;
+      if (!Number.isFinite(currentRate)) currentRate = idleRate;
+      targetRate += (idleRate - targetRate) * 0.045;
+      currentRate += (targetRate - currentRate) * 0.18;
+      if (!hasTriggered && copyWidth) {
+        marqueeX += directionFactor * basePixelsPerSecond * currentRate * deltaSeconds;
+        normalizeMarqueeX();
+        renderMarquee();
+      }
+      marqueeFrame = window.requestAnimationFrame(updateMarquee);
     };
 
-    playbackFrame = window.requestAnimationFrame(updatePlaybackRate);
+    const restartMarquee = () => {
+      window.cancelAnimationFrame(marqueeFrame);
+      marqueeFrame = 0;
+      if (document.hidden || !mounted || hasTriggered) return;
+      previousFrameTime = performance.now();
+      measureMarquee();
+      marqueeFrame = window.requestAnimationFrame(updateMarquee);
+      requestBottomCheck();
+    };
+
+    const handleVisibilityChange = () => restartMarquee();
+
+    measureMarquee();
+    marqueeFrame = window.requestAnimationFrame(updateMarquee);
 
     const movementTrigger = ScrollTrigger.create({
       trigger: section,
@@ -162,22 +228,33 @@ export default function FallingText({
       end: "bottom bottom",
       invalidateOnRefresh: true,
       onUpdate: (self) => {
-        targetRate = 1 + Math.min(3.5, Math.abs(self.getVelocity()) / 720);
-        if (self.progress >= 0.998) startFalling();
+        if (!hasTriggered) {
+          const measuredVelocity = self.getVelocity();
+          const safeVelocity = Number.isFinite(measuredVelocity) ? measuredVelocity : 0;
+          const speedBoost = Math.min(5, Math.abs(safeVelocity) / 260);
+          targetRate = idleRate + speedBoost * 1.25;
+        }
         requestBottomCheck();
       },
     });
 
     const refreshAfterLayout = () => {
       if (!mounted || hasTriggered) return;
+      measureMarquee();
       ScrollTrigger.refresh();
+      requestBottomCheck();
+    };
+    const handleResize = () => {
+      measureMarquee();
       requestBottomCheck();
     };
     const refreshFrame = window.requestAnimationFrame(refreshAfterLayout);
     document.fonts?.ready.then(refreshAfterLayout);
-    window.addEventListener("scroll", requestBottomCheck, { passive: true });
     window.addEventListener("scrollend", requestBottomCheck, { passive: true });
-    window.addEventListener("resize", requestBottomCheck);
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("focus", restartMarquee);
+    window.addEventListener("pageshow", restartMarquee);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("portfolio:layout-change", refreshAfterLayout);
     const pageEndObserver = pageEnd
       ? new IntersectionObserver(
@@ -194,10 +271,13 @@ export default function FallingText({
       mounted = false;
       window.cancelAnimationFrame(refreshFrame);
       window.cancelAnimationFrame(bottomFrame);
-      window.cancelAnimationFrame(playbackFrame);
-      window.removeEventListener("scroll", requestBottomCheck);
+      window.cancelAnimationFrame(marqueeFrame);
+      window.clearTimeout(fallTimer);
       window.removeEventListener("scrollend", requestBottomCheck);
-      window.removeEventListener("resize", requestBottomCheck);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("focus", restartMarquee);
+      window.removeEventListener("pageshow", restartMarquee);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("portfolio:layout-change", refreshAfterLayout);
       pageEndObserver?.disconnect();
       movementTrigger.kill();
@@ -274,18 +354,20 @@ export default function FallingText({
         Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.024);
       }
       element.style.position = "absolute";
-      element.style.left = `${x}px`;
-      element.style.top = `${y}px`;
       element.style.margin = "0";
-      element.style.transform = "translate(-50%, -50%)";
-      return { element, body };
+      element.style.left = "0";
+      element.style.top = "0";
+      element.style.transform = `translate3d(${x - rect.width / 2}px, ${y - rect.height / 2}px, 0)`;
+      element.style.willChange = "transform";
+      return { element, body, width: rect.width, height: rect.height };
     });
 
     World.add(engine.world, [...boundaries, ...wordBodies.map(({ body }) => body)]);
     const releaseTimers = [];
     if (trigger === "bottom" || trigger === "bottom-hover") {
-      wordBodies.forEach(({ body }, index) => {
+      wordBodies.forEach(({ body, element }, index) => {
         const timer = window.setTimeout(() => {
+          if (element.hasAttribute("data-dragging")) return;
           Body.setStatic(body, false);
           Body.setVelocity(body, {
             x: (Math.random() - 0.5) * 1.8,
@@ -348,8 +430,8 @@ export default function FallingText({
     const onPointerMove = (event) => {
       if (!dragState || event.pointerId !== dragState.pointerId) return;
       const pointer = pointerPosition(event);
-      const halfWidth = dragState.element.offsetWidth / 2;
-      const halfHeight = dragState.element.offsetHeight / 2;
+      const halfWidth = dragState.width / 2;
+      const halfHeight = dragState.height / 2;
       const nextX = Math.max(halfWidth + 4, Math.min(width - halfWidth - 4, pointer.x + dragState.offsetX));
       const nextY = Math.max(halfHeight + 4, Math.min(height - halfHeight - 4, pointer.y + dragState.offsetY));
       const elapsed = Math.max(8, event.timeStamp - dragState.lastTime);
@@ -367,31 +449,83 @@ export default function FallingText({
     container.addEventListener("pointerup", endDrag);
     container.addEventListener("pointercancel", endDrag);
     let animationFrame = 0;
+    let resetFrame = 0;
+    let resetRequested = false;
     let previousTime = 0;
 
+    const resetAfterLeavingFooter = () => {
+      resetFrame = 0;
+      if (resetRequested || (trigger !== "bottom" && trigger !== "bottom-hover")) return;
+
+      const scrollingElement = document.scrollingElement || document.documentElement;
+      const maxScroll = Math.max(0, scrollingElement.scrollHeight - scrollingElement.clientHeight);
+      const resetDistance = Math.max(220, window.innerHeight * 0.28);
+      if (scrollingElement.scrollTop < maxScroll - resetDistance) {
+        resetRequested = true;
+        setEffectStarted(false);
+      }
+    };
+
+    const requestFooterReset = () => {
+      if (!resetFrame) resetFrame = window.requestAnimationFrame(resetAfterLeavingFooter);
+    };
+
     const syncElements = (time) => {
+      animationFrame = 0;
       const frameDuration = previousTime ? Math.min(time - previousTime, 16.6) : 16.6;
       previousTime = time;
       Engine.update(engine, frameDuration);
-      wordBodies.forEach(({ element, body }) => {
-        element.style.left = `${body.position.x}px`;
-        element.style.top = `${body.position.y}px`;
-        element.style.transform = `translate(-50%, -50%) rotate(${body.angle}rad)`;
+      wordBodies.forEach(({ element, body, width: bodyWidth, height: bodyHeight }) => {
+        element.style.transform = `translate3d(${body.position.x - bodyWidth / 2}px, ${body.position.y - bodyHeight / 2}px, 0) rotate(${body.angle}rad)`;
       });
       animationFrame = window.requestAnimationFrame(syncElements);
     };
+
+    const restartPhysics = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      if (document.hidden) return;
+      previousTime = 0;
+      animationFrame = window.requestAnimationFrame(syncElements);
+    };
+
+    const handlePhysicsVisibility = () => restartPhysics();
+
     animationFrame = window.requestAnimationFrame(syncElements);
+    window.addEventListener("scroll", requestFooterReset, { passive: true });
+    window.addEventListener("focus", restartPhysics);
+    window.addEventListener("pageshow", restartPhysics);
+    document.addEventListener("visibilitychange", handlePhysicsVisibility);
 
     return () => {
       endDrag();
+      window.removeEventListener("scroll", requestFooterReset);
+      window.removeEventListener("focus", restartPhysics);
+      window.removeEventListener("pageshow", restartPhysics);
+      document.removeEventListener("visibilitychange", handlePhysicsVisibility);
       container.removeEventListener("pointerdown", onPointerDown);
       container.removeEventListener("pointermove", onPointerMove);
       container.removeEventListener("pointerup", endDrag);
       container.removeEventListener("pointercancel", endDrag);
       window.cancelAnimationFrame(animationFrame);
+      window.cancelAnimationFrame(resetFrame);
       releaseTimers.forEach((timer) => window.clearTimeout(timer));
       World.clear(engine.world, false);
       Engine.clear(engine);
+      textElement.style.removeProperty("animation");
+      textElement.style.removeProperty("transform");
+      allWordElements.forEach((element) => {
+        element.removeAttribute("data-dragging");
+        element.style.removeProperty("visibility");
+        element.style.removeProperty("position");
+        element.style.removeProperty("margin");
+        element.style.removeProperty("left");
+        element.style.removeProperty("top");
+        element.style.removeProperty("transform");
+        element.style.removeProperty("will-change");
+      });
+      capturedWordsRef.current = null;
+      capturedRectsRef.current = null;
     };
   }, [backgroundColor, dropStagger, effectStarted, gravity, trigger, wireframes]);
 

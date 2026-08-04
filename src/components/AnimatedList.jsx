@@ -44,6 +44,7 @@ const AnimatedList = forwardRef(function AnimatedList({
   displayScrollbar = true,
   initialSelectedIndex = 0,
   className = "",
+  ariaLabel = "Work experience",
   pageDriven = false,
   onReachEnd,
 }, forwardedRef) {
@@ -147,7 +148,7 @@ const AnimatedList = forwardRef(function AnimatedList({
         ref={listRef}
         className={`animated-list__scroll${displayScrollbar ? "" : " no-scrollbar"}${pageDriven ? " is-page-driven" : ""}`}
         role="listbox"
-        aria-label="Work experience"
+        aria-label={ariaLabel}
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onScroll={handleScroll}

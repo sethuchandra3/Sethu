@@ -55,7 +55,6 @@ export default function InterestVelocity({
 }) {
   const baseX = useMotionValue(0);
   const copyRef = useRef(null);
-  const directionFactor = useRef(1);
   const copyWidth = useElementWidth(copyRef);
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
@@ -76,12 +75,9 @@ export default function InterestVelocity({
   ));
 
   useAnimationFrame((_time, delta) => {
-    const factor = velocityFactor.get();
-    if (factor < 0) directionFactor.current = -1;
-    else if (factor > 0) directionFactor.current = 1;
-
-    let moveBy = directionFactor.current * velocity * (delta / 1000);
-    moveBy += directionFactor.current * moveBy * factor;
+    const factor = Math.min(6, Math.abs(velocityFactor.get()));
+    const safeDelta = Math.min(Math.max(delta, 0), 50);
+    const moveBy = velocity * (safeDelta / 1000) * (1 + factor);
     baseX.set(baseX.get() + moveBy);
   });
 

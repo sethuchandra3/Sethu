@@ -14,6 +14,7 @@ export default function ExperienceSection() {
   const sequenceRef = useRef(null);
   const resumeRef = useRef(null);
   const workListRef = useRef(null);
+  const communityListRef = useRef(null);
   const activePanelRef = useRef("work");
   const manualCommunityRef = useRef(false);
   const [activePanel, setActivePanel] = useState("work");
@@ -88,11 +89,12 @@ export default function ExperienceSection() {
 
     const media = gsap.matchMedia();
     media.add("(min-width: 821px)", () => {
-      const workEndProgress = 0.76;
-      const communityEnterProgress = 0.79;
-      const communityExitProgress = 0.72;
-      const resumeStartProgress = 0.8;
-      const resumeEndProgress = 0.92;
+      const workEndProgress = 0.64;
+      const communityEnterProgress = 0.66;
+      const communityExitProgress = 0.6;
+      const communityEndProgress = 0.96;
+      const resumeStartProgress = 0.72;
+      const resumeEndProgress = 0.9;
 
       gsap.set(resumeCta, { autoAlpha: 0, y: 26, pointerEvents: "none" });
       const resumeReveal = gsap.to(resumeCta, {
@@ -106,19 +108,26 @@ export default function ExperienceSection() {
       const sequenceTrigger = ScrollTrigger.create({
         trigger: sequence,
         start: "top 4%",
-        end: () => `+=${Math.max(window.innerHeight * 2.2, 1500)}`,
+        end: () => `+=${Math.max(window.innerHeight * 1.2, 840)}`,
         pin: true,
         pinSpacing: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const workProgress = gsap.utils.clamp(0, 1, self.progress / workEndProgress);
+          const communityProgress = gsap.utils.clamp(
+            0,
+            1,
+            (self.progress - communityEnterProgress) /
+              (communityEndProgress - communityEnterProgress),
+          );
           const resumeProgress = gsap.utils.clamp(
             0,
             1,
             (self.progress - resumeStartProgress) / (resumeEndProgress - resumeStartProgress),
           );
           workListRef.current?.setProgress(workProgress);
+          communityListRef.current?.setProgress(communityProgress);
           resumeReveal.progress(resumeProgress);
           resumeCta.style.pointerEvents = resumeProgress >= 0.85 ? "auto" : "none";
 
@@ -205,6 +214,7 @@ export default function ExperienceSection() {
               inert={activePanel !== "community"}
             >
               <MagicBento
+                ref={communityListRef}
                 textAutoHide={false}
                 enableStars={false}
                 enableSpotlight={false}
@@ -236,8 +246,8 @@ export default function ExperienceSection() {
               shineFade={50}
               thickness={1.3}
               speed={0.48}
-              followMouse
-              proximity={250}
+              followMouse={false}
+              proximity={1}
               autoAnimate
               className="experience-resume-button"
               onClick={() => window.open("/resume.pdf", "_blank", "noopener,noreferrer")}
