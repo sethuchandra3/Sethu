@@ -1,4 +1,4 @@
-# Sethu Chandra | Personal Portfolio
+# Sethu Chandra | Portfolio
 
 This is my personal corner of the internet: a place to show how I think, what I build, the communities I care about, and the sidequests that make life interesting.
 
