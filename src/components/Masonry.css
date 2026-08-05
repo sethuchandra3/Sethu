@@ -212,12 +212,7 @@
   grid-column: span 3;
 }
 
-.project-masonry__item[href] {
-  color: var(--gallery-ink);
-  text-decoration: none;
-}
-
-.project-masonry__item:focus-visible {
+.project-masonry__media:focus-visible {
   border-radius: 14px;
   outline: 2px solid #f25a1d;
   outline-offset: 7px;
@@ -267,11 +262,11 @@
   object-position: left center;
 }
 
-.project-masonry__item:focus-visible .project-masonry__media::after {
+.project-masonry__media:focus-visible::after {
   opacity: 1;
 }
 
-.project-masonry__item:focus-visible .project-masonry__media img {
+.project-masonry__media:focus-visible img {
   filter: saturate(1) contrast(1.04);
   transform: scale(1.025);
 }
@@ -297,14 +292,29 @@
 
 .project-masonry__content h3,
 .project-masonry__content h4 {
-  max-width: 18ch;
+  width: 100%;
+  max-width: none;
   color: var(--gallery-ink);
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(1.35rem, 1.95vw, 2rem);
+  font-size: clamp(1.32rem, 1.65vw, 1.62rem);
   font-weight: 900;
   letter-spacing: -0.04em;
-  line-height: 1;
-  text-wrap: balance;
+  line-height: 1.04;
+  text-wrap: pretty;
+}
+
+.project-masonry__content h3 a,
+.project-masonry__content h4 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.project-masonry__content h3 a:focus-visible,
+.project-masonry__content h4 a:focus-visible,
+.project-masonry__action:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #f25a1d;
+  outline-offset: 4px;
 }
 
 .projects-group--shipped .project-masonry__content h3,
@@ -322,16 +332,18 @@
 
 .project-masonry__action {
   margin-top: auto;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   border-bottom: 1px solid currentColor;
-  padding-top: clamp(14px, 1.8vw, 20px);
+  padding-top: clamp(12px, 1.5vw, 17px);
   padding-bottom: 4px;
   color: var(--gallery-ink);
   font-size: 0.84rem;
   font-weight: 800;
   line-height: 1;
+  text-decoration: none;
 }
 
 .project-masonry__action i {
@@ -339,7 +351,7 @@
   transition: transform 220ms ease;
 }
 
-.project-masonry__item:focus-visible .project-masonry__action i {
+.project-masonry__action:focus-visible i {
   transform: translate(3px, -3px);
 }
 
@@ -395,8 +407,8 @@
 
   .project-masonry__content h3,
   .project-masonry__content h4 {
-    max-width: 21ch;
-    font-size: clamp(1.45rem, 6.5vw, 2rem);
+    max-width: none;
+    font-size: clamp(1.38rem, 5.8vw, 1.8rem);
   }
 }
 

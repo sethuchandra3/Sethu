@@ -6,20 +6,18 @@ export default function Masonry({ items, headingTag = "h3" }) {
   return (
     <div className="project-masonry" aria-label="Project index">
       {items.map((item) => {
-        const ItemTag = item.href ? "a" : "article";
-
         return (
-          <ItemTag
+          <article
             key={item.id}
             data-project-key={item.id}
             className="project-masonry__item"
-            href={item.href}
-            target={item.href ? "_blank" : undefined}
-            rel={item.href ? "noreferrer" : undefined}
-            aria-label={item.href ? `${item.title}, ${item.cursorLabel || "view project"} (opens in a new tab)` : undefined}
           >
-            <div
+            <a
               className="project-masonry__media"
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${item.title}, ${item.cursorLabel || "view project"} (opens in a new tab)`}
               data-cursor-label={item.cursorLabel || "View case study"}
             >
               <img
@@ -30,16 +28,25 @@ export default function Masonry({ items, headingTag = "h3" }) {
                 loading={item.id === "project-01" ? "eager" : "lazy"}
                 decoding="async"
               />
-            </div>
+            </a>
             <div className="project-masonry__content">
-              <HeadingTag>{item.title}</HeadingTag>
+              <HeadingTag>
+                <a href={item.href} target="_blank" rel="noopener noreferrer">
+                  {item.title}
+                </a>
+              </HeadingTag>
               <p className="project-masonry__description">{item.description}</p>
-              <span className="project-masonry__action">
+              <a
+                className="project-masonry__action"
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {item.cursorLabel || "View project"}
                 <i aria-hidden="true">↗</i>
-              </span>
+              </a>
             </div>
-          </ItemTag>
+          </article>
         );
       })}
     </div>
