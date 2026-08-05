@@ -73,12 +73,12 @@ const WorkExperienceList = forwardRef(function WorkExperienceList({ onReachEnd }
       renderItem={(item) => (
         <>
           <div className={`work-experience__logo work-experience__logo--${item.id}`} aria-hidden="true">
-            {item.id === "mesh" && <img src="/assets/mesh-mark-blue.png" alt="" />}
-            {item.id === "bouken-capital" && <img src="/assets/bouken-capital-logo.png" alt="" />}
-            {item.id === "superpower" && <img src="/assets/superpower-logo.png" alt="" />}
-            {item.id === "rebee-health" && <img src="/assets/rebee-health-logo.png" alt="" />}
-            {item.id === "you-com" && <img src="/assets/you-com-logo.png" alt="" />}
-            {item.id === "clever-harvey" && <img src="/assets/clever-harvey-logo.png" alt="" />}
+            {item.id === "mesh" && <img src="/assets/mesh-mark-blue.png" width="173" height="173" alt="" loading="lazy" decoding="async" />}
+            {item.id === "bouken-capital" && <img src="/assets/bouken-capital-logo.png" width="200" height="200" alt="" loading="lazy" decoding="async" />}
+            {item.id === "superpower" && <img src="/assets/superpower-logo.png" width="200" height="200" alt="" loading="lazy" decoding="async" />}
+            {item.id === "rebee-health" && <img src="/assets/rebee-health-logo.png" width="600" height="300" alt="" loading="lazy" decoding="async" />}
+            {item.id === "you-com" && <img src="/assets/you-com-logo.png" width="512" height="512" alt="" loading="lazy" decoding="async" />}
+            {item.id === "clever-harvey" && <img src="/assets/clever-harvey-logo.png" width="200" height="200" alt="" loading="lazy" decoding="async" />}
           </div>
           <div className="work-experience__content">
             <h3>{item.role}</h3>

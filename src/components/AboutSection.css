@@ -66,10 +66,6 @@
   object-fit: contain;
 }
 
-.about-section__copy .about-section__mesh-link:hover {
-  color: #175ca8;
-}
-
 .about-section__copy a::after {
   margin-left: 0.18em;
   content: "↗";
@@ -77,10 +73,6 @@
   text-decoration: none;
   transition: transform 160ms ease;
 }
-
-.about-section__copy a:hover::after { transform: translate(2px, -2px); }
-
-.about-section__copy a:hover { color: #754631; }
 
 .about-section__copy a:focus-visible {
   border-radius: 3px;
@@ -95,7 +87,7 @@
 
 @media (max-width: 640px) {
   .about-section {
-    min-height: 135svh;
+    min-height: 112svh;
     padding-block: clamp(56px, 9vh, 80px);
     padding-inline: var(--page-gutter);
   }
@@ -106,6 +98,12 @@
   }
 
   .about-section__copy { gap: 16px; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .about-section__copy .about-section__mesh-link:hover { color: #175ca8; }
+  .about-section__copy a:hover::after { transform: translate(2px, -2px); }
+  .about-section__copy a:hover { color: #754631; }
 }
 
 @media (max-width: 430px) {

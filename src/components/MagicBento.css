@@ -102,7 +102,6 @@
   text-underline-offset: 4px;
 }
 
-.community-experience__organization:hover { opacity: 0.76; }
 .community-experience__organization:focus-visible { outline: 2px solid #cf2f72; outline-offset: 3px; border-radius: 2px; }
 
 .community-experience__content p {
@@ -165,7 +164,6 @@
   transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.magic-bento-card:hover,
 .magic-bento-card:focus-within {
   z-index: 1;
   border-color: color-mix(in srgb, var(--card-accent) 48%, var(--line));
@@ -174,7 +172,6 @@
   transform: translate3d(0, -5px, 0);
 }
 
-.magic-bento-card:hover::before,
 .magic-bento-card:focus-visible::before { transform: scaleX(1); }
 
 .magic-bento-card:focus-visible {
@@ -210,11 +207,6 @@
   font-weight: 800;
   line-height: 1.25;
   text-decoration: none;
-}
-
-.magic-bento-card__organization:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
 }
 
 .magic-bento-card__organization:focus-visible {
@@ -263,7 +255,6 @@
   transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.magic-bento-awards:hover::before,
 .magic-bento-awards:focus-within::before {
   transform: scaleX(1);
 }
@@ -343,12 +334,6 @@
   top: 12px;
 }
 
-.magic-bento-card__awards a:hover {
-  border-color: color-mix(in srgb, #cf2f72 50%, var(--line));
-  background: color-mix(in srgb, #cf2f72 8%, var(--paper));
-  transform: translateY(-3px);
-}
-
 .magic-bento-card__awards a:focus-visible {
   outline: 2px solid #cf2f72;
   outline-offset: 3px;
@@ -358,6 +343,33 @@
   .magic-bento-card { min-height: 205px; }
 
   .magic-bento-awards { grid-template-columns: 1fr; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .community-experience__organization:hover { opacity: 0.76; }
+
+  .magic-bento-card:hover {
+    z-index: 1;
+    border-color: color-mix(in srgb, var(--card-accent) 48%, var(--line));
+    background: color-mix(in srgb, var(--card-accent) 7%, var(--paper));
+    box-shadow: 0 20px 42px rgba(18, 15, 23, 0.14);
+    transform: translate3d(0, -5px, 0);
+  }
+
+  .magic-bento-card:hover::before { transform: scaleX(1); }
+
+  .magic-bento-card__organization:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  .magic-bento-card__awards a:hover {
+    border-color: color-mix(in srgb, #cf2f72 50%, var(--line));
+    background: color-mix(in srgb, #cf2f72 8%, var(--paper));
+    transform: translateY(-3px);
+  }
+
+  .magic-bento-awards:hover::before { transform: scaleX(1); }
 }
 
 @media (max-width: 560px) {

@@ -25,7 +25,10 @@ export default function Masonry({ items, headingTag = "h3" }) {
               <img
                 src={item.img}
                 alt={`${item.title} project preview`}
+                width={item.imageWidth}
+                height={item.imageHeight}
                 loading={item.id === "project-01" ? "eager" : "lazy"}
+                decoding="async"
               />
             </div>
             <div className="project-masonry__content">

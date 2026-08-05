@@ -77,6 +77,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .scroll-velocity__track {
+    animation: none;
     transform: none !important;
   }
 }

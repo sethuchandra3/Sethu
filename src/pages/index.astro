@@ -45,6 +45,17 @@ const SHOW_MY_WORLD = true;
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      (() => {
+        try {
+          const stored = window.localStorage.getItem("sethu-theme");
+          const theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
     <link rel="preload" href={geistUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="preload" href={robotoFlexUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -77,7 +88,10 @@ const SHOW_MY_WORLD = true;
           </div>
 
           <span class="hello-mark" aria-hidden="true">
-            <img src="/assets/hello-transparent.gif" alt="" loading="eager" />
+            <picture>
+              <source media="(max-width: 760px)" srcset="/assets/hello-transparent-mobile.gif" />
+              <img src="/assets/hello-transparent.gif" alt="" width="768" height="1152" loading="eager" fetchpriority="low" />
+            </picture>
           </span>
 
           <div class="latest-content">
@@ -117,7 +131,7 @@ const SHOW_MY_WORLD = true;
                                 >
                                   {event.linkText}
                                   {event.linkKey === "mesh" && (
-                                    <img src="/assets/mesh-mark-blue.png" alt="" aria-hidden="true" />
+                                    <img src="/assets/mesh-mark-blue.png" alt="" width="173" height="173" aria-hidden="true" />
                                   )}
                                 </a>
                                 {event.titleSuffix}
@@ -140,11 +154,11 @@ const SHOW_MY_WORLD = true;
         </div>
       </section>
 
-      <AboutSection client:load />
+      <AboutSection client:visible={{ rootMargin: "600px" }} />
 
       <ExperienceSection client:load />
 
-      <ProjectsSection client:load />
+      <ProjectsSection client:visible={{ rootMargin: "1800px" }} />
 
       <CoolThingsSection client:load />
 
@@ -210,15 +224,12 @@ const SHOW_MY_WORLD = true;
       import { TextPlugin } from "gsap/TextPlugin";
 
       gsap.registerPlugin(ScrollTrigger, TextPlugin);
-      window.history.scrollRestoration = "manual";
-      if (window.location.hash) {
-        window.history.replaceState(null, "", window.location.pathname);
-      }
-      window.scrollTo(0, 0);
+      window.history.scrollRestoration = window.location.hash ? "manual" : "auto";
 
       const storedTheme = window.localStorage.getItem("sethu-theme");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
+      document.documentElement.dataset.theme = initialTheme;
       document.body.dataset.theme = initialTheme;
 
       const typeInto = (element, delay = 0, instant = false) => {
@@ -240,7 +251,6 @@ const SHOW_MY_WORLD = true;
           if (shouldMakeInteractive && char !== " ") {
             span.className = "name-letter";
             span.dataset.letter = char;
-            span.tabIndex = 0;
           }
           content.appendChild(span);
         };
@@ -489,10 +499,12 @@ const SHOW_MY_WORLD = true;
         {
           reduceMotion: "(prefers-reduced-motion: reduce)",
           isDesktop: "(min-width: 760px)",
+          isWideDesktop: "(min-width: 981px)",
+          isMobile: "(max-width: 759px)",
           isLaptop: "(min-width: 760px) and (max-width: 1600px) and (max-height: 1050px)",
         },
         (context) => {
-          const { reduceMotion, isDesktop, isLaptop } = context.conditions;
+          const { reduceMotion, isDesktop, isWideDesktop, isLaptop } = context.conditions;
           const introLines = gsap.utils.toArray(".typed-line");
           const stackGap = isLaptop ? 18 : isDesktop ? 22 : 18;
 
@@ -524,7 +536,9 @@ const SHOW_MY_WORLD = true;
               scrollTrigger: {
                 trigger: ".opening-stage",
                 start: "top top",
-                end: () => `+=${Math.max(window.innerHeight * 4, 3400)}`,
+                end: () => isWideDesktop
+                  ? `+=${Math.max(window.innerHeight * 4, 3400)}`
+                  : `+=${Math.max(window.innerHeight * 2.8, 1200)}`,
                 scrub: 1.15,
                 pin: ".opening-pin",
                 invalidateOnRefresh: true,
@@ -722,28 +736,93 @@ const SHOW_MY_WORLD = true;
             )
             ;
 
-          window.addEventListener("load", () => ScrollTrigger.refresh());
-          window.addEventListener("portfolio:layout-change", () => ScrollTrigger.refresh());
+          let refreshFrame = 0;
+          let projectsObserver;
+          const scheduleRefresh = () => {
+            cancelAnimationFrame(refreshFrame);
+            refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+          };
+
+          window.addEventListener("load", scheduleRefresh, { once: true });
+          window.addEventListener("portfolio:layout-change", scheduleRefresh);
 
           const projectsSection = document.querySelector(".projects-section");
           if (projectsSection) {
-            let refreshFrame = 0;
-            const projectsObserver = new ResizeObserver(() => {
-              cancelAnimationFrame(refreshFrame);
-              refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
-            });
+            projectsObserver = new ResizeObserver(scheduleRefresh);
             projectsObserver.observe(projectsSection);
-            window.addEventListener(
-              "pagehide",
-              () => {
-                cancelAnimationFrame(refreshFrame);
-                projectsObserver.disconnect();
-              },
-              { once: true }
-            );
           }
+
+          return () => {
+            cancelAnimationFrame(refreshFrame);
+            window.removeEventListener("load", scheduleRefresh);
+            window.removeEventListener("portfolio:layout-change", scheduleRefresh);
+            projectsObserver?.disconnect();
+          };
         }
       );
+
+      const stabilizeInitialAnchor = async () => {
+        if (!window.location.hash) return;
+        const id = decodeURIComponent(window.location.hash.slice(1));
+        const target = document.getElementById(id);
+        if (!target) return;
+
+        if (document.readyState !== "complete") {
+          await new Promise((resolve) => window.addEventListener("load", resolve, { once: true }));
+        }
+        await document.fonts?.ready;
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        ScrollTrigger.refresh();
+
+        let stopped = false;
+        let alignFrame = 0;
+        let alignTimer = 0;
+        const alignTarget = () => {
+          if (stopped) return;
+          cancelAnimationFrame(alignFrame);
+          alignFrame = requestAnimationFrame(() => {
+            const targetTop = window.scrollY + target.getBoundingClientRect().top - 88;
+            // Temporarily override the global smooth-scroll rule so repeated
+            // stabilization passes do not chase one another while pinned
+            // sections and late-loading media settle.
+            const root = document.documentElement;
+            const previousScrollBehavior = root.style.scrollBehavior;
+            root.style.scrollBehavior = "auto";
+            window.scrollTo(0, Math.max(0, targetTop));
+            root.style.scrollBehavior = previousScrollBehavior;
+          });
+        };
+        const stopAligning = () => {
+          if (stopped) return;
+          stopped = true;
+          cancelAnimationFrame(alignFrame);
+          window.clearInterval(alignTimer);
+          bodyObserver.disconnect();
+          ScrollTrigger.removeEventListener("refresh", alignTarget);
+          window.history.scrollRestoration = "auto";
+          ["wheel", "touchstart", "pointerdown"].forEach((eventName) => {
+            window.removeEventListener(eventName, stopAligning);
+          });
+          window.removeEventListener("keydown", stopOnScrollKey);
+        };
+        const stopOnScrollKey = (event) => {
+          if (["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", " "].includes(event.key)) {
+            stopAligning();
+          }
+        };
+        const bodyObserver = new ResizeObserver(alignTarget);
+        bodyObserver.observe(document.body);
+        ScrollTrigger.addEventListener("refresh", alignTarget);
+        alignTimer = window.setInterval(alignTarget, 160);
+        ["wheel", "touchstart", "pointerdown"].forEach((eventName) => {
+          window.addEventListener(eventName, stopAligning, { passive: true, once: true });
+        });
+        window.addEventListener("keydown", stopOnScrollKey, { passive: true });
+        alignTarget();
+        window.setTimeout(stopAligning, 6000);
+      };
+
+      stabilizeInitialAnchor();
     </script>
   </body>
 </html>
@@ -759,6 +838,8 @@ const SHOW_MY_WORLD = true;
     --section-title-leading: 0.88;
     --section-subtitle-size: clamp(1rem, 1.7vw, 1.3rem);
     --section-subtitle-leading: 1.5;
+    --safe-inline-start: env(safe-area-inset-left, 0px);
+    --safe-inline-end: env(safe-area-inset-right, 0px);
     --ink: #111111;
     --paper: #fbfaf7;
     --soft: #eee8df;
@@ -803,6 +884,12 @@ const SHOW_MY_WORLD = true;
       color 220ms ease;
   }
 
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    background: #10100f;
+  }
+
+  html[data-theme="dark"] body,
   body[data-theme="dark"] {
     color-scheme: dark;
     --ink: #f6f0e8;
@@ -992,6 +1079,7 @@ const SHOW_MY_WORLD = true;
     will-change: opacity, transform;
   }
 
+  .hello-mark picture,
   .hello-mark img {
     position: relative;
     z-index: 1;
@@ -2217,7 +2305,14 @@ const SHOW_MY_WORLD = true;
   }
 
 
+  @media (max-width: 980px) {
+    .opening-stage {
+      min-height: 300svh;
+    }
+  }
+
   @media (max-width: 760px) {
+
     .opening-pin {
       --landing-statement-size: clamp(2.65rem, 9.4vw, 4rem);
       grid-template-columns: 1fr;
@@ -2242,6 +2337,7 @@ const SHOW_MY_WORLD = true;
       min-width: 0.62em;
       margin-inline: -0.035em;
       padding-inline: 0.055em;
+      cursor: default;
     }
 
     .identity-line {
@@ -2428,6 +2524,50 @@ const SHOW_MY_WORLD = true;
 
     :global(.connect-signoff) {
       margin-inline: var(--page-gutter);
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .name-letter {
+      transition: none;
+      will-change: auto;
+    }
+
+    .name-letter:hover {
+      background: transparent;
+      box-shadow: none;
+      clip-path: none;
+      color: inherit;
+      font-family: inherit;
+      font-weight: inherit;
+      transform: none;
+      text-shadow: none;
+      -webkit-text-stroke: 0;
+    }
+
+    .name-letter:hover::before,
+    .name-letter:hover::after {
+      opacity: 0;
+    }
+
+    :global(.projects-see-all:hover),
+    :global(.connect-links a:hover) {
+      transform: none;
+    }
+
+    .social-links a:hover,
+    .theme-toggle:hover,
+    .yin-yang-option:hover,
+    .yin-yang-option:hover .yin-yang-option__label {
+      transform: none;
+    }
+
+    :global(.projects-see-all),
+    :global(.connect-links a),
+    .social-links a,
+    .theme-toggle {
+      min-width: 44px;
+      min-height: 44px;
     }
   }
 

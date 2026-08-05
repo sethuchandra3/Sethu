@@ -46,12 +46,15 @@ export default function HeaderDock() {
   const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-    const initialTheme = document.body.dataset.theme || "light";
+    const initialTheme = document.documentElement.dataset.theme || document.body.dataset.theme || "light";
+    document.documentElement.dataset.theme = initialTheme;
+    document.body.dataset.theme = initialTheme;
     setTheme(initialTheme);
   }, []);
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = nextTheme;
     document.body.dataset.theme = nextTheme;
     window.localStorage.setItem("sethu-theme", nextTheme);
     setTheme(nextTheme);
@@ -65,6 +68,7 @@ export default function HeaderDock() {
     if (!root || !full || !compact) return undefined;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobileNavigation = window.matchMedia("(max-width: 760px), (hover: none), (pointer: coarse)");
     const duration = reduceMotion ? 0 : 0.38;
 
     gsap.set(root, { autoAlpha: 0, y: -12 });
@@ -122,6 +126,9 @@ export default function HeaderDock() {
       if (scrollTop <= 6) {
         hiddenLatchRef.current = false;
         if (stateRef.current !== "intro") transitionTo("full");
+      } else if (mobileNavigation.matches) {
+        hiddenLatchRef.current = false;
+        transitionTo("full");
       } else if (dockHasPassed) {
         hiddenLatchRef.current = true;
         transitionTo("hidden");
@@ -141,10 +148,12 @@ export default function HeaderDock() {
 
     updateHeader();
     window.addEventListener("scroll", requestUpdate, { passive: true });
+    mobileNavigation.addEventListener?.("change", requestUpdate);
 
     return () => {
       window.cancelAnimationFrame(frameRef.current);
       window.removeEventListener("scroll", requestUpdate);
+      mobileNavigation.removeEventListener?.("change", requestUpdate);
       introReveal.kill();
       gsap.killTweensOf([root, full, compact]);
     };

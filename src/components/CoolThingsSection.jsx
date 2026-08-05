@@ -9,17 +9,21 @@ gsap.registerPlugin(ScrollTrigger);
 const accomplishments = [
   {
     title: "East to west solo travel",
-    description: "Chicago to San Francisco aboard the California Zephyr, with plenty of good conversations along the way.",
+    description: "Took the California Zephyr from Chicago to San Francisco, taking in the American landscape and sharing unforgettable conversations along the way.",
     label: "01",
     image: "/assets/east-west-solo-travel.jpg?v=2",
+    imageWidth: 2200,
+    imageHeight: 1650,
     imageAlt: "Riding the California Zephyr through the American West",
     gradient: "linear-gradient(135deg, #f5d76e, #e85d75)",
   },
   {
     title: "Eagle project",
-    description: "A community service project I planned, led, and brought from an early idea to execution.",
+    description: "Built a playground for a local children’s school, leading the project from idea to execution.",
     label: "02",
     image: "/assets/eagle-project.jpg",
+    imageWidth: 748,
+    imageHeight: 562,
     imageAlt: "Painting outdoor steps during the Eagle project",
     gradient: "linear-gradient(135deg, #7bdff2, #246eb9)",
   },
@@ -28,14 +32,18 @@ const accomplishments = [
     description: "Ran for president of student council by creating my own rap song from scratch.",
     label: "03",
     image: "/assets/rapping-at-school.jpg",
+    imageWidth: 1600,
+    imageHeight: 1200,
     imageAlt: "Performing a student council campaign rap at school",
     gradient: "linear-gradient(135deg, #b8f2e6, #2f9c95)",
   },
   {
     title: "Skydiving in Kenya",
-    description: "Took the leap over Kenya and experienced the landscape from an entirely new perspective.",
+    description: "Spontaneously jumped 10,000 feet from a plane and saw Kenya’s beautiful beaches from above.",
     label: "04",
     image: "/assets/skydiving-kenya.png",
+    imageWidth: 320,
+    imageHeight: 180,
     imageAlt: "Preparing to skydive above Kenya",
     gradient: "linear-gradient(135deg, #f7a072, #5b2333)",
   },
@@ -75,10 +83,11 @@ export default function CoolThingsSection() {
               start: "top top",
               end: () => `+=${Math.max(getTravelDistance(), 1)}`,
               scrub: 0.18,
-              pin: true,
+              pin: root,
               pinSpacing: true,
               anticipatePin: 1,
               invalidateOnRefresh: true,
+              refreshPriority: -10,
             },
           });
 
@@ -135,6 +144,8 @@ export default function CoolThingsSection() {
                   <img
                     src={item.image}
                     alt={item.imageAlt}
+                    width={item.imageWidth}
+                    height={item.imageHeight}
                     loading={item.label === "01" ? "eager" : "lazy"}
                     decoding="async"
                   />

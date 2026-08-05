@@ -125,7 +125,8 @@ function buildItems(pool, seg, locations) {
     ...c,
     src: usedImages[i].src,
     alt: locations[i % locations.length] || usedImages[i].alt,
-    caption: locations[i % locations.length] || usedImages[i].caption
+    caption: locations[i % locations.length] || usedImages[i].caption,
+    keyboardAccessible: i < locations.length
   }));
 }
 
@@ -176,10 +177,12 @@ export default function DomeGallery({
   const movedRef = useRef(false);
   const inertiaRAF = useRef(null);
   const autoSpinRAF = useRef(null);
+  const autoSpinActiveRef = useRef(true);
   const lastInteractionAtRef = useRef(0);
   const openingRef = useRef(false);
   const openStartedAtRef = useRef(0);
   const lastDragEndAt = useRef(0);
+  const touchAxisRef = useRef(null);
 
   const scrollLockedRef = useRef(false);
   const lockScroll = useCallback(() => {
@@ -297,12 +300,25 @@ export default function DomeGallery({
   useEffect(() => {
     if (!autoSpin || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => { autoSpinActiveRef.current = entry.isIntersecting && !document.hidden; },
+      { rootMargin: '200px 0px' }
+    );
+    const onVisibilityChange = () => {
+      const rect = root.getBoundingClientRect();
+      autoSpinActiveRef.current = !document.hidden && rect.bottom >= -200 && rect.top <= window.innerHeight + 200;
+    };
+    observer.observe(root);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
     let previousTime = performance.now();
     lastInteractionAtRef.current = previousTime;
     const step = now => {
       const deltaSeconds = Math.min((now - previousTime) / 1000, 0.05);
       previousTime = now;
-      const isIdle = now - lastInteractionAtRef.current >= autoSpinDelay;
+      const isIdle = autoSpinActiveRef.current && now - lastInteractionAtRef.current >= autoSpinDelay;
       const canSpin =
         isIdle &&
         !draggingRef.current &&
@@ -321,6 +337,8 @@ export default function DomeGallery({
 
     autoSpinRAF.current = requestAnimationFrame(step);
     return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       if (autoSpinRAF.current) cancelAnimationFrame(autoSpinRAF.current);
       autoSpinRAF.current = null;
     };
@@ -376,6 +394,7 @@ export default function DomeGallery({
         draggingRef.current = true;
         rootRef.current?.setAttribute('data-dragging', 'true');
         movedRef.current = false;
+        touchAxisRef.current = null;
         startRotRef.current = { ...rotationRef.current };
         startPosRef.current = { x: evt.clientX, y: evt.clientY };
       },
@@ -384,6 +403,17 @@ export default function DomeGallery({
         const evt = event;
         const dxTotal = evt.clientX - startPosRef.current.x;
         const dyTotal = evt.clientY - startPosRef.current.y;
+        if (evt.pointerType === 'touch' && !touchAxisRef.current && Math.hypot(dxTotal, dyTotal) > 8) {
+          touchAxisRef.current = Math.abs(dxTotal) > Math.abs(dyTotal) * 1.2 ? 'horizontal' : 'vertical';
+        }
+        if (evt.pointerType === 'touch' && touchAxisRef.current === 'vertical') {
+          if (last) {
+            draggingRef.current = false;
+            rootRef.current?.removeAttribute('data-dragging');
+            touchAxisRef.current = null;
+          }
+          return;
+        }
         if (!movedRef.current) {
           const dist2 = dxTotal * dxTotal + dyTotal * dyTotal;
           if (dist2 > 16) movedRef.current = true;
@@ -414,6 +444,7 @@ export default function DomeGallery({
           if (Math.abs(vx) > 0.005 || Math.abs(vy) > 0.005) startInertia(vx, vy);
           if (movedRef.current) lastDragEndAt.current = performance.now();
           movedRef.current = false;
+          touchAxisRef.current = null;
         }
       }
     },
@@ -692,14 +723,15 @@ export default function DomeGallery({
               >
                 <div
                   className="item__image"
-                  role="button"
-                  tabIndex={0}
-                  aria-label={it.alt || 'Open image'}
+                  role={it.keyboardAccessible ? 'button' : undefined}
+                  tabIndex={it.keyboardAccessible ? 0 : -1}
+                  aria-label={it.keyboardAccessible ? (it.alt || 'Open image') : undefined}
+                  aria-hidden={it.keyboardAccessible ? undefined : 'true'}
                   onClick={onTileClick}
                   onPointerUp={onTilePointerUp}
                   onKeyDown={onTileKeyDown}
                 >
-                  <img src={it.src} draggable={false} alt={it.alt} />
+                  <img src={it.src} draggable={false} alt={it.alt} loading="lazy" decoding="async" fetchPriority="low" />
                   <span className="item__caption">{it.caption}</span>
                 </div>
               </div>

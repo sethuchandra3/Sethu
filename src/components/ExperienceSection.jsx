@@ -40,7 +40,9 @@ export default function ExperienceSection() {
     if (!root) return undefined;
 
     const context = gsap.context(() => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const touchPrimary = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+      if (reduceMotion || touchPrimary) {
         gsap.set([".experiences-title", ".experiences-subtitle", ".experience-island"], {
           autoAlpha: 1,
           clearProps: "transform",

@@ -137,6 +137,32 @@ body *::after {
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
+html {
+  max-width: 100%;
+  overflow-x: clip;
+  scroll-padding-top: calc(88px + env(safe-area-inset-top, 0px));
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: rgba(242, 90, 29, 0.18);
+}
+
 .company-link {
   display: inline-flex;
   align-items: center;
@@ -160,17 +186,11 @@ body *::after {
   transition: transform 160ms ease;
 }
 
-.company-link:hover::after { transform: translate(2px, -2px); }
-
 .company-link img {
   width: 0.92em;
   height: 0.92em;
   flex: none;
   object-fit: contain;
-}
-
-.company-link:hover {
-  color: #183ab7;
 }
 
 .company-link:focus-visible {
@@ -183,22 +203,22 @@ body *::after {
   color: #172b75;
 }
 
-.deck-card .company-link:hover {
-  color: #07184d;
-}
-
 body[data-theme="dark"] .company-link {
   color: #9bacff;
-}
-
-body[data-theme="dark"] .company-link:hover {
-  color: #c4ceff;
 }
 
 body[data-theme="dark"] .deck-card .company-link {
   color: #172b75;
 }
 
-body[data-theme="dark"] .deck-card .company-link:hover {
-  color: #07184d;
+@media (hover: hover) and (pointer: fine) {
+  .company-link:hover::after { transform: translate(2px, -2px); }
+  .company-link:hover { color: #183ab7; }
+  .deck-card .company-link:hover { color: #07184d; }
+  body[data-theme="dark"] .company-link:hover { color: #c4ceff; }
+  body[data-theme="dark"] .deck-card .company-link:hover { color: #07184d; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
 }

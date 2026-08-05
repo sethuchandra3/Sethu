@@ -1,17 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import FluidGlass from "./FluidGlass.jsx";
 import Masonry from "./Masonry.jsx";
 import ScrollFloat from "./ScrollFloat.jsx";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
+const FluidGlass = lazy(() => import("./FluidGlass.jsx"));
+
 const projectPlaceholders = [
   {
     id: "project-01",
     img: "/assets/mesh-homepage.jpg",
+    imageWidth: 1265,
+    imageHeight: 712,
     group: "shipped",
     title: "Mesh Website Design",
     description:
@@ -22,6 +25,8 @@ const projectPlaceholders = [
   {
     id: "project-02",
     img: "/assets/spotify-insights.png",
+    imageWidth: 1568,
+    imageHeight: 1003,
     group: "concepts",
     title: "Spotify Insights: Make Podcasts Rememberable",
     description:
@@ -32,6 +37,8 @@ const projectPlaceholders = [
   {
     id: "project-03",
     img: "/assets/researchbuddy-cover.png",
+    imageWidth: 1782,
+    imageHeight: 1014,
     group: "shipped",
     title: "Rodney: Your Research Buddy",
     description:
@@ -42,6 +49,8 @@ const projectPlaceholders = [
   {
     id: "project-04",
     img: "/assets/designathon-cooking-app.webp",
+    imageWidth: 394,
+    imageHeight: 450,
     group: "concepts",
     title: "AI Cooking Companion",
     description:
@@ -52,6 +61,8 @@ const projectPlaceholders = [
   {
     id: "project-05",
     img: "/assets/pinterest-wrapped-concept.png",
+    imageWidth: 1448,
+    imageHeight: 1086,
     group: "concepts",
     title: "Pinterest Wrapped: Your Year in Aesthetics",
     description:
@@ -82,6 +93,7 @@ export default function ProjectsSection() {
   const galleryRef = useRef(null);
   const galleryInnerRef = useRef(null);
   const sliderRef = useRef(null);
+  const panelRefs = useRef({});
   const swipeRef = useRef({ active: false, dragging: false, x: 0, y: 0 });
   const suppressClickRef = useRef(false);
 
@@ -92,6 +104,41 @@ export default function ProjectsSection() {
     pointerQuery.addEventListener?.("change", updatePointerSupport);
     return () => pointerQuery.removeEventListener?.("change", updatePointerSupport);
   }, []);
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return undefined;
+
+    let frame = 0;
+    const updateHeight = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const activePanel = panelRefs.current[activeGroup];
+        if (!activePanel) return;
+        const nextHeight = Math.ceil(activePanel.scrollHeight);
+        const currentHeight = Number.parseFloat(slider.style.height) || 0;
+        if (nextHeight > 0 && Math.abs(nextHeight - currentHeight) > 1) {
+          slider.style.height = `${nextHeight}px`;
+        }
+        if (slider.dataset.heightReady !== "true") {
+          window.requestAnimationFrame(() => {
+            slider.dataset.heightReady = "true";
+          });
+        }
+      });
+    };
+
+    const observer = new ResizeObserver(updateHeight);
+    Object.values(panelRefs.current).forEach(panel => observer.observe(panel));
+    window.addEventListener("resize", updateHeight, { passive: true });
+    updateHeight();
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [activeGroup]);
 
   useGSAP(() => {
     const galleryInner = galleryInnerRef.current;
@@ -126,22 +173,18 @@ export default function ProjectsSection() {
   }, { scope: galleryRef });
 
   useEffect(() => {
-    const syncGroupFromHash = () => {
-      const groupId = window.location.hash.replace("#projects-", "");
-      if (projectGroups.some(group => group.id === groupId)) {
-        setGlassReady(false);
-        setActiveGroup(groupId);
-      }
-    };
-    syncGroupFromHash();
-    window.addEventListener("hashchange", syncGroupFromHash);
-    return () => window.removeEventListener("hashchange", syncGroupFromHash);
+    // Category tabs are local UI state, not routes. Normalize legacy category
+    // hashes to the stable section anchor so refresh/back-forward restoration
+    // cannot target an element whose panel is currently hidden.
+    if (window.location.hash.startsWith("#projects-")) {
+      window.history.replaceState(null, "", "#projects");
+    }
+    setActiveGroup(projectGroups[0].id);
   }, []);
 
   const selectGroup = groupId => {
     if (groupId === activeGroup) return;
     setGlassReady(false);
-    window.history.replaceState(null, "", `#projects-${groupId}`);
     setActiveGroup(groupId);
   };
 
@@ -309,6 +352,10 @@ export default function ProjectsSection() {
                   : "is-after";
               return (
                 <section
+                  ref={element => {
+                    if (element) panelRefs.current[group.id] = element;
+                    else delete panelRefs.current[group.id];
+                  }}
                   id={`projects-panel-${group.id}`}
                   className={`projects-slider__panel projects-group projects-group--${group.id} ${positionClass}`}
                   role="tabpanel"
@@ -327,26 +374,28 @@ export default function ProjectsSection() {
 
         {supportsFinePointer && galleryRevealed && (
           <div className="projects-glass-overlay" data-html2canvas-ignore="true" aria-hidden="true">
-            <FluidGlass
-              mode="lens"
-              captureTargetRef={galleryRef}
-              trackingTargetRef={galleryRef}
-              activeTargetRef={galleryRef}
-              activeSelector=".project-masonry__media"
-              captureKey={activeGroup}
-              captureSettleDelay={760}
-              enabled={glassReady}
-              onCaptureReady={setGlassReady}
-              lensProps={{
-                scale: 0.055,
-                ior: 1.15,
-                thickness: 5,
-                chromaticAberration: 0.03,
-                anisotropy: 0.01,
-              }}
-              barProps={{}}
-              cubeProps={{}}
-            />
+            <Suspense fallback={null}>
+              <FluidGlass
+                mode="lens"
+                captureTargetRef={galleryRef}
+                trackingTargetRef={galleryRef}
+                activeTargetRef={galleryRef}
+                activeSelector=".project-masonry__media"
+                captureKey={activeGroup}
+                captureSettleDelay={760}
+                enabled={glassReady}
+                onCaptureReady={setGlassReady}
+                lensProps={{
+                  scale: 0.075,
+                  ior: 1.15,
+                  thickness: 5,
+                  chromaticAberration: 0.03,
+                  anisotropy: 0.01,
+                }}
+                barProps={{}}
+                cubeProps={{}}
+              />
+            </Suspense>
           </div>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   motion,
   useAnimationFrame,
@@ -54,6 +54,9 @@ export default function InterestVelocity({
   fontSize = "clamp(1.5rem, 4vw, 3.2rem)",
 }) {
   const baseX = useMotionValue(0);
+  const rootRef = useRef(null);
+  const activeRef = useRef(true);
+  const reducedMotionRef = useRef(false);
   const copyRef = useRef(null);
   const copyWidth = useElementWidth(copyRef);
   const { scrollY } = useScroll();
@@ -74,7 +77,31 @@ export default function InterestVelocity({
     copyWidth === 0 ? "0px" : `${wrap(-copyWidth, 0, value)}px`
   ));
 
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    reducedMotionRef.current = motionQuery.matches;
+    const observer = new IntersectionObserver(
+      ([entry]) => { activeRef.current = entry.isIntersecting && !document.hidden; },
+      { rootMargin: "200px 0px" },
+    );
+    const onVisibilityChange = () => {
+      activeRef.current = !document.hidden && root.getBoundingClientRect().bottom >= -200 && root.getBoundingClientRect().top <= window.innerHeight + 200;
+    };
+    const onMotionChange = (event) => { reducedMotionRef.current = event.matches; };
+    observer.observe(root);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    motionQuery.addEventListener?.("change", onMotionChange);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      motionQuery.removeEventListener?.("change", onMotionChange);
+    };
+  }, []);
+
   useAnimationFrame((_time, delta) => {
+    if (!activeRef.current || reducedMotionRef.current) return;
     const factor = Math.min(6, Math.abs(velocityFactor.get()));
     const safeDelta = Math.min(Math.max(delta, 0), 50);
     const moveBy = velocity * (safeDelta / 1000) * (1 + factor);
@@ -83,6 +110,7 @@ export default function InterestVelocity({
 
   return (
     <section
+      ref={rootRef}
       className="interest-velocity"
       style={{ "--interest-velocity-size": fontSize }}
       aria-label="Interests"

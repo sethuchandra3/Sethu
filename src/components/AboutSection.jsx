@@ -45,7 +45,7 @@ export default function AboutSection() {
                 target="_blank"
                 rel="noreferrer"
               >
-                <img src="/assets/mesh-mark-blue.png" alt="" aria-hidden="true" />
+                <img src="/assets/mesh-mark-blue.png" width="173" height="173" alt="" aria-hidden="true" loading="lazy" decoding="async" />
                 <span className="scroll-reveal__word about-section__linked-name">Mesh (YC W25)</span>
               </a>
               {splitWords(" and studying ", "study-intro")}

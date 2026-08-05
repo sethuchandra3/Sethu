@@ -19,6 +19,29 @@ function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, varia
     let targetRate = idleRate;
     let currentRate = idleRate;
     let animationFrame = 0;
+    let isActive = false;
+    let animation;
+
+    const getAnimation = () => {
+      if (!animation) [animation] = track.getAnimations();
+      return animation;
+    };
+
+    const syncActivity = () => {
+      const active = isActive && !document.hidden;
+      const currentAnimation = getAnimation();
+      if (currentAnimation) active ? currentAnimation.play() : currentAnimation.pause();
+    };
+
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        isActive = entry.isIntersecting;
+        syncActivity();
+      },
+      { rootMargin: "200px 0px" },
+    );
+    intersectionObserver.observe(row);
+    document.addEventListener("visibilitychange", syncActivity);
 
     const onScroll = () => {
       const now = performance.now();
@@ -36,21 +59,23 @@ function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, varia
       const boostScale = scrollBoostVelocity / Math.max(1, Math.abs(velocity));
       targetRate = idleRate + scrollBoost * boostScale;
 
-      const [animation] = track.getAnimations();
-      if (animation && typeof animation.currentTime === "number") {
-        const timing = animation.effect?.getTiming();
+      const currentAnimation = getAnimation();
+      if (currentAnimation && typeof currentAnimation.currentTime === "number") {
+        const timing = currentAnimation.effect?.getTiming();
         const duration = typeof timing?.duration === "number" ? timing.duration : 0;
-        let nextTime = animation.currentTime + Math.abs(delta) * 5;
+        let nextTime = currentAnimation.currentTime + Math.abs(delta) * 5;
         if (duration > 0) nextTime = ((nextTime % duration) + duration) % duration;
-        animation.currentTime = Math.max(0, nextTime);
+        currentAnimation.currentTime = Math.max(0, nextTime);
       }
     };
 
     const updatePlaybackRate = () => {
-      targetRate += (idleRate - targetRate) * 0.045;
-      currentRate += (targetRate - currentRate) * 0.18;
-      const [animation] = track.getAnimations();
-      if (animation) animation.playbackRate = currentRate;
+      if (isActive && !document.hidden) {
+        targetRate += (idleRate - targetRate) * 0.045;
+        currentRate += (targetRate - currentRate) * 0.18;
+        const currentAnimation = getAnimation();
+        if (currentAnimation) currentAnimation.playbackRate = currentRate;
+      }
       animationFrame = window.requestAnimationFrame(updatePlaybackRate);
     };
 
@@ -58,6 +83,8 @@ function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, varia
     animationFrame = window.requestAnimationFrame(updatePlaybackRate);
     return () => {
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", syncActivity);
+      intersectionObserver.disconnect();
       window.cancelAnimationFrame(animationFrame);
     };
   }, [scrollBoostVelocity, velocity]);

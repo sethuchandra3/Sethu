@@ -94,7 +94,7 @@ const MagicBento = forwardRef(function MagicBento(_, forwardedRef) {
               data-accent={card.accent}
               data-logo={card.logoKey}
             >
-              <img src={card.logo} alt={card.logoAlt} loading="lazy" decoding="async" />
+              <img src={card.logo} alt={card.logoAlt} width="512" height="512" loading="lazy" decoding="async" />
             </div>
             <div className="community-experience__content">
               <h3>{card.role}</h3>
@@ -128,6 +128,8 @@ const MagicBento = forwardRef(function MagicBento(_, forwardedRef) {
                   className="magic-bento-card__award-logo"
                   src={award.logo}
                   alt={award.logoAlt}
+                  width={award.title === 'Eagle Scout Award' ? 448 : 512}
+                  height="512"
                   data-logo={award.logoKey}
                   loading="lazy"
                   decoding="async"

@@ -21,6 +21,13 @@ export default function TextPressure({ text, id, className = "" }) {
 
     const letters = lettersRef.current.filter(Boolean);
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (reducedMotion || !finePointer) {
+      letters.forEach((letter) => {
+        letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${RESTING_WEIGHT}, 'wdth' ${RESTING_WIDTH}, 'slnt' 0`;
+      });
+      return undefined;
+    }
     const pointer = { x: 0, y: 0 };
     const easedPointer = { x: 0, y: 0 };
     const scrollPointer = { x: 0, y: 0 };

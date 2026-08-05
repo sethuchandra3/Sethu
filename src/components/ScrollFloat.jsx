@@ -22,15 +22,22 @@ export default function ScrollFloat({
   const containerRef = useRef(null);
   const characters = useMemo(() => {
     const text = typeof children === "string" ? children : "";
-    return [...text].map((character, index) =>
-      character === "\n" ? (
-        <br key={`line-break-${index}`} />
-      ) : (
-        <span className="scroll-float__char" key={`${character}-${index}`}>
-          {character === " " ? "\u00A0" : character}
+    return text.split(/(\s+)/).map((token, tokenIndex) => {
+      if (/^\s+$/.test(token)) {
+        return token.includes("\n")
+          ? <br key={`line-break-${tokenIndex}`} />
+          : <span className="scroll-float__space" key={`space-${tokenIndex}`}>{token}</span>;
+      }
+      return (
+        <span className="scroll-float__word" key={`${token}-${tokenIndex}`}>
+          {[...token].map((character, characterIndex) => (
+            <span className="scroll-float__char" key={`${character}-${characterIndex}`}>
+              {character}
+            </span>
+          ))}
         </span>
-      ),
-    );
+      );
+    });
   }, [children]);
 
   useEffect(() => {

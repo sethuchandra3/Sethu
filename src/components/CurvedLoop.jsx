@@ -34,6 +34,8 @@ const CurvedLoop = ({
   const dirRef = useRef(direction);
   const velRef = useRef(0);
   const scrollBoostRef = useRef(0);
+  const activeRef = useRef(true);
+  const reducedMotionRef = useRef(false);
 
   const textLength = spacing;
   const totalText = textLength
@@ -58,9 +60,22 @@ const CurvedLoop = ({
 
   useEffect(() => {
     if (!spacing || !ready) return;
+    const root = textPathRef.current?.ownerSVGElement?.closest('.curved-loop-jacket');
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotionRef.current = motionQuery.matches;
+    const observer = root
+      ? new IntersectionObserver(([entry]) => { activeRef.current = entry.isIntersecting && !document.hidden; }, { rootMargin: '160px 0px' })
+      : null;
+    const syncVisibility = () => {
+      activeRef.current = !document.hidden && Boolean(root && root.getBoundingClientRect().bottom >= -160 && root.getBoundingClientRect().top <= window.innerHeight + 160);
+    };
+    const syncMotion = event => { reducedMotionRef.current = event.matches; };
+    if (root) observer?.observe(root);
+    document.addEventListener('visibilitychange', syncVisibility);
+    motionQuery.addEventListener?.('change', syncMotion);
     let frame = 0;
     const step = () => {
-      if (!dragRef.current && textPathRef.current) {
+      if (activeRef.current && !reducedMotionRef.current && !dragRef.current && textPathRef.current) {
         const boost = scrollDriven
           ? Math.min(speed * 0.9, scrollBoostRef.current * 0.018)
           : 0;
@@ -79,7 +94,12 @@ const CurvedLoop = ({
       frame = requestAnimationFrame(step);
     };
     frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', syncVisibility);
+      motionQuery.removeEventListener?.('change', syncMotion);
+    };
   }, [spacing, speed, ready, scrollDriven]);
 
   useEffect(() => {
@@ -110,7 +130,7 @@ const CurvedLoop = ({
   }, [ready, scrollDriven, spacing]);
 
   const onPointerDown = e => {
-    if (!interactive) return;
+    if (!interactive || e.pointerType === 'touch') return;
     dragRef.current = true;
     setIsDragging(true);
     lastXRef.current = e.clientX;

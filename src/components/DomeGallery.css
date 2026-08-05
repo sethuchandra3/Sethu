@@ -34,6 +34,23 @@ main.sphere-main {
   cursor: grab;
 }
 
+@media (hover: none), (pointer: coarse) {
+  main.sphere-main {
+    touch-action: pan-y;
+    cursor: default;
+  }
+
+  .item__image {
+    cursor: pointer;
+    touch-action: pan-y;
+  }
+
+  .item__image::after,
+  .item__caption {
+    display: none;
+  }
+}
+
 .sphere-root[data-dragging='true'] main.sphere-main,
 .sphere-root[data-dragging='true'] .item__image {
   cursor: grabbing;

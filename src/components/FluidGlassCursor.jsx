@@ -7,7 +7,7 @@ export default function FluidGlassCursor() {
   useEffect(() => {
     const cursor = cursorRef.current;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-    if (!cursor || !finePointer.matches) return undefined;
+    if (!cursor) return undefined;
 
     const root = document.documentElement;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -17,8 +17,7 @@ export default function FluidGlassCursor() {
     let currentY = -100;
     let hasPosition = false;
     let frame = 0;
-
-    root.classList.add("has-fluid-glass-cursor");
+    let listening = false;
 
     const renderPosition = () => {
       frame = 0;
@@ -79,20 +78,42 @@ export default function FluidGlassCursor() {
       if (!event.relatedTarget) hideCursor();
     };
 
-    window.addEventListener("pointermove", handlePointerMove, { passive: true });
-    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
-    window.addEventListener("pointerup", handlePointerUp, { passive: true });
-    window.addEventListener("mouseout", handleWindowMouseOut);
-    window.addEventListener("blur", hideCursor);
-
-    return () => {
+    const stopListening = () => {
+      if (!listening) return;
+      listening = false;
       window.cancelAnimationFrame(frame);
+      frame = 0;
+      hideCursor();
       root.classList.remove("has-fluid-glass-cursor");
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("mouseout", handleWindowMouseOut);
       window.removeEventListener("blur", hideCursor);
+    };
+
+    const startListening = () => {
+      if (listening || !finePointer.matches) return;
+      listening = true;
+      root.classList.add("has-fluid-glass-cursor");
+      window.addEventListener("pointermove", handlePointerMove, { passive: true });
+      window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+      window.addEventListener("pointerup", handlePointerUp, { passive: true });
+      window.addEventListener("mouseout", handleWindowMouseOut);
+      window.addEventListener("blur", hideCursor);
+    };
+
+    const handleCapabilityChange = () => {
+      if (finePointer.matches) startListening();
+      else stopListening();
+    };
+
+    handleCapabilityChange();
+    finePointer.addEventListener?.("change", handleCapabilityChange);
+
+    return () => {
+      finePointer.removeEventListener?.("change", handleCapabilityChange);
+      stopListening();
     };
   }, []);
 

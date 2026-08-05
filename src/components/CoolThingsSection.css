@@ -8,6 +8,7 @@
   background: var(--site-dark, #0d0d0d);
   color: #fbfaf7;
   overflow: hidden;
+  overflow-anchor: none;
 }
 
 .sidequests-curve {
@@ -178,7 +179,7 @@
   .carousel-section {
     min-height: auto;
     display: block;
-    padding: clamp(72px, 14vw, 112px) var(--page-gutter);
+    padding: clamp(72px, 14vw, 112px) var(--page-gutter) clamp(16px, 3vw, 24px);
     overflow: visible;
   }
 
