@@ -10,26 +10,16 @@ export default function FluidGlassCursor() {
     if (!cursor) return undefined;
 
     const root = document.documentElement;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let targetX = -100;
     let targetY = -100;
-    let currentX = -100;
-    let currentY = -100;
     let hasPosition = false;
     let frame = 0;
     let listening = false;
 
     const renderPosition = () => {
       frame = 0;
-      const easing = reducedMotion ? 1 : 0.42;
-      currentX += (targetX - currentX) * easing;
-      currentY += (targetY - currentY) * easing;
-      cursor.style.setProperty("--cursor-x", `${currentX}px`);
-      cursor.style.setProperty("--cursor-y", `${currentY}px`);
-
-      if (Math.abs(targetX - currentX) > 0.08 || Math.abs(targetY - currentY) > 0.08) {
-        frame = window.requestAnimationFrame(renderPosition);
-      }
+      cursor.style.setProperty("--cursor-x", `${targetX}px`);
+      cursor.style.setProperty("--cursor-y", `${targetY}px`);
     };
 
     const requestPositionRender = () => {
@@ -44,27 +34,40 @@ export default function FluidGlassCursor() {
       hasPosition = false;
     };
 
+    const syncCursorMode = target => {
+      const projectMedia = target?.closest(".project-masonry__media");
+      const projectGallery = projectMedia?.closest(".projects-editorial-gallery");
+      cursor.dataset.header = target?.closest(".site-header") ? "true" : "false";
+      cursor.dataset.glassActive = projectMedia && projectGallery?.dataset.glassReady === "true" ? "true" : "false";
+    };
+
     const handlePointerMove = (event) => {
       if (event.pointerType === "touch") {
         hideCursor();
         return;
       }
 
-      targetX = event.clientX;
-      targetY = event.clientY;
+      const coalescedEvents = event.getCoalescedEvents?.();
+      const latestEvent = coalescedEvents?.length
+        ? coalescedEvents[coalescedEvents.length - 1]
+        : event;
+      targetX = latestEvent.clientX;
+      targetY = latestEvent.clientY;
       if (!hasPosition) {
-        currentX = targetX;
-        currentY = targetY;
         hasPosition = true;
       }
       const target = event.target instanceof Element ? event.target : null;
-      const projectMedia = target?.closest(".project-masonry__media");
-      const projectGallery = projectMedia?.closest(".projects-editorial-gallery");
-      cursor.dataset.header = target?.closest(".site-header") ? "true" : "false";
-      cursor.dataset.glassActive = projectMedia && projectGallery?.dataset.glassReady === "true" ? "true" : "false";
+      syncCursorMode(target);
       cursor.dataset.visible = "true";
       requestPositionRender();
     };
+
+    const handleGlassReadinessChange = () => {
+      if (!hasPosition) return;
+      syncCursorMode(document.elementFromPoint(targetX, targetY));
+    };
+
+    const glassObserver = new MutationObserver(handleGlassReadinessChange);
 
     const handlePointerDown = () => {
       cursor.dataset.pressed = "true";
@@ -79,6 +82,7 @@ export default function FluidGlassCursor() {
     };
 
     const stopListening = () => {
+      glassObserver.disconnect();
       if (!listening) return;
       listening = false;
       window.cancelAnimationFrame(frame);
@@ -96,6 +100,11 @@ export default function FluidGlassCursor() {
       if (listening || !finePointer.matches) return;
       listening = true;
       root.classList.add("has-fluid-glass-cursor");
+      glassObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["data-glass-ready"],
+        subtree: true,
+      });
       window.addEventListener("pointermove", handlePointerMove, { passive: true });
       window.addEventListener("pointerdown", handlePointerDown, { passive: true });
       window.addEventListener("pointerup", handlePointerUp, { passive: true });

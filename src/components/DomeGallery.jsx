@@ -4,24 +4,27 @@ import './DomeGallery.css';
 
 const DEFAULT_IMAGES = [
   {
-    src: 'https://images.unsplash.com/photo-1745965976680-d00be7dc0377?q=80&w=774&auto=format&fit=crop',
-    alt: 'Travel memory'
+    src: '/assets/world-san-francisco-1.jpg',
+    alt: 'Watching the sunset above the clouds in San Francisco',
+    caption: 'San Francisco, CA'
   },
   {
     src: 'https://images.unsplash.com/photo-1755353985163-c2a0fe5ac3d8?q=80&w=774&auto=format&fit=crop',
     alt: 'Travel memory'
   },
   {
-    src: 'https://images.unsplash.com/photo-1755569309049-98410b94f66d?q=80&w=772&auto=format&fit=crop',
-    alt: 'Travel memory'
+    src: '/assets/world-san-francisco-2.jpg',
+    alt: 'Walking along the waterfront by the Golden Gate Bridge',
+    caption: 'San Francisco, CA'
   },
   {
     src: 'https://images.unsplash.com/photo-1755331039789-7e5680e26e8f?q=80&w=774&auto=format&fit=crop',
     alt: 'Travel memory'
   },
   {
-    src: 'https://pbs.twimg.com/media/Gyla7NnXMAAXSo_?format=jpg&name=large',
-    alt: 'Travel memory'
+    src: '/assets/world-san-francisco-3.jpg',
+    alt: 'Visiting Y Combinator in San Francisco',
+    caption: 'San Francisco, CA'
   },
   {
     src: 'https://images.unsplash.com/photo-1752588975228-21f44630bb3c?q=80&w=774&auto=format&fit=crop',
@@ -106,7 +109,15 @@ function buildItems(pool, seg, locations) {
     };
   });
 
-  const usedImages = Array.from({ length: totalSlots }, (_, i) => normalizedImages[i % normalizedImages.length]);
+  // Offset each column by one image so repeated locations do not form vertical
+  // bands across the dome. With the alternating San Francisco and travel
+  // sources above, this keeps matching locations from sitting directly beside
+  // one another while preserving the existing tile count and frame geometry.
+  const rowsPerColumn = evenYs.length;
+  const usedImages = Array.from({ length: totalSlots }, (_, i) => {
+    const column = Math.floor(i / rowsPerColumn);
+    return normalizedImages[(i + column) % normalizedImages.length];
+  });
 
   for (let i = 1; i < usedImages.length; i++) {
     if (usedImages[i].src === usedImages[i - 1].src) {
@@ -124,8 +135,10 @@ function buildItems(pool, seg, locations) {
   return coords.map((c, i) => ({
     ...c,
     src: usedImages[i].src,
-    alt: locations[i % locations.length] || usedImages[i].alt,
-    caption: locations[i % locations.length] || usedImages[i].caption,
+    alt: usedImages[i].caption
+      ? usedImages[i].alt
+      : locations[i % locations.length] || usedImages[i].alt,
+    caption: usedImages[i].caption || locations[i % locations.length],
     keyboardAccessible: i < locations.length
   }));
 }

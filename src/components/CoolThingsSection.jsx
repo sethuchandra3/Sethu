@@ -72,22 +72,32 @@ export default function CoolThingsSection() {
           const { desktop, reduceMotion } = conditions;
 
           if (reduceMotion || !desktop) {
+            root.style.removeProperty("--sidequest-scroll-distance");
             gsap.set(track, { clearProps: "all" });
             return undefined;
           }
 
           const getTravelDistance = () => Math.max(0, track.scrollWidth - viewport.clientWidth);
+          const syncScrollDistance = () => {
+            root.style.setProperty(
+              "--sidequest-scroll-distance",
+              `${Math.ceil(getTravelDistance())}px`,
+            );
+          };
+          syncScrollDistance();
+
           const horizontalTimeline = gsap.timeline({
             scrollTrigger: {
               trigger: root,
               start: "top top",
-              end: () => `+=${Math.max(getTravelDistance(), 1)}`,
-              scrub: 0.18,
-              pin: root,
-              pinSpacing: true,
-              anticipatePin: 1,
+              end: "bottom bottom",
+              // Bind the gallery directly to scroll position. A numeric scrub
+              // continued catching up after fast wheel input, which looked
+              // like the page overshot the section and bounced back.
+              scrub: true,
               invalidateOnRefresh: true,
-              refreshPriority: -10,
+              refreshPriority: 10,
+              onRefreshInit: syncScrollDistance,
             },
           });
 
@@ -98,7 +108,7 @@ export default function CoolThingsSection() {
             force3D: true,
           });
 
-          return undefined;
+          return () => root.style.removeProperty("--sidequest-scroll-distance");
         },
       );
 
@@ -115,50 +125,52 @@ export default function CoolThingsSection() {
 
   return (
     <section ref={rootRef} className="carousel-section" aria-labelledby="cool-things-title">
-      <h2 id="cool-things-title" className="sr-only">Cool sidequests I have been on</h2>
-      <div className="sidequests-curve" aria-hidden="true">
-        <CurvedLoop
-          marqueeText="Cool sidequests I have been on ✦ "
-          speed={1.15}
-          curveAmount={165}
-          direction="left"
-          interactive
-          scrollDriven
-          wave
-          className="sidequests-curve__text"
-        />
-      </div>
-      <div ref={viewportRef} className="carousel-viewport">
-        <div ref={trackRef} className="carousel-track" aria-label="Cool sidequests gallery">
-          <header className="carousel-intro">
-            <p className="carousel-intro-copy">
-              I lose sleep to hackathons, travelling and stepping out of my comfort zone.
-            </p>
-            <p className="carousel-scroll-cue">Scroll <span aria-hidden="true">→</span></p>
-          </header>
+      <div className="carousel-sticky">
+        <h2 id="cool-things-title" className="sr-only">Cool sidequests I have been on</h2>
+        <div className="sidequests-curve" aria-hidden="true">
+          <CurvedLoop
+            marqueeText="Cool sidequests I have been on ✦ "
+            speed={1.15}
+            curveAmount={165}
+            direction="left"
+            interactive
+            scrollDriven
+            wave
+            className="sidequests-curve__text"
+          />
+        </div>
+        <div ref={viewportRef} className="carousel-viewport">
+          <div ref={trackRef} className="carousel-track" aria-label="Cool sidequests gallery">
+            <header className="carousel-intro">
+              <p className="carousel-intro-copy">
+                I lose sleep to hackathons, travelling and stepping out of my comfort zone.
+              </p>
+              <p className="carousel-scroll-cue">Scroll <span aria-hidden="true">→</span></p>
+            </header>
 
-          {accomplishments.map((item) => (
-            <article className="achievement-card" key={item.label}>
-              <div className="achievement-image" style={{ background: item.gradient }}>
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt={item.imageAlt}
-                    width={item.imageWidth}
-                    height={item.imageHeight}
-                    loading={item.label === "01" ? "eager" : "lazy"}
-                    decoding="async"
-                  />
-                ) : (
-                  <span>{item.label}</span>
-                )}
-              </div>
-              <div className="achievement-copy">
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </div>
-            </article>
-          ))}
+            {accomplishments.map((item) => (
+              <article className="achievement-card" key={item.label}>
+                <div className="achievement-image" style={{ background: item.gradient }}>
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.imageAlt}
+                      width={item.imageWidth}
+                      height={item.imageHeight}
+                      loading={item.label === "01" ? "eager" : "lazy"}
+                      decoding="async"
+                    />
+                  ) : (
+                    <span>{item.label}</span>
+                  )}
+                </div>
+                <div className="achievement-copy">
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </section>

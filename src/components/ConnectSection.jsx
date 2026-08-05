@@ -59,6 +59,7 @@ export default function ConnectSection() {
         highlightWords={interestWords}
         highlightClass="is-interest"
         velocity={34}
+        direction="right"
         numCopies={4}
         velocityMapping={{ input: [0, 1000], output: [0, 5.5] }}
         fontSize="clamp(1.35rem, 2.6vw, 2.2rem)"

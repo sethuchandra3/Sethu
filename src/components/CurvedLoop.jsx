@@ -20,7 +20,6 @@ const CurvedLoop = ({
   const textPathRef = useRef(null);
   const pathRef = useRef(null);
   const [spacing, setSpacing] = useState(0);
-  const [offset, setOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const uid = useId();
   const pathId = `curve-${uid}`;
@@ -34,8 +33,12 @@ const CurvedLoop = ({
   const dirRef = useRef(direction);
   const velRef = useRef(0);
   const scrollBoostRef = useRef(0);
-  const activeRef = useRef(true);
   const reducedMotionRef = useRef(false);
+
+  const wrapOffset = value => {
+    if (!spacing) return value;
+    return ((value % spacing) - spacing) % spacing;
+  };
 
   const textLength = spacing;
   const totalText = textLength
@@ -54,38 +57,27 @@ const CurvedLoop = ({
     if (textPathRef.current) {
       const initial = -spacing;
       textPathRef.current.setAttribute('startOffset', initial + 'px');
-      setOffset(initial);
     }
   }, [spacing]);
 
   useEffect(() => {
     if (!spacing || !ready) return;
-    const root = textPathRef.current?.ownerSVGElement?.closest('.curved-loop-jacket');
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     reducedMotionRef.current = motionQuery.matches;
-    const observer = root
-      ? new IntersectionObserver(([entry]) => { activeRef.current = entry.isIntersecting && !document.hidden; }, { rootMargin: '160px 0px' })
-      : null;
-    const syncVisibility = () => {
-      activeRef.current = !document.hidden && Boolean(root && root.getBoundingClientRect().bottom >= -160 && root.getBoundingClientRect().top <= window.innerHeight + 160);
-    };
     const syncMotion = event => { reducedMotionRef.current = event.matches; };
-    if (root) observer?.observe(root);
-    document.addEventListener('visibilitychange', syncVisibility);
     motionQuery.addEventListener?.('change', syncMotion);
     let frame = 0;
-    const step = () => {
-      if (activeRef.current && !reducedMotionRef.current && !dragRef.current && textPathRef.current) {
+    let previousTime = performance.now();
+    const step = time => {
+      const elapsedFrames = Math.min(3, Math.max(0, (time - previousTime) / (1000 / 60)));
+      previousTime = time;
+      if (!document.hidden && !reducedMotionRef.current && !dragRef.current && textPathRef.current) {
         const boost = scrollDriven
           ? Math.min(speed * 0.9, scrollBoostRef.current * 0.018)
           : 0;
-        const delta = (dirRef.current === 'right' ? 1 : -1) * (speed + boost);
+        const delta = (dirRef.current === 'right' ? 1 : -1) * (speed + boost) * elapsedFrames;
         const currentOffset = parseFloat(textPathRef.current.getAttribute('startOffset') || '0');
-        let newOffset = currentOffset + delta;
-
-        const wrapPoint = spacing;
-        if (newOffset <= -wrapPoint) newOffset += wrapPoint;
-        if (newOffset > 0) newOffset -= wrapPoint;
+        const newOffset = wrapOffset(currentOffset + delta);
 
         textPathRef.current.setAttribute('startOffset', newOffset + 'px');
 
@@ -96,8 +88,6 @@ const CurvedLoop = ({
     frame = requestAnimationFrame(step);
     return () => {
       cancelAnimationFrame(frame);
-      observer?.disconnect();
-      document.removeEventListener('visibilitychange', syncVisibility);
       motionQuery.removeEventListener?.('change', syncMotion);
     };
   }, [spacing, speed, ready, scrollDriven]);
@@ -145,11 +135,7 @@ const CurvedLoop = ({
     velRef.current = dx;
 
     const currentOffset = parseFloat(textPathRef.current.getAttribute('startOffset') || '0');
-    let newOffset = currentOffset + dx;
-
-    const wrapPoint = spacing;
-    if (newOffset <= -wrapPoint) newOffset += wrapPoint;
-    if (newOffset > 0) newOffset -= wrapPoint;
+    const newOffset = wrapOffset(currentOffset + dx);
 
     textPathRef.current.setAttribute('startOffset', newOffset + 'px');
   };
@@ -185,7 +171,7 @@ const CurvedLoop = ({
         </defs>
         {ready && (
           <text fontWeight="bold" xmlSpace="preserve" className={className}>
-            <textPath ref={textPathRef} href={`#${pathId}`} startOffset={offset + 'px'} xmlSpace="preserve">
+            <textPath ref={textPathRef} href={`#${pathId}`} xmlSpace="preserve">
               {totalText}
             </textPath>
           </text>

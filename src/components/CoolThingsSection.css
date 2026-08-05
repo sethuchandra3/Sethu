@@ -1,14 +1,23 @@
 .carousel-section {
   position: relative;
+  height: calc(100svh + var(--sidequest-scroll-distance, 0px));
   min-height: 100svh;
+  background: var(--site-dark, #0d0d0d);
+  color: #fbfaf7;
+  overflow: visible;
+  overflow-anchor: none;
+}
+
+.carousel-sticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100svh;
   display: grid;
   grid-template-rows: clamp(190px, 25svh, 240px) minmax(0, 1fr);
   align-items: stretch;
-  border-top: 0;
   background: var(--site-dark, #0d0d0d);
-  color: #fbfaf7;
   overflow: hidden;
-  overflow-anchor: none;
 }
 
 .sidequests-curve {
@@ -177,9 +186,17 @@
 
 @media (max-width: 760px) {
   .carousel-section {
+    height: auto;
     min-height: auto;
-    display: block;
     padding: clamp(72px, 14vw, 112px) var(--page-gutter) clamp(16px, 3vw, 24px);
+    overflow: visible;
+  }
+
+  .carousel-sticky {
+    position: relative;
+    top: auto;
+    height: auto;
+    display: block;
     overflow: visible;
   }
 
@@ -235,5 +252,20 @@
   .achievement-card {
     opacity: 1;
     transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (min-width: 761px) {
+  .carousel-section { height: auto; }
+
+  .carousel-sticky {
+    position: relative;
+    height: auto;
+    min-height: 100svh;
+  }
+
+  .carousel-viewport {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
   }
 }

@@ -25,13 +25,13 @@ export default function FluidGlass({
   activeTargetRef,
   activeSelector,
   captureKey,
-  captureSettleDelay = 0,
   enabled = true,
   onCaptureReady
 }) {
   const Wrapper = mode === 'bar' ? Bar : mode === 'cube' ? Cube : Lens;
   const rawOverrides = mode === 'bar' ? barProps : mode === 'cube' ? cubeProps : lensProps;
   const [contentCanvas, setContentCanvas] = useState(null);
+  const captureCacheRef = useRef(new Map());
 
   const {
     navItems = [
@@ -46,14 +46,15 @@ export default function FluidGlass({
     const target = captureTargetRef?.current;
     if (!target) return undefined;
 
-    setContentCanvas(null);
-    onCaptureReady?.(false);
     let cancelled = false;
-    let timer = 0;
-    let idleCallback = 0;
+    let frame = 0;
+    const getCaptureSignature = () => `${String(captureKey ?? 'default')}:${target.offsetWidth}x${target.offsetHeight}`;
+    const captureSignature = getCaptureSignature();
+    const cachedCapture = captureCacheRef.current.get(captureSignature);
     let resizeObserver;
-    let intersectionObserver;
-    const captureNotBefore = performance.now() + captureSettleDelay;
+
+    setContentCanvas(cachedCapture ?? null);
+    onCaptureReady?.(Boolean(cachedCapture));
 
     const waitForImages = () => Promise.all(
       [...target.querySelectorAll('img')]
@@ -77,72 +78,108 @@ export default function FluidGlass({
         })
     );
 
-    const capture = async () => {
-      if (cancelled || !target.isConnected || target.offsetWidth === 0 || target.offsetHeight === 0) return;
+    const parseObjectPosition = value => {
+      const tokens = value.trim().split(/\s+/);
+      const resolve = (token, axis) => {
+        if (token === 'left' || token === 'top') return 0;
+        if (token === 'right' || token === 'bottom') return 1;
+        if (token === 'center') return 0.5;
+        if (token?.endsWith('%')) return Math.min(1, Math.max(0, parseFloat(token) / 100));
+        return axis === 'x' ? 0.5 : 0.5;
+      };
+      return {
+        x: resolve(tokens[0] || 'center', 'x'),
+        y: resolve(tokens[1] || tokens[0] || 'center', 'y')
+      };
+    };
 
-      await document.fonts?.ready;
+    const drawImageCover = (context, image, x, y, width, height) => {
+      const sourceWidth = image.naturalWidth;
+      const sourceHeight = image.naturalHeight;
+      if (!sourceWidth || !sourceHeight || width <= 0 || height <= 0) return;
+
+      const sourceRatio = sourceWidth / sourceHeight;
+      const destinationRatio = width / height;
+      let cropWidth = sourceWidth;
+      let cropHeight = sourceHeight;
+      if (sourceRatio > destinationRatio) cropWidth = sourceHeight * destinationRatio;
+      else cropHeight = sourceWidth / destinationRatio;
+
+      const position = parseObjectPosition(getComputedStyle(image).objectPosition || '50% 50%');
+      const sourceX = (sourceWidth - cropWidth) * position.x;
+      const sourceY = (sourceHeight - cropHeight) * position.y;
+      context.drawImage(
+        image,
+        sourceX,
+        sourceY,
+        cropWidth,
+        cropHeight,
+        x,
+        y,
+        width,
+        height
+      );
+    };
+
+    const captureProjectImages = async () => {
       await waitForImages();
-      const { default: html2canvas } = await import('html2canvas-pro');
-      if (cancelled) return;
+      if (cancelled || !target.isConnected || !target.offsetWidth || !target.offsetHeight) return;
 
-      const snapshot = await html2canvas(target, {
-        backgroundColor: null,
-        logging: false,
-        useCORS: true,
-        imageTimeout: 0,
-        ignoreElements: element => element.classList?.contains('projects-glass-overlay'),
-        scale: Math.min(window.devicePixelRatio || 1, 1.5),
-        width: target.offsetWidth,
-        height: target.offsetHeight
-      });
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        if (cancelled) return;
+        const scale = 0.75;
+        const snapshot = document.createElement('canvas');
+        snapshot.width = Math.max(1, Math.round(target.offsetWidth * scale));
+        snapshot.height = Math.max(1, Math.round(target.offsetHeight * scale));
+        const context = snapshot.getContext('2d', { alpha: false });
+        const targetRect = target.getBoundingClientRect();
+        context.scale(scale, scale);
+        context.fillStyle = getComputedStyle(target).backgroundColor || '#0d0d0d';
+        context.fillRect(0, 0, target.offsetWidth, target.offsetHeight);
 
-      if (!cancelled) {
+        target.querySelectorAll('.project-masonry__media img').forEach(image => {
+          if (image.closest('[aria-hidden="true"]') || !image.complete) return;
+          const rect = image.getBoundingClientRect();
+          drawImageCover(
+            context,
+            image,
+            rect.left - targetRect.left,
+            rect.top - targetRect.top,
+            rect.width,
+            rect.height
+          );
+        });
+
+        captureCacheRef.current.set(getCaptureSignature(), snapshot);
         setContentCanvas(snapshot);
         onCaptureReady?.(true);
-      }
+      });
     };
 
-    const scheduleCapture = (delay = 140) => {
-      window.clearTimeout(timer);
-      if (idleCallback && "cancelIdleCallback" in window) window.cancelIdleCallback(idleCallback);
-      const settleRemaining = Math.max(0, captureNotBefore - performance.now());
-      const resolvedDelay = Math.max(delay, settleRemaining);
-      timer = window.setTimeout(() => {
-        const runCapture = () => {
-          idleCallback = 0;
-          capture().catch(error => {
-            console.warn('Unable to refresh the FluidGlass project texture.', error);
-          });
-        };
-        if ("requestIdleCallback" in window) {
-          idleCallback = window.requestIdleCallback(runCapture, { timeout: 450 });
-        } else {
-          runCapture();
-        }
-      }, resolvedDelay);
-    };
-
-    intersectionObserver = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) scheduleCapture(80);
-    }, { rootMargin: '240px 0px' });
-    intersectionObserver.observe(target);
-
-    resizeObserver = new ResizeObserver(() => scheduleCapture(220));
+    let observedWidth = target.offsetWidth;
+    let observedHeight = target.offsetHeight;
+    resizeObserver = new ResizeObserver(() => {
+      const nextWidth = target.offsetWidth;
+      const nextHeight = target.offsetHeight;
+      if (nextWidth === observedWidth && nextHeight === observedHeight) return;
+      observedWidth = nextWidth;
+      observedHeight = nextHeight;
+      captureCacheRef.current.clear();
+      captureProjectImages().catch(() => onCaptureReady?.(false));
+    });
     resizeObserver.observe(target);
 
-    const handleResize = () => scheduleCapture(220);
-    window.addEventListener('resize', handleResize, { passive: true });
-    scheduleCapture(0);
+    if (!cachedCapture) {
+      captureProjectImages().catch(() => onCaptureReady?.(false));
+    }
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
-      if (idleCallback && "cancelIdleCallback" in window) window.cancelIdleCallback(idleCallback);
+      window.cancelAnimationFrame(frame);
       resizeObserver?.disconnect();
-      intersectionObserver?.disconnect();
-      window.removeEventListener('resize', handleResize);
     };
-  }, [captureTargetRef, captureKey, captureSettleDelay, onCaptureReady]);
+  }, [captureTargetRef, captureKey, onCaptureReady]);
 
   return (
     <Canvas camera={{ position: [0, 0, 20], fov: 15 }} gl={{ alpha: true }}>
@@ -262,7 +299,7 @@ const ModeWrapper = memo(function ModeWrapper({
       const seedScale = resolvedScale * 0.3;
       ref.current.scale.set(seedScale, seedScale, seedScale);
     } else {
-      easing.damp3(ref.current.position, [destX, destY, 15], 0.15, delta);
+      easing.damp3(ref.current.position, [destX, destY, 15], 0.06, delta);
     }
 
     const targetScale = isActive ? resolvedScale : 0;

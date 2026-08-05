@@ -47,6 +47,7 @@ export default function InterestVelocity({
   highlightWords = [],
   highlightClass = "is-interest",
   velocity = -32,
+  direction = "right",
   damping = 50,
   stiffness = 400,
   numCopies = 4,
@@ -104,7 +105,11 @@ export default function InterestVelocity({
     if (!activeRef.current || reducedMotionRef.current) return;
     const factor = Math.min(6, Math.abs(velocityFactor.get()));
     const safeDelta = Math.min(Math.max(delta, 0), 50);
-    const moveBy = velocity * (safeDelta / 1000) * (1 + factor);
+    // Keep the row's direction independent from scroll direction. Scrolling
+    // only changes its speed, so reversing the page scroll cannot make this
+    // row turn around and follow the Let's Connect marquee.
+    const directionFactor = direction === "right" ? 1 : -1;
+    const moveBy = directionFactor * Math.abs(velocity) * (safeDelta / 1000) * (1 + factor);
     baseX.set(baseX.get() + moveBy);
   });
 

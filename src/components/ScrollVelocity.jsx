@@ -4,44 +4,68 @@ import "./ScrollVelocity.css";
 function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, variant }) {
   const rowRef = useRef(null);
   const trackRef = useRef(null);
-  const duration = Math.max(14, 900 / Math.max(1, Math.abs(velocity)));
+  const firstCopyRef = useRef(null);
 
   useEffect(() => {
     const row = rowRef.current;
     const track = trackRef.current;
-    if (!row || !track || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const firstCopy = firstCopyRef.current;
+    if (!row || !track || !firstCopy) {
       return undefined;
     }
 
-    const idleRate = 0.57;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const direction = velocity >= 0 ? -1 : 1;
+    const baseSpeed = Math.max(1, Math.abs(velocity));
     let lastScrollY = window.scrollY;
     let lastScrollTime = performance.now();
-    let targetRate = idleRate;
-    let currentRate = idleRate;
+    let lastFrameTime = performance.now();
+    let copyWidth = firstCopy.offsetWidth;
+    let position = 0;
+    let targetBoost = 0;
+    let currentBoost = 0;
     let animationFrame = 0;
-    let isActive = false;
-    let animation;
+    let isActive = true;
+    let reducedMotion = motionQuery.matches;
 
-    const getAnimation = () => {
-      if (!animation) [animation] = track.getAnimations();
-      return animation;
+    const wrapPosition = value => {
+      if (!copyWidth) return 0;
+      return ((value % copyWidth) + copyWidth) % copyWidth;
     };
 
-    const syncActivity = () => {
-      const active = isActive && !document.hidden;
-      const currentAnimation = getAnimation();
-      if (currentAnimation) active ? currentAnimation.play() : currentAnimation.pause();
+    const measure = () => {
+      copyWidth = firstCopy.offsetWidth;
+      position = wrapPosition(position);
     };
 
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
         isActive = entry.isIntersecting;
-        syncActivity();
+        lastFrameTime = performance.now();
       },
       { rootMargin: "200px 0px" },
     );
+    const resizeObserver = new ResizeObserver(measure);
     intersectionObserver.observe(row);
-    document.addEventListener("visibilitychange", syncActivity);
+    resizeObserver.observe(firstCopy);
+    document.fonts?.ready.then(measure);
+
+    const onVisibilityChange = () => {
+      lastFrameTime = performance.now();
+      if (!document.hidden) {
+        const rect = row.getBoundingClientRect();
+        isActive = rect.bottom >= -200 && rect.top <= window.innerHeight + 200;
+      }
+    };
+
+    const onMotionChange = event => {
+      reducedMotion = event.matches;
+      if (reducedMotion) track.style.transform = "translate3d(0, 0, 0)";
+      lastFrameTime = performance.now();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    motionQuery.addEventListener?.("change", onMotionChange);
 
     const onScroll = () => {
       const now = performance.now();
@@ -51,40 +75,35 @@ function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, varia
       lastScrollY = currentScrollY;
       lastScrollTime = now;
 
-      const rect = row.getBoundingClientRect();
-      if (rect.bottom < 0 || rect.top > window.innerHeight) return;
-
       const scrollVelocity = (Math.abs(delta) / elapsed) * 1000;
-      const scrollBoost = Math.max(0, Math.min(5, scrollVelocity / 240));
-      const boostScale = scrollBoostVelocity / Math.max(1, Math.abs(velocity));
-      targetRate = idleRate + scrollBoost * boostScale;
-
-      const currentAnimation = getAnimation();
-      if (currentAnimation && typeof currentAnimation.currentTime === "number") {
-        const timing = currentAnimation.effect?.getTiming();
-        const duration = typeof timing?.duration === "number" ? timing.duration : 0;
-        let nextTime = currentAnimation.currentTime + Math.abs(delta) * 5;
-        if (duration > 0) nextTime = ((nextTime % duration) + duration) % duration;
-        currentAnimation.currentTime = Math.max(0, nextTime);
-      }
+      const scrollFactor = Math.max(0, Math.min(5, scrollVelocity / 240));
+      targetBoost = Math.max(targetBoost, scrollFactor * Math.abs(scrollBoostVelocity));
     };
 
-    const updatePlaybackRate = () => {
-      if (isActive && !document.hidden) {
-        targetRate += (idleRate - targetRate) * 0.045;
-        currentRate += (targetRate - currentRate) * 0.18;
-        const currentAnimation = getAnimation();
-        if (currentAnimation) currentAnimation.playbackRate = currentRate;
+    const tick = now => {
+      const deltaSeconds = Math.min(Math.max((now - lastFrameTime) / 1000, 0), 0.05);
+      lastFrameTime = now;
+
+      if (isActive && !document.hidden && !reducedMotion && copyWidth > 0) {
+        targetBoost += (0 - targetBoost) * 0.075;
+        currentBoost += (targetBoost - currentBoost) * 0.16;
+        position = wrapPosition(position + direction * (baseSpeed + currentBoost) * deltaSeconds);
+        const translatedPosition = direction < 0 ? -position : position - copyWidth;
+        track.style.transform = `translate3d(${translatedPosition}px, 0, 0)`;
       }
-      animationFrame = window.requestAnimationFrame(updatePlaybackRate);
+
+      animationFrame = window.requestAnimationFrame(tick);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    animationFrame = window.requestAnimationFrame(updatePlaybackRate);
+    measure();
+    animationFrame = window.requestAnimationFrame(tick);
     return () => {
       window.removeEventListener("scroll", onScroll);
-      document.removeEventListener("visibilitychange", syncActivity);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      motionQuery.removeEventListener?.("change", onMotionChange);
       intersectionObserver.disconnect();
+      resizeObserver.disconnect();
       window.cancelAnimationFrame(animationFrame);
     };
   }, [scrollBoostVelocity, velocity]);
@@ -94,10 +113,9 @@ function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, varia
       <div
         ref={trackRef}
         className="scroll-velocity__track"
-        style={{ "--scroll-velocity-duration": `${duration}s` }}
       >
         {Array.from({ length: numCopies }, (_, index) => (
-          <span className="scroll-velocity__copy" key={index}>
+          <span ref={index === 0 ? firstCopyRef : null} className="scroll-velocity__copy" key={index}>
             {children}
           </span>
         ))}

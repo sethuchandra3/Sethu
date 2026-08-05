@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -105,27 +105,19 @@ export default function ProjectsSection() {
     return () => pointerQuery.removeEventListener?.("change", updatePointerSupport);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return undefined;
 
-    let frame = 0;
     const updateHeight = () => {
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        const activePanel = panelRefs.current[activeGroup];
-        if (!activePanel) return;
-        const nextHeight = Math.ceil(activePanel.scrollHeight);
-        const currentHeight = Number.parseFloat(slider.style.height) || 0;
-        if (nextHeight > 0 && Math.abs(nextHeight - currentHeight) > 1) {
-          slider.style.height = `${nextHeight}px`;
-        }
-        if (slider.dataset.heightReady !== "true") {
-          window.requestAnimationFrame(() => {
-            slider.dataset.heightReady = "true";
-          });
-        }
-      });
+      const activePanel = panelRefs.current[activeGroup];
+      if (!activePanel) return;
+      const nextHeight = Math.ceil(activePanel.scrollHeight);
+      const currentHeight = Number.parseFloat(slider.style.height) || 0;
+      if (nextHeight > 0 && Math.abs(nextHeight - currentHeight) > 1) {
+        slider.style.height = `${nextHeight}px`;
+      }
+      slider.dataset.heightReady = "true";
     };
 
     const observer = new ResizeObserver(updateHeight);
@@ -134,7 +126,6 @@ export default function ProjectsSection() {
     updateHeight();
 
     return () => {
-      window.cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener("resize", updateHeight);
     };
@@ -373,7 +364,7 @@ export default function ProjectsSection() {
         </div>
 
         {supportsFinePointer && galleryRevealed && (
-          <div className="projects-glass-overlay" data-html2canvas-ignore="true" aria-hidden="true">
+          <div className="projects-glass-overlay" aria-hidden="true">
             <Suspense fallback={null}>
               <FluidGlass
                 mode="lens"
@@ -382,7 +373,6 @@ export default function ProjectsSection() {
                 activeTargetRef={galleryRef}
                 activeSelector=".project-masonry__media"
                 captureKey={activeGroup}
-                captureSettleDelay={760}
                 enabled={glassReady}
                 onCaptureReady={setGlassReady}
                 lensProps={{
