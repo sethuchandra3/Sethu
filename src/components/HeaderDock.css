@@ -158,10 +158,9 @@ body[data-theme="dark"] .site-header .theme-toggle-thumb {
   transform: translateY(-2px);
 }
 
-.site-header__socials svg {
+.site-header__socials .brand-icon {
   width: 17px;
   height: 17px;
-  fill: currentColor;
 }
 
 .site-header a:focus-visible {

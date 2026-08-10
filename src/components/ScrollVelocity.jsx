@@ -30,7 +30,8 @@ function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, varia
 
     const wrapPosition = value => {
       if (!copyWidth) return 0;
-      return ((value % copyWidth) + copyWidth) % copyWidth;
+      const wrapped = ((value % copyWidth) + copyWidth) % copyWidth;
+      return wrapped === 0 ? 0 : wrapped - copyWidth;
     };
 
     const measure = () => {
@@ -87,9 +88,11 @@ function VelocityRow({ children, numCopies, velocity, scrollBoostVelocity, varia
       if (isActive && !document.hidden && !reducedMotion && copyWidth > 0) {
         targetBoost += (0 - targetBoost) * 0.075;
         currentBoost += (targetBoost - currentBoost) * 0.16;
+        // Keep the base direction fixed. Scroll velocity only increases the
+        // magnitude, while this signed wrap keeps leftward motion leftward
+        // across every seamless copy boundary.
         position = wrapPosition(position + direction * (baseSpeed + currentBoost) * deltaSeconds);
-        const translatedPosition = direction < 0 ? -position : position - copyWidth;
-        track.style.transform = `translate3d(${translatedPosition}px, 0, 0)`;
+        track.style.transform = `translate3d(${position}px, 0, 0)`;
       }
 
       animationFrame = window.requestAnimationFrame(tick);

@@ -1,0 +1,36 @@
+.professional-loop {
+  display: flex;
+  align-items: center;
+  min-height: clamp(78px, 7vw, 116px);
+  color: #0d0d0d;
+  overflow: hidden;
+}
+
+.professional-loop__term {
+  display: inline-block;
+  color: #0d0d0d;
+  font-family: Arial, sans-serif;
+  font-size: clamp(1.7rem, 3vw, 3.5rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.professional-loop__separator {
+  display: inline-block;
+  color: #ff5a1f;
+  font-size: clamp(1.2rem, 1.8vw, 2rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+@media (max-width: 800px) {
+  .professional-loop {
+    min-height: 70px;
+  }
+
+  .professional-loop__term {
+    font-size: clamp(1.55rem, 7vw, 2.15rem);
+  }
+}

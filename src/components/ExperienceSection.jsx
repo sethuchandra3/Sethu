@@ -43,7 +43,7 @@ export default function ExperienceSection() {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const touchPrimary = window.matchMedia("(hover: none), (pointer: coarse)").matches;
       if (reduceMotion || touchPrimary) {
-        gsap.set([".experiences-title", ".experiences-subtitle", ".experience-island"], {
+        gsap.set([".experiences-title-reveal", ".experiences-subtitle", ".experience-island"], {
           autoAlpha: 1,
           clearProps: "transform",
         });
@@ -62,7 +62,7 @@ export default function ExperienceSection() {
           defaults: { ease: "power2.out" },
         })
         .fromTo(
-          ".experiences-title",
+          ".experiences-title-reveal",
           { autoAlpha: 0, xPercent: 92 },
           { autoAlpha: 1, xPercent: 0, duration: 0.5 },
         )
@@ -91,12 +91,13 @@ export default function ExperienceSection() {
 
     const media = gsap.matchMedia();
     media.add("(min-width: 821px)", () => {
-      const workEndProgress = 0.64;
-      const communityEnterProgress = 0.66;
-      const communityExitProgress = 0.6;
+      const workEndProgress = 0.56;
+      const communityEnterProgress = 0.58;
+      const communityExitProgress = 0.52;
+      const communityScrollStartProgress = 0.68;
       const communityEndProgress = 0.96;
-      const resumeStartProgress = 0.72;
-      const resumeEndProgress = 0.9;
+      const resumeStartProgress = 0.84;
+      const resumeEndProgress = 0.96;
 
       gsap.set(resumeCta, { autoAlpha: 0, y: 26, pointerEvents: "none" });
       const resumeReveal = gsap.to(resumeCta, {
@@ -110,7 +111,7 @@ export default function ExperienceSection() {
       const sequenceTrigger = ScrollTrigger.create({
         trigger: sequence,
         start: "top 4%",
-        end: () => `+=${Math.max(window.innerHeight * 1.2, 840)}`,
+        end: () => `+=${Math.max(window.innerHeight * 2.4, 1680)}`,
         pin: true,
         pinSpacing: true,
         anticipatePin: 1,
@@ -120,8 +121,8 @@ export default function ExperienceSection() {
           const communityProgress = gsap.utils.clamp(
             0,
             1,
-            (self.progress - communityEnterProgress) /
-              (communityEndProgress - communityEnterProgress),
+            (self.progress - communityScrollStartProgress) /
+              (communityEndProgress - communityScrollStartProgress),
           );
           const resumeProgress = gsap.utils.clamp(
             0,
@@ -168,7 +169,9 @@ export default function ExperienceSection() {
   return (
     <section ref={rootRef} className="experiences-section" aria-labelledby="experiences-title">
       <div className="experiences-inner">
-        <TextPressure id="experiences-title" className="experiences-title" text="Experience" />
+        <div className="experiences-title-reveal">
+          <TextPressure id="experiences-title" className="experiences-title" text="Experience" />
+        </div>
         <p className="experiences-subtitle">
           "Everything is a win when the goal is to experience."
         </p>

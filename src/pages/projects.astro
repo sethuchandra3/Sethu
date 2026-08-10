@@ -13,6 +13,11 @@ import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
       name="description"
       content="Projects by Sethu Chandra. More case studies are coming soon."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Projects | Sethu Chandra" />
+    <meta property="og:description" content="Projects and case studies by Sethu Chandra." />
+    <meta property="og:image" content="/assets/sethu-chandra-headshot.jpeg" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>Projects | Sethu Chandra</title>
   </head>
   <body>
@@ -32,7 +37,7 @@ import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
         data-typewriter
         data-text="More coming soon..."
         aria-label="More coming soon..."
-      ></h1>
+      >More coming soon...</h1>
     </main>
 
     <script>
@@ -41,6 +46,7 @@ import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       if (title) {
+        title.textContent = "";
         const content = document.createElement("span");
         content.className = "projects-placeholder-title__content";
         const cursor = document.createElement("span");
