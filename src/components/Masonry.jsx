@@ -4,7 +4,11 @@ export default function Masonry({ items, headingTag = "h3" }) {
   const HeadingTag = headingTag;
 
   return (
-    <div className="project-masonry" aria-label="Project index">
+    <div
+      className="project-masonry"
+      aria-label="Project index"
+      data-item-count={items.length}
+    >
       {items.map((item) => {
         return (
           <article

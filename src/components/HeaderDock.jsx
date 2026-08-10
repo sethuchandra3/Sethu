@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import BrandIcon from "./BrandIcon.jsx";
 import "./HeaderDock.css";
 
 const socialLinks = [
@@ -10,29 +11,7 @@ const socialLinks = [
 ];
 
 function SocialIcon({ icon }) {
-  if (icon === "linkedin") return <span aria-hidden="true">in</span>;
-
-  if (icon === "x") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
-      </svg>
-    );
-  }
-
-  if (icon === "github") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.5v-1.9c-2.78.62-3.37-1.2-3.37-1.2-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 5.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.95.68 1.92v2.85c0 .28.18.6.69.5A10.1 10.1 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M5 4h14v2H5V4Zm0 4h14v2H5V8Zm0 4h14v8l-7-3.9L5 20v-8Z" />
-    </svg>
-  );
+  return <BrandIcon icon={icon} />;
 }
 
 export default function HeaderDock() {
@@ -56,7 +35,11 @@ export default function HeaderDock() {
     const nextTheme = theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = nextTheme;
     document.body.dataset.theme = nextTheme;
-    window.localStorage.setItem("sethu-theme", nextTheme);
+    try {
+      window.localStorage.setItem("sethu-theme", nextTheme);
+    } catch {
+      // The visual theme still works when storage is blocked or unavailable.
+    }
     setTheme(nextTheme);
   };
 

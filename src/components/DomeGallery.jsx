@@ -9,51 +9,189 @@ const DEFAULT_IMAGES = [
     caption: 'San Francisco, CA'
   },
   {
-    src: 'https://images.unsplash.com/photo-1755353985163-c2a0fe5ac3d8?q=80&w=774&auto=format&fit=crop',
-    alt: 'Travel memory'
+    src: '/assets/world-chicago-1.jpg?v=2',
+    alt: 'Standing above the Chicago River at night',
+    caption: 'Chicago, IL'
   },
   {
-    src: '/assets/world-san-francisco-2.jpg',
+    src: '/assets/world-san-francisco-2.jpg?v=3',
     alt: 'Walking along the waterfront by the Golden Gate Bridge',
     caption: 'San Francisco, CA'
   },
   {
-    src: 'https://images.unsplash.com/photo-1755331039789-7e5680e26e8f?q=80&w=774&auto=format&fit=crop',
-    alt: 'Travel memory'
+    src: '/assets/world-chicago-2.jpg?v=2',
+    alt: 'Visiting Cloud Gate in Millennium Park',
+    caption: 'Chicago, IL'
   },
   {
-    src: '/assets/world-san-francisco-3.jpg',
+    src: '/assets/world-san-francisco-3.jpg?v=3',
     alt: 'Visiting Y Combinator in San Francisco',
     caption: 'San Francisco, CA'
   },
   {
-    src: 'https://images.unsplash.com/photo-1752588975228-21f44630bb3c?q=80&w=774&auto=format&fit=crop',
-    alt: 'Travel memory'
+    src: '/assets/world-denver-1.jpg?v=2',
+    alt: 'Walking through a Colorado mountain town near Denver',
+    caption: 'Denver, CO'
+  },
+  {
+    src: '/assets/world-denver-2.jpg?v=2',
+    alt: 'Snow-capped Rocky Mountains near Denver',
+    caption: 'Denver, CO'
+  },
+  {
+    src: '/assets/world-bethlehem-1.jpg?v=1',
+    alt: 'Enjoying a snowy night in Bethlehem',
+    caption: 'Bethlehem, PA'
+  },
+  {
+    src: '/assets/world-bethlehem-2.jpg?v=1',
+    alt: 'Celebrating with a friend in Bethlehem',
+    caption: 'Bethlehem, PA'
+  },
+  {
+    src: '/assets/world-bethlehem-3.jpg?v=1',
+    alt: 'Celebrating outside a historic stone building in Bethlehem',
+    caption: 'Bethlehem, PA'
+  },
+  {
+    src: '/assets/world-new-york-2.jpg?v=2',
+    alt: 'Exploring Times Square in New York City',
+    caption: 'New York, NY'
+  },
+  {
+    src: '/assets/world-new-york-un.jpg?v=1',
+    alt: 'Attending an event at the United Nations Headquarters',
+    caption: 'New York, NY'
+  },
+  {
+    src: '/assets/world-toronto-1.jpg?v=1',
+    alt: 'Toronto skyline and the CN Tower',
+    caption: 'Toronto, Canada'
+  },
+  {
+    src: '/assets/world-boston-1.jpg?v=1',
+    alt: 'Visiting the waterfront in Boston',
+    caption: 'Boston, MA'
+  },
+  {
+    src: '/assets/world-shawnee-mountain.jpg?v=1',
+    alt: 'Snowboarding at sunset at Shawnee Mountain',
+    caption: 'East Stroudsburg, PA'
+  },
+  {
+    src: '/assets/world-mumbai-1.jpg?v=1',
+    alt: 'Viewing historic architecture in Mumbai',
+    caption: 'Mumbai, India'
+  },
+  {
+    src: '/assets/world-andaman-nicobar-1.jpg?v=1',
+    alt: 'Scuba diving beside a coral reef in the Andaman and Nicobar Islands',
+    caption: 'Andaman and Nicobar Islands, India'
+  },
+  {
+    src: '/assets/world-bangalore-1.jpg?v=1',
+    alt: 'Relaxing with friends while camping in Bangalore',
+    caption: 'Bangalore, India'
+  },
+  {
+    src: '/assets/world-kerala-1.jpg?v=2',
+    alt: 'Spending time with children at a community event in Kochi, Kerala',
+    caption: 'Kochi, Kerala'
+  },
+  {
+    src: '/assets/world-uttarakhand-1.jpg?v=1',
+    alt: 'Taking in a waterfall surrounded by greenery in Uttarakhand',
+    caption: 'Uttarakhand, India'
+  },
+  {
+    src: '/assets/world-dubai-1.jpg?v=1',
+    alt: 'Riding an electric scooter through Dubai',
+    caption: 'Dubai, UAE'
+  },
+  {
+    src: '/assets/world-raleigh-1.jpg?v=1',
+    alt: 'Attending a leadership conference with fellow students in Raleigh',
+    caption: 'Raleigh, NC'
+  },
+  {
+    src: '/assets/world-singapore-1.jpg?v=1',
+    alt: 'Visiting the Merlion and Marina Bay in Singapore',
+    caption: 'Singapore, Singapore'
+  },
+  {
+    src: '/assets/world-thrissur-1.jpg?v=1',
+    alt: 'Spending time with children at a community event in Thrissur',
+    caption: 'Thrissur, India'
+  },
+  {
+    src: '/assets/world-nanyuki-1.jpg?v=1',
+    alt: 'Standing at the equator marker in Nanyuki',
+    caption: 'Nanyuki, Kenya'
+  },
+  {
+    src: '/assets/world-nairobi-1.jpg?v=1',
+    alt: 'Overlooking the green highlands near Nairobi',
+    caption: 'Nairobi, Kenya'
+  },
+  {
+    src: '/assets/world-bali-1.jpg?v=1',
+    alt: 'Preparing for an outdoor adventure surrounded by tropical greenery in Bali',
+    caption: 'Bali, Indonesia'
+  },
+  {
+    src: '/assets/world-bali-2.jpg?v=1',
+    alt: 'Watching the sunrise over the mountains in Bali',
+    caption: 'Bali, Indonesia'
+  },
+  {
+    src: '/assets/world-diani-1.jpg?v=1',
+    alt: 'Running along the beach in Diani',
+    caption: 'Diani, Kenya'
+  },
+  {
+    src: '/assets/world-kuala-lumpur-1.jpg?v=1',
+    alt: 'Standing in front of the illuminated Petronas Towers at night',
+    caption: 'Kuala Lumpur, Malaysia'
+  },
+  {
+    src: '/assets/world-kuala-lumpur-2.jpg?v=1',
+    alt: 'Looking toward a hillside pagoda in Kuala Lumpur',
+    caption: 'Kuala Lumpur, Malaysia'
+  },
+  {
+    src: '/assets/world-montreal-1.jpg?v=1',
+    alt: 'Inside the richly decorated Notre-Dame Basilica of Montréal',
+    caption: 'Montréal, Canada'
   }
 ];
 
+const getThumbnailSrc = src => src.replace('/assets/world-', '/assets/world-thumbs/world-');
+
 const DEFAULT_LOCATIONS = [
-  'San Francisco, California',
+  'Bethlehem, PA',
+  'New York, NY',
+  'Chicago, IL',
+  'San Francisco, CA',
+  'Denver, CO',
+  'Boston, MA',
+  'Raleigh, NC',
+  'East Stroudsburg, PA',
   'Montreal, Canada',
   'Toronto, Canada',
   'Dubai, UAE',
-  'Bangkok, Thailand',
-  'Bali, Indonesia',
-  'Kuala Lumpur, Malaysia',
-  'Singapore',
-  'Malacca, Malaysia',
+  'Kenya, Africa',
+  'Tanzania, Africa',
+  'Thailand, Asia',
+  'Indonesia, Asia',
+  'Singapore, Asia',
+  'Malaysia, Asia',
   'Kerala, India',
-  'Mumbai, India',
-  'Delhi, India',
-  'Bengaluru, India',
-  'Tanzania',
-  'Nairobi, Kenya',
-  'Bethlehem, PA',
-  'New York City, NY',
-  'Chicago, IL',
-  'Denver, CO',
-  'Boston, MA',
-  'Nepal'
+  'Maharashtra, India',
+  'Bangalore, India (Karnataka)',
+  'New Delhi, India',
+  'Jaipur, India',
+  'Maldives',
+  'Andaman and Nicobar Islands'
 ];
 
 const DEFAULTS = {
@@ -75,28 +213,46 @@ const getDataNumber = (el, name, fallback) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
+const splitLocationCaption = caption => {
+  const value = String(caption || '').trim();
+  const separatorIndex = value.lastIndexOf(',');
+
+  if (separatorIndex < 0) {
+    return { place: value, country: '', length: value.length };
+  }
+
+  const place = value.slice(0, separatorIndex).trim();
+  const country = value.slice(separatorIndex + 1).trim();
+  return { place, country, length: value.length };
+};
+
+const US_STATE_CODES = new Set([
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'
+]);
+
+const isUSLocation = location => US_STATE_CODES.has(location.country);
+
+const getCaptionSizeClass = length => {
+  if (length >= 25) return 'item__caption--compact';
+  if (length >= 18) return 'item__caption--small';
+  return '';
+};
+
 function buildItems(pool, seg, locations) {
-  // Keep the longitude grid centred for every segment count. The previous
-  // fixed starting point only centred the sphere when `segments` was 38,
-  // which made wider/denser configurations visibly lean to one side.
-  const xCols = Array.from({ length: seg }, (_, i) => -(seg - 1) + i * 2);
+  // Preserve the original React Bits dome geometry: a dense, evenly spaced
+  // longitude grid with six staggered tiles per column. The visual curvature
+  // depends on this fixed relationship between the tile offsets and segments.
+  const xCols = Array.from({ length: seg }, (_, index) => -(seg - 1) + index * 2);
   const evenYs = [-5, -3, -1, 1, 3, 5];
   const oddYs = [-4, -2, 0, 2, 4, 6];
-
-  const coords = xCols.flatMap((x, c) => {
-    const ys = c % 2 === 0 ? evenYs : oddYs;
+  const coords = xCols.flatMap((x, column) => {
+    const ys = column % 2 === 0 ? evenYs : oddYs;
     return ys.map(y => ({ x, y, sizeX: 2, sizeY: 2 }));
   });
-
-  const totalSlots = coords.length;
-  if (pool.length === 0) {
-    return coords.map(c => ({ ...c, src: '', alt: '', caption: '' }));
-  }
-  if (pool.length > totalSlots) {
-    console.warn(
-      `[DomeGallery] Provided image count (${pool.length}) exceeds available tiles (${totalSlots}). Some images will not be shown.`
-    );
-  }
 
   const normalizedImages = pool.map(image => {
     if (typeof image === 'string') {
@@ -107,40 +263,37 @@ function buildItems(pool, seg, locations) {
       alt: image.alt || image.caption || image.place || '',
       caption: image.caption || image.place || image.alt || ''
     };
-  });
+  }).filter(image => image.src);
 
-  // Offset each column by one image so repeated locations do not form vertical
-  // bands across the dome. With the alternating San Francisco and travel
-  // sources above, this keeps matching locations from sitting directly beside
-  // one another while preserving the existing tile count and frame geometry.
-  const rowsPerColumn = evenYs.length;
-  const usedImages = Array.from({ length: totalSlots }, (_, i) => {
-    const column = Math.floor(i / rowsPerColumn);
-    return normalizedImages[(i + column) % normalizedImages.length];
-  });
+  const uniqueImages = [...new Map(normalizedImages.map(image => [image.src, image])).values()];
+  if (uniqueImages.length === 0) return { items: [], geometrySegments: seg };
 
-  for (let i = 1; i < usedImages.length; i++) {
-    if (usedImages[i].src === usedImages[i - 1].src) {
-      for (let j = i + 1; j < usedImages.length; j++) {
-        if (usedImages[j].src !== usedImages[i].src) {
-          const tmp = usedImages[i];
-          usedImages[i] = usedImages[j];
-          usedImages[j] = tmp;
-          break;
-        }
-      }
-    }
-  }
+  // A coprime stride spreads photos that were added together across the dome,
+  // keeping photos from the same city from clustering in adjacent tiles.
+  const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+  let stride = Math.max(2, Math.ceil(uniqueImages.length / 3));
+  while (gcd(stride, uniqueImages.length) !== 1) stride += 1;
+  const distributedImages = uniqueImages.map((_, index) => uniqueImages[(index * stride) % uniqueImages.length]);
+  const firstOccurrence = new Set();
 
-  return coords.map((c, i) => ({
-    ...c,
-    src: usedImages[i].src,
-    alt: usedImages[i].caption
-      ? usedImages[i].alt
-      : locations[i % locations.length] || usedImages[i].alt,
-    caption: usedImages[i].caption || locations[i % locations.length],
-    keyboardAccessible: i < locations.length
-  }));
+  return {
+    geometrySegments: seg,
+    items: coords.map((coord, index) => {
+      // Repeat the complete shuffled sequence to fill the visual grid. A full
+      // cycle separates identical sources by the entire unique collection,
+      // avoiding obvious duplicates in neighbouring rows or columns.
+      const image = distributedImages[index % distributedImages.length];
+      const keyboardAccessible = !firstOccurrence.has(image.src);
+      firstOccurrence.add(image.src);
+      return {
+        ...coord,
+        src: image.src,
+        alt: image.alt || locations[index % locations.length] || '',
+        caption: image.caption || locations[index % locations.length] || '',
+        keyboardAccessible
+      };
+    })
+  };
 }
 
 function computeItemBaseRotation(offsetX, offsetY, sizeX, sizeY, segments) {
@@ -210,7 +363,9 @@ export default function DomeGallery({
     document.body.classList.remove('dg-scroll-lock');
   }, []);
 
-  const items = useMemo(() => buildItems(images, segments, locations), [images, segments, locations]);
+  const galleryLayout = useMemo(() => buildItems(images, segments, locations), [images, segments, locations]);
+  const items = galleryLayout.items;
+  const geometrySegments = galleryLayout.geometrySegments;
   const resolvedImageFilter = imageFilter || (grayscale ? 'grayscale(1)' : 'none');
 
   const applyTransform = (xDeg, yDeg) => {
@@ -580,7 +735,7 @@ export default function DomeGallery({
       const offsetY = getDataNumber(parent, 'offsetY', 0);
       const sizeX = getDataNumber(parent, 'sizeX', 2);
       const sizeY = getDataNumber(parent, 'sizeY', 2);
-      const parentRot = computeItemBaseRotation(offsetX, offsetY, sizeX, sizeY, segments);
+      const parentRot = computeItemBaseRotation(offsetX, offsetY, sizeX, sizeY, geometrySegments);
       const parentY = normalizeAngle(parentRot.rotateY);
       const globalY = normalizeAngle(rotationRef.current.y);
       let rotY = -(parentY + globalY) % 360;
@@ -635,9 +790,19 @@ export default function DomeGallery({
       img.src = rawSrc;
       overlay.appendChild(img);
       if (caption) {
+        const location = splitLocationCaption(caption);
         const captionElement = document.createElement('div');
-        captionElement.className = 'enlarge__caption';
-        captionElement.textContent = caption;
+        captionElement.className = `enlarge__caption${isUSLocation(location) ? ' enlarge__caption--us' : ''}`;
+        const placeElement = document.createElement('span');
+        placeElement.className = 'enlarge__caption-place';
+        placeElement.textContent = `${location.place}${location.country ? ',' : ''}`;
+        captionElement.appendChild(placeElement);
+        if (location.country) {
+          const countryElement = document.createElement('span');
+          countryElement.className = 'enlarge__caption-country';
+          countryElement.textContent = location.country;
+          captionElement.appendChild(countryElement);
+        }
         overlay.appendChild(captionElement);
       }
       viewerRef.current.appendChild(overlay);
@@ -659,7 +824,7 @@ export default function DomeGallery({
       }, 16);
 
     },
-    [enlargeTransitionMs, lockScroll, openedImageHeight, openedImageWidth, segments, unlockScroll]
+    [enlargeTransitionMs, geometrySegments, lockScroll, openedImageHeight, openedImageWidth, unlockScroll]
   );
 
   const onTileClick = useCallback(
@@ -706,8 +871,8 @@ export default function DomeGallery({
       ref={rootRef}
       className="sphere-root"
       style={{
-        ['--segments-x']: segments,
-        ['--segments-y']: segments,
+        ['--segments-x']: geometrySegments,
+        ['--segments-y']: geometrySegments,
         ['--overlay-blur-color']: overlayBlurColor,
         ['--tile-radius']: imageBorderRadius,
         ['--enlarge-radius']: openedImageBorderRadius,
@@ -717,8 +882,13 @@ export default function DomeGallery({
       <main ref={mainRef} className="sphere-main">
         <div className="stage">
           <div ref={sphereRef} className="sphere">
-            {items.map((it, i) => (
-              <div
+            {items.map((it, i) => {
+              const location = splitLocationCaption(it.caption);
+              const captionSizeClass = getCaptionSizeClass(location.length);
+              const usLocationClass = isUSLocation(location) ? ' item__caption--us' : '';
+
+              return (
+                <div
                 key={`${it.x},${it.y},${i}`}
                 className="item"
                 data-src={it.src}
@@ -744,11 +914,23 @@ export default function DomeGallery({
                   onPointerUp={onTilePointerUp}
                   onKeyDown={onTileKeyDown}
                 >
-                  <img src={it.src} draggable={false} alt={it.alt} loading="lazy" decoding="async" fetchPriority="low" />
-                  <span className="item__caption">{it.caption}</span>
+                  <img
+                    src={getThumbnailSrc(it.src)}
+                    draggable={false}
+                    alt={it.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className={`item__caption ${captionSizeClass}${usLocationClass}`}>
+                    <span className="item__caption-place">
+                      {location.place}{location.country ? ',' : ''}
+                    </span>
+                    {location.country && <span className="item__caption-country">{location.country}</span>}
+                  </span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

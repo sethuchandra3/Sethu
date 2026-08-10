@@ -14,6 +14,12 @@
   margin-inline: auto;
 }
 
+.experiences-title-reveal {
+  width: fit-content;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
 .experiences-title {
   margin: 0;
   display: inline-flex;
@@ -24,10 +30,9 @@
   font-weight: 620;
   line-height: var(--section-title-leading);
   letter-spacing: 0;
-  opacity: 0;
+  opacity: 1;
   cursor: default;
   user-select: none;
-  will-change: transform, opacity;
 }
 
 .experiences-title .text-pressure-letter {
@@ -37,8 +42,7 @@
   font-size: inherit;
   color: var(--ink);
   text-align: center;
-  font-variation-settings: "opsz" 144, "wght" 620, "wdth" 86, "slnt" 0;
-  will-change: font-variation-settings;
+  font-variation-settings: "opsz" 144, "wght" 620, "wdth" 94, "slnt" 0;
 }
 
 .experiences-subtitle {

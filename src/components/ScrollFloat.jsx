@@ -8,6 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function ScrollFloat({
   as: Tag = "h2",
   id,
+  text,
   children,
   containerClassName = "",
   textClassName = "",
@@ -20,9 +21,10 @@ export default function ScrollFloat({
   preserveShape = false,
 }) {
   const containerRef = useRef(null);
+  const content = typeof text === "string" ? text : children;
   const characters = useMemo(() => {
-    const text = typeof children === "string" ? children : "";
-    return text.split(/(\s+)/).map((token, tokenIndex) => {
+    const value = typeof content === "string" ? content : "";
+    return value.split(/(\s+)/).map((token, tokenIndex) => {
       if (/^\s+$/.test(token)) {
         return token.includes("\n")
           ? <br key={`line-break-${tokenIndex}`} />
@@ -38,7 +40,7 @@ export default function ScrollFloat({
         </span>
       );
     });
-  }, [children]);
+  }, [content]);
 
   useEffect(() => {
     const element = containerRef.current;

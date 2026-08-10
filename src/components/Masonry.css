@@ -202,6 +202,10 @@
   grid-column: span 3;
 }
 
+.project-masonry[data-item-count="4"] .project-masonry__item {
+  grid-column: span 3;
+}
+
 .project-masonry__media:focus-visible {
   border-radius: 14px;
   outline: 2px solid #f25a1d;

@@ -7,7 +7,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const RESTING_WEIGHT = 620;
-const RESTING_WIDTH = 86;
+// Keep the variable-font title optically aligned with the Arial section
+// headings while retaining enough width range for the pressure interaction.
+const RESTING_WIDTH = 94;
 const MIN_PRESSURE_WEIGHT = 280;
 const MAX_PRESSURE_WEIGHT = 980;
 
@@ -37,13 +39,21 @@ export default function TextPressure({ text, id, className = "" }) {
     let targetHoverStrength = 0;
     let scrollStrength = 0;
     let targetScrollStrength = 0;
+    let titleRect = title.getBoundingClientRect();
     let frameId = 0;
     let resizeFrameId = 0;
     let disposed = false;
     let pressureTrigger;
+    let resizeObserver;
+    const lastSettings = new Array(letters.length).fill("");
+
+    const updateTitleRect = () => {
+      titleRect = title.getBoundingClientRect();
+      return titleRect;
+    };
 
     const centerPointer = (immediate = false) => {
-      const rect = title.getBoundingClientRect();
+      const rect = updateTitleRect();
       pointer.x = rect.left + rect.width / 2;
       pointer.y = rect.top + rect.height / 2;
 
@@ -57,8 +67,18 @@ export default function TextPressure({ text, id, className = "" }) {
       }
     };
 
-    const resetLetter = (letter) => {
-      letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${RESTING_WEIGHT}, 'wdth' ${RESTING_WIDTH}, 'slnt' 0`;
+    const applySettings = (letter, index, settings) => {
+      if (lastSettings[index] === settings) return;
+      letter.style.fontVariationSettings = settings;
+      lastSettings[index] = settings;
+    };
+
+    const resetLetter = (letter, index) => {
+      applySettings(
+        letter,
+        index,
+        `'opsz' 144, 'wght' ${RESTING_WEIGHT}, 'wdth' ${RESTING_WIDTH}, 'slnt' 0`,
+      );
     };
 
     const measureLetters = () => {
@@ -72,13 +92,13 @@ export default function TextPressure({ text, id, className = "" }) {
         resetLetter(letter);
       });
 
-      const titleRect = title.getBoundingClientRect();
+      const measuredTitleRect = updateTitleRect();
       letterMetrics = letters.map((letter) => {
         const rect = letter.getBoundingClientRect();
 
         return {
-          centerX: rect.left - titleRect.left + rect.width / 2,
-          centerY: rect.top - titleRect.top + rect.height / 2,
+          centerX: rect.left - measuredTitleRect.left + rect.width / 2,
+          centerY: rect.top - measuredTitleRect.top + rect.height / 2,
           width: rect.width,
         };
       });
@@ -98,7 +118,6 @@ export default function TextPressure({ text, id, className = "" }) {
       hoverStrength += (targetHoverStrength - hoverStrength) / 7;
       scrollStrength += (targetScrollStrength - scrollStrength) / 7;
 
-      const titleRect = title.getBoundingClientRect();
       const maxDistance = Math.max(titleRect.width * 0.38, 150);
       const useHoverPressure = hoverStrength >= scrollStrength;
       const activePointer = useHoverPressure ? easedPointer : easedScrollPointer;
@@ -124,7 +143,11 @@ export default function TextPressure({ text, id, className = "" }) {
           RESTING_WIDTH + (pressureWidth - RESTING_WIDTH) * activeStrength,
         );
         const slant = Math.round(horizontalOffset * -7 * activeStrength * 10) / 10;
-        letter.style.fontVariationSettings = `'opsz' 144, 'wght' ${weight}, 'wdth' ${width}, 'slnt' ${slant}`;
+        applySettings(
+          letter,
+          index,
+          `'opsz' 144, 'wght' ${weight}, 'wdth' ${width}, 'slnt' ${slant}`,
+        );
       });
 
       if (
@@ -147,19 +170,24 @@ export default function TextPressure({ text, id, className = "" }) {
       if (!frameId) frameId = window.requestAnimationFrame(animate);
     };
 
-    const handlePointerMove = (event) => {
-      const rect = title.getBoundingClientRect();
-      const isInside =
-        event.clientX >= rect.left &&
-        event.clientX <= rect.right &&
-        event.clientY >= rect.top &&
-        event.clientY <= rect.bottom;
-
+    const handlePointerEnter = (event) => {
+      updateTitleRect();
       pointer.x = event.clientX;
       pointer.y = event.clientY;
-      targetHoverStrength = isInside ? 1.15 : 0;
+      targetHoverStrength = 1.15;
+      ensureAnimation();
+    };
 
-      if (!isInside) centerPointer(false);
+    const handlePointerMove = (event) => {
+      pointer.x = event.clientX;
+      pointer.y = event.clientY;
+      targetHoverStrength = 1.15;
+      ensureAnimation();
+    };
+
+    const handlePointerLeave = () => {
+      targetHoverStrength = 0;
+      centerPointer(false);
       ensureAnimation();
     };
 
@@ -171,7 +199,10 @@ export default function TextPressure({ text, id, className = "" }) {
 
     const handleResize = () => {
       window.cancelAnimationFrame(resizeFrameId);
-      resizeFrameId = window.requestAnimationFrame(measureLetters);
+      resizeFrameId = window.requestAnimationFrame(() => {
+        measureLetters();
+        pressureTrigger?.refresh();
+      });
     };
 
     const start = () => {
@@ -184,12 +215,13 @@ export default function TextPressure({ text, id, className = "" }) {
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const progress = clamp(self.progress, 0, 1);
-          const rect = title.getBoundingClientRect();
+          const rect = updateTitleRect();
           targetScrollStrength = Math.sin(progress * Math.PI) * 1.08;
           scrollPointer.x = rect.left + rect.width * (0.06 + progress * 0.88);
           scrollPointer.y = rect.top + rect.height / 2;
           ensureAnimation();
         },
+        onRefresh: updateTitleRect,
         onLeave: () => {
           targetScrollStrength = 0;
           ensureAnimation();
@@ -199,9 +231,15 @@ export default function TextPressure({ text, id, className = "" }) {
           ensureAnimation();
         },
       });
-      window.addEventListener("pointermove", handlePointerMove, { passive: true });
+      title.addEventListener("pointerenter", handlePointerEnter, { passive: true });
+      title.addEventListener("pointermove", handlePointerMove, { passive: true });
+      title.addEventListener("pointerleave", handlePointerLeave, { passive: true });
+      title.addEventListener("pointercancel", handlePointerLeave, { passive: true });
       window.addEventListener("blur", handleWindowBlur);
       window.addEventListener("resize", handleResize);
+
+      resizeObserver = new ResizeObserver(updateTitleRect);
+      resizeObserver.observe(title);
 
       document.fonts?.ready.then(() => {
         if (!disposed) {
@@ -218,7 +256,11 @@ export default function TextPressure({ text, id, className = "" }) {
       window.cancelAnimationFrame(frameId);
       window.cancelAnimationFrame(resizeFrameId);
       pressureTrigger?.kill();
-      window.removeEventListener("pointermove", handlePointerMove);
+      resizeObserver?.disconnect();
+      title.removeEventListener("pointerenter", handlePointerEnter);
+      title.removeEventListener("pointermove", handlePointerMove);
+      title.removeEventListener("pointerleave", handlePointerLeave);
+      title.removeEventListener("pointercancel", handlePointerLeave);
       window.removeEventListener("blur", handleWindowBlur);
       window.removeEventListener("resize", handleResize);
     };

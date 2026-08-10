@@ -160,20 +160,74 @@ main.sphere-main {
 
 .item__caption {
   position: absolute;
-  right: 14px;
-  bottom: 12px;
-  left: 14px;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
   z-index: 2;
+  display: flex;
+  min-width: 0;
+  max-width: calc(100% - 20px);
+  flex-direction: column;
+  align-items: flex-start;
   color: #ffffff;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(0.72rem, 1vw, 0.92rem);
+  font-size: clamp(0.58rem, 0.78vw, 0.8rem);
   font-weight: 750;
   letter-spacing: 0;
-  line-height: 1.15;
+  line-height: 1.06;
   opacity: 0;
   pointer-events: none;
+  text-align: left;
   transform: translateY(6px);
   transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.item__caption--small {
+  font-size: clamp(0.5rem, 0.66vw, 0.68rem);
+}
+
+.item__caption--compact {
+  font-size: clamp(0.43rem, 0.56vw, 0.58rem);
+}
+
+.item__caption-place,
+.item__caption-country,
+.enlarge__caption-place,
+.enlarge__caption-country {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.item__caption-country {
+  margin-top: 0.2em;
+  font-size: 1em;
+  font-weight: inherit;
+  opacity: 1;
+}
+
+.item__caption--us {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.22em;
+  white-space: nowrap;
+}
+
+.item__caption--us .item__caption-place,
+.item__caption--us .item__caption-country {
+  display: inline;
+  width: auto;
+  max-width: none;
+}
+
+.item__caption--us .item__caption-country {
+  margin-top: 0;
+  font-size: 1em;
+  font-weight: inherit;
+  opacity: 1;
 }
 
 .item__image:hover::after,
@@ -263,6 +317,39 @@ main.sphere-main {
   letter-spacing: 0;
   line-height: 1.2;
   pointer-events: none;
+  text-align: left;
+}
+
+.enlarge__caption-place,
+.enlarge__caption-country {
+  width: 100%;
+}
+
+.enlarge__caption-country {
+  margin-top: 0.18em;
+  font-size: 1em;
+  font-weight: inherit;
+  opacity: 1;
+}
+
+.enlarge__caption--us {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25em;
+  white-space: nowrap;
+}
+
+.enlarge__caption--us .enlarge__caption-place,
+.enlarge__caption--us .enlarge__caption-country {
+  display: inline;
+  width: auto;
+}
+
+.enlarge__caption--us .enlarge__caption-country {
+  margin-top: 0;
+  font-size: 1em;
+  font-weight: inherit;
+  opacity: 1;
 }
 
 .sphere-root .enlarge-closing img {

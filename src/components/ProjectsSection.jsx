@@ -24,9 +24,9 @@ const projectPlaceholders = [
   },
   {
     id: "project-02",
-    img: "/assets/spotify-insights.png",
-    imageWidth: 1568,
-    imageHeight: 1003,
+    img: "/assets/spotify-insights.png?v=2",
+    imageWidth: 1536,
+    imageHeight: 1024,
     group: "concepts",
     title: "Spotify Insights: Make Podcasts Rememberable",
     description:
@@ -48,9 +48,9 @@ const projectPlaceholders = [
   },
   {
     id: "project-04",
-    img: "/assets/designathon-cooking-app.webp",
-    imageWidth: 394,
-    imageHeight: 450,
+    img: "/assets/designathon-cooking-app.webp?v=3",
+    imageWidth: 1536,
+    imageHeight: 1024,
     group: "concepts",
     title: "AI Cooking Companion",
     description:
@@ -60,15 +60,27 @@ const projectPlaceholders = [
   },
   {
     id: "project-05",
-    img: "/assets/pinterest-wrapped-concept.png",
-    imageWidth: 1448,
-    imageHeight: 1086,
+    img: "/assets/pinterest-wrapped-concept.png?v=2",
+    imageWidth: 1536,
+    imageHeight: 1024,
     group: "concepts",
     title: "Pinterest Wrapped: Your Year in Aesthetics",
     description:
       "Conceptualized a shareable annual recap that turns a year of saves into a named aesthetic identity and a new-user growth loop.",
     href: "https://superficial-wolf-2a8.notion.site/Pinterest-Wrapped-Your-Year-in-Aesthetics-shareable-annual-recap-39500521ab3181489ca3da05c95a937f?source=copy_link",
     cursorLabel: "View case study",
+  },
+  {
+    id: "project-06",
+    img: "/assets/tiktok-tutorial-mode.webp?v=2",
+    imageWidth: 1536,
+    imageHeight: 1024,
+    group: "concepts",
+    title: "TikTok Tutorial Mode",
+    description:
+      "Designed a native follow-along layer that turns how-to videos into guided steps, checklists, loopable clips, and shoppable tools.",
+    href: "/projects",
+    cursorLabel: "View concept",
   },
 ];
 
@@ -96,6 +108,10 @@ export default function ProjectsSection() {
   const panelRefs = useRef({});
   const swipeRef = useRef({ active: false, dragging: false, x: 0, y: 0 });
   const suppressClickRef = useRef(false);
+  const activeProjectCaptureKey = projectPlaceholders
+    .filter(project => project.group === activeGroup)
+    .map(project => project.img)
+    .join("|");
 
   useEffect(() => {
     const pointerQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
@@ -210,7 +226,6 @@ export default function ProjectsSection() {
       x: event.clientX,
       y: event.clientY,
     };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const handleSliderPointerMove = event => {
@@ -218,9 +233,12 @@ export default function ProjectsSection() {
     if (!swipe.active || !sliderRef.current) return;
     const deltaX = event.clientX - swipe.x;
     const deltaY = event.clientY - swipe.y;
-    if (!swipe.dragging && (Math.abs(deltaX) < 8 || Math.abs(deltaX) <= Math.abs(deltaY))) return;
-    swipe.dragging = true;
-    suppressClickRef.current = true;
+    if (!swipe.dragging) {
+      if (Math.abs(deltaX) < 8 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+      swipe.dragging = true;
+      suppressClickRef.current = true;
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
     sliderRef.current.dataset.dragging = "true";
     sliderRef.current.style.setProperty(
       "--projects-drag-x",
@@ -278,6 +296,7 @@ export default function ProjectsSection() {
         </a>
         <ScrollFloat
           as="p"
+          text={"I help build products that unleash the full user experience,\none feature at a time."}
           containerClassName="projects-subtitle"
           animationDuration={1}
           ease="none"
@@ -285,9 +304,7 @@ export default function ProjectsSection() {
           scrollEnd="top 56%"
           stagger={0.018}
           preserveShape
-        >
-          A selection of how I think, design and build.
-        </ScrollFloat>
+        />
         </header>
       </div>
 
@@ -372,8 +389,7 @@ export default function ProjectsSection() {
                 trackingTargetRef={galleryRef}
                 activeTargetRef={galleryRef}
                 activeSelector=".project-masonry__media"
-                captureKey={activeGroup}
-                enabled={glassReady}
+                captureKey={`${activeGroup}:${activeProjectCaptureKey}`}
                 onCaptureReady={setGlassReady}
                 lensProps={{
                   scale: 0.075,
