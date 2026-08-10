@@ -151,23 +151,26 @@ export default function ProjectsSection() {
     const galleryInner = galleryInnerRef.current;
     if (!galleryInner) return undefined;
 
+    // Keep the gallery visible while Astro hydrates this island. Starting at
+    // autoAlpha: 0 could hide the server-rendered projects after their scroll
+    // trigger had already been crossed, leaving the whole section invisible.
+    gsap.set(galleryInner, { autoAlpha: 1 });
+    setGalleryRevealed(true);
+
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       gsap.set(galleryInner, { clearProps: "all" });
-      setGalleryRevealed(true);
       return undefined;
     }
 
     const reveal = gsap.fromTo(
       galleryInner,
-      { autoAlpha: 0, y: 30 },
+      { y: 30 },
       {
-        autoAlpha: 1,
         y: 0,
         duration: 0.9,
         delay: 0.08,
         ease: "power3.out",
         clearProps: "transform,opacity,visibility",
-        onComplete: () => setGalleryRevealed(true),
         scrollTrigger: {
           trigger: galleryInner,
           start: "top 88%",
