@@ -32,7 +32,7 @@ const projectPlaceholders = [
     description:
       "Designed a podcast memory layer for capturing, searching, and sharing insights and quotes while listening.",
     href: "https://superficial-wolf-2a8.notion.site/Spotify-Insights-Make-Podcasts-Rememberable-Insight-Capture-Sharing-Layer-39500521ab31817ea491dd6094e774a9",
-    cursorLabel: "View case study",
+    cursorLabel: "View concept",
   },
   {
     id: "project-03",
@@ -68,7 +68,7 @@ const projectPlaceholders = [
     description:
       "Conceptualized a shareable annual recap that turns a year of saves into a named aesthetic identity and a new-user growth loop.",
     href: "https://superficial-wolf-2a8.notion.site/Pinterest-Wrapped-Your-Year-in-Aesthetics-shareable-annual-recap-39500521ab3181489ca3da05c95a937f?source=copy_link",
-    cursorLabel: "View case study",
+    cursorLabel: "View concept",
   },
   {
     id: "project-06",
@@ -79,7 +79,7 @@ const projectPlaceholders = [
     title: "TikTok Tutorial Mode",
     description:
       "Designed a native follow-along layer that turns how-to videos into guided steps, checklists, loopable clips, and shoppable tools.",
-    href: "/projects",
+    href: "https://superficial-wolf-2a8.notion.site/TikTok-Tutorial-Mode-Capitalizing-on-a-new-search-engine-with-a-native-follow-along-layer-for-how-t-39500521ab3180ddbdf8d70bd6a5a1b1?source=copy_link",
     cursorLabel: "View concept",
   },
 ];
