@@ -26,7 +26,8 @@ export default function FluidGlass({
   activeSelector,
   captureKey,
   enabled = true,
-  onCaptureReady
+  onCaptureReady,
+  onResolvedScreenSize
 }) {
   const Wrapper = mode === 'bar' ? Bar : mode === 'cube' ? Cube : Lens;
   const rawOverrides = mode === 'bar' ? barProps : mode === 'cube' ? cubeProps : lensProps;
@@ -191,6 +192,7 @@ export default function FluidGlass({
           activeTargetRef={activeTargetRef}
           activeSelector={activeSelector}
           enabled={enabled && Boolean(contentCanvas)}
+          onResolvedScreenSize={onResolvedScreenSize}
         >
           {contentCanvas && <DomSnapshot canvas={contentCanvas} />}
           <Preload />
@@ -211,6 +213,7 @@ const ModeWrapper = memo(function ModeWrapper({
   activeTargetRef,
   activeSelector,
   enabled = true,
+  onResolvedScreenSize,
   ...props
 }) {
   const ref = useRef();
@@ -221,6 +224,7 @@ const ModeWrapper = memo(function ModeWrapper({
   const externalPointerRef = useRef({ x: 0, y: 0, active: !activeTargetRef });
   const wasActiveRef = useRef(!activeTargetRef);
   const lastClientPointerRef = useRef(null);
+  const lastReportedScreenSizeRef = useRef(0);
 
   useEffect(() => {
     if (!trackingTargetRef?.current) return undefined;
@@ -272,20 +276,42 @@ const ModeWrapper = memo(function ModeWrapper({
     geoWidthRef.current = geo.boundingBox.max.x - geo.boundingBox.min.x || 1;
   }, [nodes, geometryKey]);
 
-  const { scale, ior, thickness, anisotropy, chromaticAberration, ...extraMat } = modeProps;
+  const {
+    scale,
+    screenSize,
+    ior,
+    thickness,
+    anisotropy,
+    chromaticAberration,
+    ...extraMat
+  } = modeProps;
 
   useFrame((state, delta) => {
-    const { gl, viewport, pointer, camera } = state;
+    const { gl, viewport, pointer, camera, size } = state;
     const v = viewport.getCurrentViewport(camera, [0, 0, 15]);
 
     const activePointer = trackingTargetRef?.current ? externalPointerRef.current : pointer;
     const destX = followPointer ? (activePointer.x * v.width) / 2 : 0;
     const destY = lockToBottom ? -v.height / 2 + 0.2 : followPointer ? (activePointer.y * v.height) / 2 : 0;
     let resolvedScale = scale;
-    if (resolvedScale == null) {
+    if (screenSize != null && size.height > 0) {
+      // A raw Three.js scale changes its apparent size whenever the canvas
+      // height changes. Convert the requested CSS-pixel diameter to world
+      // units so short and tall project panels render the same lens size.
+      const worldDiameter = (screenSize / size.height) * v.height;
+      resolvedScale = worldDiameter / geoWidthRef.current;
+    } else if (resolvedScale == null) {
       const maxWorld = v.width * 0.9;
       const desired = maxWorld / geoWidthRef.current;
       resolvedScale = Math.min(0.15, desired);
+    }
+
+    if (onResolvedScreenSize && screenSize == null && resolvedScale != null && v.height > 0) {
+      const resolvedScreenSize = (geoWidthRef.current * resolvedScale / v.height) * size.height;
+      if (Math.abs(resolvedScreenSize - lastReportedScreenSizeRef.current) > 0.5) {
+        lastReportedScreenSizeRef.current = resolvedScreenSize;
+        onResolvedScreenSize(resolvedScreenSize);
+      }
     }
 
     const isActive = enabled && (!activeTargetRef?.current || externalPointerRef.current.active);

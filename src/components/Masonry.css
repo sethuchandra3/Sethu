@@ -198,12 +198,23 @@
   text-decoration: none;
 }
 
+.projects-group--concepts .project-masonry__item {
+  grid-column: span 3;
+}
+
+.projects-group--concepts .project-masonry__item[data-featured="true"] {
+  grid-column: 1 / -1;
+}
+
 .projects-group--shipped .project-masonry__item {
   grid-column: span 3;
 }
 
-.project-masonry[data-item-count="4"] .project-masonry__item {
-  grid-column: span 3;
+@media (min-width: 981px) {
+  .project-masonry[data-item-count="4"] .project-masonry__item,
+  .project-masonry[data-item-count="5"] .project-masonry__item:nth-child(-n + 2) {
+    grid-column: span 3;
+  }
 }
 
 .project-masonry__media:focus-visible {
@@ -225,6 +236,10 @@
 
 .projects-group--shipped .project-masonry__media {
   aspect-ratio: 2 / 1;
+}
+
+.projects-group--concepts .project-masonry__item[data-featured="true"] .project-masonry__media {
+  aspect-ratio: 21 / 9;
 }
 
 .project-masonry__media[data-cursor-label] {
@@ -271,7 +286,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding-top: clamp(14px, 1.5vw, 19px);
+  padding-top: clamp(16px, 1.5vw, 20px);
 }
 
 .projects-group--shipped .project-masonry__content {
@@ -282,6 +297,35 @@
 .project-masonry__content h4,
 .project-masonry__description {
   margin: 0;
+}
+
+.project-masonry__tags {
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0;
+  row-gap: 0.15em;
+  margin: 0 0 8px;
+  padding: 0;
+  color: var(--gallery-muted);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(0.6875rem, 0.72vw, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  list-style: none;
+}
+
+.project-masonry__tags li {
+  display: inline-flex;
+  align-items: center;
+}
+
+.project-masonry__tags li + li::before {
+  content: "·";
+  margin-inline: 0.58em;
+  color: inherit;
 }
 
 .project-masonry__content h3,
@@ -314,6 +358,16 @@
 .projects-group--shipped .project-masonry__content h3,
 .projects-group--shipped .project-masonry__content h4 {
   font-size: clamp(1.25rem, 1.7vw, 1.75rem);
+}
+
+.projects-group--concepts .project-masonry__item[data-featured="true"] .project-masonry__content h3,
+.projects-group--concepts .project-masonry__item[data-featured="true"] .project-masonry__content h4 {
+  font-size: clamp(1.7rem, 2.5vw, 2.45rem);
+}
+
+.projects-group--concepts .project-masonry__item[data-featured="true"] .project-masonry__description {
+  max-width: 72ch;
+  font-size: clamp(0.94rem, 1.15vw, 1.06rem);
 }
 
 .project-masonry__description {
@@ -355,6 +409,9 @@
     grid-column: span 3;
   }
 
+  .project-masonry[data-item-count="5"] .project-masonry__item:last-child {
+    grid-column: span 6;
+  }
 }
 
 @media (max-width: 640px) {
@@ -387,8 +444,13 @@
   }
 
   .project-masonry__item,
-  .projects-group--shipped .project-masonry__item {
+  .projects-group--shipped .project-masonry__item,
+  .project-masonry[data-item-count="5"] .project-masonry__item:last-child {
     grid-column: span 6;
+  }
+
+  .projects-group--concepts .project-masonry__item[data-featured="true"] .project-masonry__media {
+    aspect-ratio: 16 / 10;
   }
 
   .projects-group--shipped .project-masonry__media {

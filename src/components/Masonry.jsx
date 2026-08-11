@@ -14,6 +14,7 @@ export default function Masonry({ items, headingTag = "h3" }) {
           <article
             key={item.id}
             data-project-key={item.id}
+            data-featured={item.featured ? "true" : undefined}
             className="project-masonry__item"
           >
             <a
@@ -34,6 +35,11 @@ export default function Masonry({ items, headingTag = "h3" }) {
               />
             </a>
             <div className="project-masonry__content">
+              {item.tags?.length > 0 && (
+                <ul className="project-masonry__tags" aria-label="Project themes">
+                  {item.tags.map(tag => <li key={tag}>{tag}</li>)}
+                </ul>
+              )}
               <HeadingTag>
                 <a href={item.href} target="_blank" rel="noopener noreferrer">
                   {item.title}

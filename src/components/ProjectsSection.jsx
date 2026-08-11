@@ -9,6 +9,14 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const FluidGlass = lazy(() => import("./FluidGlass.jsx"));
 
+const projectLensProps = Object.freeze({
+  scale: 0.04,
+  ior: 1.15,
+  thickness: 5,
+  chromaticAberration: 0.03,
+  anisotropy: 0.01,
+});
+
 const projectPlaceholders = [
   {
     id: "project-01",
@@ -24,13 +32,15 @@ const projectPlaceholders = [
   },
   {
     id: "project-02",
-    img: "/assets/spotify-insights.png?v=2",
+    img: "/assets/spotify-insights-concept-light.png",
     imageWidth: 1536,
     imageHeight: 1024,
     group: "concepts",
+    displayOrder: 1,
+    tags: ["Retention", "Knowledge Capture", "Sharing"],
     title: "Spotify Insights: Make Podcasts Rememberable",
     description:
-      "Designed a podcast memory layer for capturing, searching, and sharing insights and quotes while listening.",
+      "Explored how Spotify could make podcasts more valuable after listening by turning fleeting moments into searchable, shareable insights.",
     href: "https://superficial-wolf-2a8.notion.site/Spotify-Insights-Make-Podcasts-Rememberable-Insight-Capture-Sharing-Layer-39500521ab31817ea491dd6094e774a9",
     cursorLabel: "View concept",
   },
@@ -52,9 +62,11 @@ const projectPlaceholders = [
     imageWidth: 1536,
     imageHeight: 1024,
     group: "concepts",
+    displayOrder: 5,
+    tags: ["AI UX", "Adaptive Guidance", "Voice"],
     title: "AI Cooking Companion",
     description:
-      "Designed a beginner-friendly cooking app that combines TikTok-style recipes with hands-free AI voice guidance.",
+      "Designed a beginner-first cooking experience that adapts recipes and provides hands-free guidance when users need it most.",
     href: "https://www.figma.com/design/f39mtF9PRe36RupvsY37UY/Prototype?node-id=0-1&t=AQRoZ5SMH3DpLIng-1",
     cursorLabel: "View prototype",
   },
@@ -64,10 +76,12 @@ const projectPlaceholders = [
     imageWidth: 1536,
     imageHeight: 1024,
     group: "concepts",
+    displayOrder: 3,
+    tags: ["Growth", "Personalization", "Sharing"],
     title: "Pinterest Wrapped: Your Year in Aesthetics",
     description:
-      "Conceptualized a shareable annual recap that turns a year of saves into a named aesthetic identity and a new-user growth loop.",
-    href: "https://superficial-wolf-2a8.notion.site/Pinterest-Wrapped-Your-Year-in-Aesthetics-shareable-annual-recap-39500521ab3181489ca3da05c95a937f?source=copy_link",
+      "Designed an annual identity recap that turns a year of saves into a shareable aesthetic story—and a new acquisition loop for Pinterest.",
+    href: "https://superficial-wolf-2a8.notion.site/Pinterest-Wrapped-2f000521ab3180a7b232e01cf2e7444b?source=copy_link",
     cursorLabel: "View concept",
   },
   {
@@ -76,10 +90,27 @@ const projectPlaceholders = [
     imageWidth: 1536,
     imageHeight: 1024,
     group: "concepts",
+    displayOrder: 0,
+    featured: true,
+    tags: ["Consumer", "Creator Ecosystem", "Commerce"],
     title: "TikTok Tutorial Mode",
     description:
-      "Designed a native follow-along layer that turns how-to videos into guided steps, checklists, loopable clips, and shoppable tools.",
+      "Turned passive how-to videos into guided experiences viewers can actually complete, while giving creators a new engagement and commerce surface.",
     href: "https://superficial-wolf-2a8.notion.site/TikTok-Tutorial-Mode-Capitalizing-on-a-new-search-engine-with-a-native-follow-along-layer-for-how-t-39500521ab3180ddbdf8d70bd6a5a1b1?source=copy_link",
+    cursorLabel: "View concept",
+  },
+  {
+    id: "project-07",
+    img: "/assets/duolingo-video-concept.png",
+    imageWidth: 1536,
+    imageHeight: 1024,
+    group: "concepts",
+    displayOrder: 4,
+    tags: ["Engagement", "Learning", "Content"],
+    title: "Duolingo Video: Spanish in Context",
+    description:
+      "Explored how short-form native-speaker video could bridge the gap between structured lessons and understanding Spanish in the real world.",
+    href: "https://superficial-wolf-2a8.notion.site/Duolingo-Video-a-short-form-native-video-layer-for-Duolingo-Spanish-39500521ab3180c8b374feff990ff56f?pvs=73",
     cursorLabel: "View concept",
   },
   {
@@ -88,10 +119,26 @@ const projectPlaceholders = [
     imageWidth: 1536,
     imageHeight: 1024,
     group: "concepts",
+    displayOrder: 6,
+    tags: ["AI UX", "Onboarding", "Automation"],
     title: "Resume to LinkedIn Profile Generator",
     description:
-      "Designed an AI-assisted onboarding flow that parses a resume, maps its content to the right LinkedIn sections, and presents editable cards for review before publishing.",
+      "Designed an AI onboarding flow that turns an existing resume into a reviewable LinkedIn profile instead of making users rebuild it manually.",
     href: "https://superficial-wolf-2a8.notion.site/Resume-to-Linkedin-profile-39500521ab31806382bfe2a0f1cd823a?source=copy_link",
+    cursorLabel: "View concept",
+  },
+  {
+    id: "project-09",
+    img: "/assets/apple-photos-feelings.png",
+    imageWidth: 1536,
+    imageHeight: 1024,
+    group: "concepts",
+    displayOrder: 2,
+    tags: ["Personalization", "Discovery", "Interaction Design"],
+    title: "Apple Photos Feelings",
+    description:
+      "Reimagined photo retrieval around how memories felt—not just when or where they happened—through an emotional organization layer.",
+    href: "https://superficial-wolf-2a8.notion.site/Apple-Photos-a-Feelings-reaction-layer-browse-memories-by-emotion-not-just-the-heart-3b900521ab31816facbbc6b50bb04ef9?source=copy_link",
     cursorLabel: "View concept",
   },
 ];
@@ -114,6 +161,7 @@ export default function ProjectsSection() {
   const [supportsFinePointer, setSupportsFinePointer] = useState(false);
   const [glassReady, setGlassReady] = useState(false);
   const [galleryRevealed, setGalleryRevealed] = useState(false);
+  const [conceptLensScreenSize, setConceptLensScreenSize] = useState(null);
   const galleryRef = useRef(null);
   const galleryInnerRef = useRef(null);
   const sliderRef = useRef(null);
@@ -311,7 +359,7 @@ export default function ProjectsSection() {
         </a>
         <ScrollFloat
           as="p"
-          text={"I help build products that unleash the full user experience,\none feature at a time."}
+          text={"I help build products that unleash the full user experience by finding overlooked user problems, understanding why they matter, and designing the smallest product bet that could change the experience."}
           containerClassName="projects-subtitle"
           animationDuration={1}
           ease="none"
@@ -366,7 +414,9 @@ export default function ProjectsSection() {
             onClickCapture={handleSliderClickCapture}
           >
             {projectGroups.map((group, groupIndex) => {
-              const items = projectPlaceholders.filter(project => project.group === group.id);
+              const items = projectPlaceholders
+                .filter(project => project.group === group.id)
+                .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
               const activeIndex = projectGroups.findIndex(item => item.id === activeGroup);
               const positionClass = groupIndex === activeIndex
                 ? "is-active"
@@ -406,13 +456,10 @@ export default function ProjectsSection() {
                 activeSelector=".project-masonry__media"
                 captureKey={`${activeGroup}:${activeProjectCaptureKey}`}
                 onCaptureReady={setGlassReady}
-                lensProps={{
-                  scale: 0.075,
-                  ior: 1.15,
-                  thickness: 5,
-                  chromaticAberration: 0.03,
-                  anisotropy: 0.01,
-                }}
+                onResolvedScreenSize={activeGroup === "concepts" ? setConceptLensScreenSize : undefined}
+                lensProps={activeGroup === "shipped" && conceptLensScreenSize
+                  ? { ...projectLensProps, screenSize: conceptLensScreenSize }
+                  : projectLensProps}
                 barProps={{}}
                 cubeProps={{}}
               />
