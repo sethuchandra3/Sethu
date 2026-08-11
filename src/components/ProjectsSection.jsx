@@ -82,6 +82,18 @@ const projectPlaceholders = [
     href: "https://superficial-wolf-2a8.notion.site/TikTok-Tutorial-Mode-Capitalizing-on-a-new-search-engine-with-a-native-follow-along-layer-for-how-t-39500521ab3180ddbdf8d70bd6a5a1b1?source=copy_link",
     cursorLabel: "View concept",
   },
+  {
+    id: "project-08",
+    img: "/assets/resume-linkedin-profile-generator.png",
+    imageWidth: 1536,
+    imageHeight: 1024,
+    group: "concepts",
+    title: "Resume to LinkedIn Profile Generator",
+    description:
+      "Designed an AI-assisted onboarding flow that parses a resume, maps its content to the right LinkedIn sections, and presents editable cards for review before publishing.",
+    href: "https://superficial-wolf-2a8.notion.site/Resume-to-Linkedin-profile-39500521ab31806382bfe2a0f1cd823a?source=copy_link",
+    cursorLabel: "View concept",
+  },
 ];
 
 const projectGroups = [
