@@ -124,18 +124,24 @@ const AnimatedList = forwardRef(function AnimatedList({
     const element = event.currentTarget;
     updateGradients(element);
 
-    const distanceFromEnd = element.scrollHeight - element.scrollTop - element.clientHeight;
-    const reachedEnd = distanceFromEnd <= 4;
-    const isProgrammatic = performance.now() < programmaticScrollUntilRef.current;
+    // A page-driven list is controlled by its parent's scroll timeline. Letting
+    // its mirrored internal scroll fire onReachEnd creates a second, competing
+    // panel controller and can force the view forward while the user scrolls
+    // back. Only self-scrolling lists own their end transition.
+    if (!pageDriven) {
+      const distanceFromEnd = element.scrollHeight - element.scrollTop - element.clientHeight;
+      const reachedEnd = distanceFromEnd <= 4;
+      const isProgrammatic = performance.now() < programmaticScrollUntilRef.current;
 
-    if (!reachedEnd) {
-      reachedEndRef.current = false;
-    } else if (!isProgrammatic && !reachedEndRef.current) {
-      reachedEndRef.current = true;
-      onReachEnd?.();
+      if (!reachedEnd) {
+        reachedEndRef.current = false;
+      } else if (!isProgrammatic && !reachedEndRef.current) {
+        reachedEndRef.current = true;
+        onReachEnd?.();
+      }
+      return;
     }
 
-    if (!pageDriven) return;
     const maxScroll = Math.max(0, element.scrollHeight - element.clientHeight);
     const progress = maxScroll > 0 ? element.scrollTop / maxScroll : 0;
     const nextIndex = Math.round(progress * Math.max(items.length - 1, 0));

@@ -20,6 +20,9 @@ export default function FluidGlassCursor() {
       frame = 0;
       cursor.style.setProperty("--cursor-x", `${targetX}px`);
       cursor.style.setProperty("--cursor-y", `${targetY}px`);
+      if (hasPosition) {
+        syncCursorMode(document.elementFromPoint(targetX, targetY));
+      }
     };
 
     const requestPositionRender = () => {
@@ -27,6 +30,8 @@ export default function FluidGlassCursor() {
     };
 
     const hideCursor = () => {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
       cursor.dataset.visible = "false";
       cursor.dataset.header = "false";
       cursor.dataset.pressed = "false";
@@ -56,8 +61,10 @@ export default function FluidGlassCursor() {
       if (!hasPosition) {
         hasPosition = true;
       }
-      const target = event.target instanceof Element ? event.target : null;
-      syncCursorMode(target);
+      // Pointer capture can keep event.target pinned to a clicked tab even
+      // after the pointer has moved away. Hit-test the live coordinates so the
+      // normal cursor and FluidGlass state never remain stuck on stale DOM.
+      syncCursorMode(document.elementFromPoint(targetX, targetY));
       cursor.dataset.visible = "true";
       requestPositionRender();
     };
@@ -75,6 +82,12 @@ export default function FluidGlassCursor() {
 
     const handlePointerUp = () => {
       cursor.dataset.pressed = "false";
+      handleGlassReadinessChange();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") hideCursor();
+      else handleGlassReadinessChange();
     };
 
     const handleWindowMouseOut = (event) => {
@@ -92,8 +105,14 @@ export default function FluidGlassCursor() {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", hideCursor);
       window.removeEventListener("mouseout", handleWindowMouseOut);
       window.removeEventListener("blur", hideCursor);
+      window.removeEventListener("focus", handleGlassReadinessChange);
+      window.removeEventListener("pageshow", handleGlassReadinessChange);
+      window.removeEventListener("scroll", handleGlassReadinessChange);
+      window.removeEventListener("resize", handleGlassReadinessChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
 
     const startListening = () => {
@@ -108,8 +127,14 @@ export default function FluidGlassCursor() {
       window.addEventListener("pointermove", handlePointerMove, { passive: true });
       window.addEventListener("pointerdown", handlePointerDown, { passive: true });
       window.addEventListener("pointerup", handlePointerUp, { passive: true });
+      window.addEventListener("pointercancel", hideCursor, { passive: true });
       window.addEventListener("mouseout", handleWindowMouseOut);
       window.addEventListener("blur", hideCursor);
+      window.addEventListener("focus", handleGlassReadinessChange);
+      window.addEventListener("pageshow", handleGlassReadinessChange);
+      window.addEventListener("scroll", handleGlassReadinessChange, { passive: true });
+      window.addEventListener("resize", handleGlassReadinessChange, { passive: true });
+      document.addEventListener("visibilitychange", handleVisibilityChange);
     };
 
     const handleCapabilityChange = () => {

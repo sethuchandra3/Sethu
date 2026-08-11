@@ -191,6 +191,7 @@ export default function FluidGlass({
           trackingTargetRef={trackingTargetRef}
           activeTargetRef={activeTargetRef}
           activeSelector={activeSelector}
+          pointerRefreshKey={captureKey}
           enabled={enabled && Boolean(contentCanvas)}
           onResolvedScreenSize={onResolvedScreenSize}
         >
@@ -212,6 +213,7 @@ const ModeWrapper = memo(function ModeWrapper({
   trackingTargetRef,
   activeTargetRef,
   activeSelector,
+  pointerRefreshKey,
   enabled = true,
   onResolvedScreenSize,
   ...props
@@ -229,11 +231,24 @@ const ModeWrapper = memo(function ModeWrapper({
   useEffect(() => {
     if (!trackingTargetRef?.current) return undefined;
 
+    let refreshFrame = 0;
+    let resizeObserver;
+
+    const deactivatePointer = () => {
+      externalPointerRef.current.active = false;
+    };
+
     const updatePointerFromClient = (clientX, clientY) => {
       const target = trackingTargetRef.current;
-      if (!target) return;
+      if (!target?.isConnected || document.visibilityState === 'hidden') {
+        deactivatePointer();
+        return;
+      }
       const rect = target.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
+      if (!rect.width || !rect.height) {
+        deactivatePointer();
+        return;
+      }
 
       const activeTarget = activeTargetRef?.current;
       const activeRect = activeTarget?.getBoundingClientRect();
@@ -251,24 +266,66 @@ const ModeWrapper = memo(function ModeWrapper({
     };
 
     const updatePointer = event => {
-      lastClientPointerRef.current = { x: event.clientX, y: event.clientY };
-      updatePointerFromClient(event.clientX, event.clientY);
+      const coalescedEvents = event.getCoalescedEvents?.();
+      const latestEvent = coalescedEvents?.length
+        ? coalescedEvents[coalescedEvents.length - 1]
+        : event;
+      lastClientPointerRef.current = { x: latestEvent.clientX, y: latestEvent.clientY };
+      updatePointerFromClient(latestEvent.clientX, latestEvent.clientY);
     };
 
-    const updateAfterLayoutChange = () => {
+    const refreshPointer = () => {
+      refreshFrame = 0;
       const lastPointer = lastClientPointerRef.current;
-      if (lastPointer) updatePointerFromClient(lastPointer.x, lastPointer.y);
+      if (lastPointer) {
+        updatePointerFromClient(lastPointer.x, lastPointer.y);
+      } else {
+        deactivatePointer();
+      }
+    };
+
+    const schedulePointerRefresh = () => {
+      if (!refreshFrame) refreshFrame = window.requestAnimationFrame(refreshPointer);
+    };
+
+    const handlePointerOut = event => {
+      if (!event.relatedTarget) deactivatePointer();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') deactivatePointer();
+      else schedulePointerRefresh();
     };
 
     window.addEventListener('pointermove', updatePointer, { passive: true });
-    window.addEventListener('scroll', updateAfterLayoutChange, { passive: true });
-    window.addEventListener('resize', updateAfterLayoutChange, { passive: true });
+    window.addEventListener('pointercancel', deactivatePointer, { passive: true });
+    window.addEventListener('pointerout', handlePointerOut);
+    window.addEventListener('scroll', schedulePointerRefresh, { passive: true });
+    window.addEventListener('resize', schedulePointerRefresh, { passive: true });
+    window.addEventListener('blur', deactivatePointer);
+    window.addEventListener('focus', schedulePointerRefresh);
+    window.addEventListener('pageshow', schedulePointerRefresh);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    resizeObserver = new ResizeObserver(schedulePointerRefresh);
+    resizeObserver.observe(trackingTargetRef.current);
+    schedulePointerRefresh();
+
     return () => {
+      window.cancelAnimationFrame(refreshFrame);
+      resizeObserver?.disconnect();
+      deactivatePointer();
       window.removeEventListener('pointermove', updatePointer);
-      window.removeEventListener('scroll', updateAfterLayoutChange);
-      window.removeEventListener('resize', updateAfterLayoutChange);
+      window.removeEventListener('pointercancel', deactivatePointer);
+      window.removeEventListener('pointerout', handlePointerOut);
+      window.removeEventListener('scroll', schedulePointerRefresh);
+      window.removeEventListener('resize', schedulePointerRefresh);
+      window.removeEventListener('blur', deactivatePointer);
+      window.removeEventListener('focus', schedulePointerRefresh);
+      window.removeEventListener('pageshow', schedulePointerRefresh);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [trackingTargetRef, activeTargetRef, activeSelector]);
+  }, [trackingTargetRef, activeTargetRef, activeSelector, pointerRefreshKey]);
 
   useEffect(() => {
     const geo = nodes[geometryKey]?.geometry;

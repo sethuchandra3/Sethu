@@ -38,11 +38,11 @@ const projectPlaceholders = [
     group: "concepts",
     displayOrder: 1,
     tags: ["Retention", "Knowledge Capture", "Sharing"],
-    title: "Spotify Insights: Make Podcasts Rememberable",
+    title: "Spotify Insights",
     description:
       "Explored how Spotify could make podcasts more valuable after listening by turning fleeting moments into searchable, shareable insights.",
     href: "https://superficial-wolf-2a8.notion.site/Spotify-Insights-Make-Podcasts-Rememberable-Insight-Capture-Sharing-Layer-39500521ab31817ea491dd6094e774a9",
-    cursorLabel: "View concept",
+    cursorLabel: "Explore concept",
   },
   {
     id: "project-03",
@@ -64,11 +64,11 @@ const projectPlaceholders = [
     group: "concepts",
     displayOrder: 5,
     tags: ["AI UX", "Adaptive Guidance", "Voice"],
-    title: "AI Cooking Companion",
+    title: "Let's Cook",
     description:
       "Designed a beginner-first cooking experience that adapts recipes and provides hands-free guidance when users need it most.",
     href: "https://www.figma.com/design/f39mtF9PRe36RupvsY37UY/Prototype?node-id=0-1&t=AQRoZ5SMH3DpLIng-1",
-    cursorLabel: "View prototype",
+    cursorLabel: "Explore concept",
   },
   {
     id: "project-05",
@@ -78,17 +78,17 @@ const projectPlaceholders = [
     group: "concepts",
     displayOrder: 3,
     tags: ["Growth", "Personalization", "Sharing"],
-    title: "Pinterest Wrapped: Your Year in Aesthetics",
+    title: "Pinterest Wrapped",
     description:
-      "Designed an annual identity recap that turns a year of saves into a shareable aesthetic story—and a new acquisition loop for Pinterest.",
+      "Designed an annual identity recap that turns a year of saves into a shareable aesthetic story and creates a new acquisition loop for Pinterest.",
     href: "https://superficial-wolf-2a8.notion.site/Pinterest-Wrapped-2f000521ab3180a7b232e01cf2e7444b?source=copy_link",
-    cursorLabel: "View concept",
+    cursorLabel: "Explore concept",
   },
   {
     id: "project-06",
-    img: "/assets/tiktok-tutorial-mode.webp?v=2",
-    imageWidth: 1536,
-    imageHeight: 1024,
+    img: "/assets/tiktok-tutorial-mode.webp?v=3",
+    imageWidth: 1672,
+    imageHeight: 941,
     group: "concepts",
     displayOrder: 0,
     featured: true,
@@ -97,7 +97,7 @@ const projectPlaceholders = [
     description:
       "Turned passive how-to videos into guided experiences viewers can actually complete, while giving creators a new engagement and commerce surface.",
     href: "https://superficial-wolf-2a8.notion.site/TikTok-Tutorial-Mode-Capitalizing-on-a-new-search-engine-with-a-native-follow-along-layer-for-how-t-39500521ab3180ddbdf8d70bd6a5a1b1?source=copy_link",
-    cursorLabel: "View concept",
+    cursorLabel: "Explore concept",
   },
   {
     id: "project-07",
@@ -107,11 +107,11 @@ const projectPlaceholders = [
     group: "concepts",
     displayOrder: 4,
     tags: ["Engagement", "Learning", "Content"],
-    title: "Duolingo Video: Spanish in Context",
+    title: "Duolingo Video",
     description:
       "Explored how short-form native-speaker video could bridge the gap between structured lessons and understanding Spanish in the real world.",
     href: "https://superficial-wolf-2a8.notion.site/Duolingo-Video-a-short-form-native-video-layer-for-Duolingo-Spanish-39500521ab3180c8b374feff990ff56f?pvs=73",
-    cursorLabel: "View concept",
+    cursorLabel: "Explore concept",
   },
   {
     id: "project-08",
@@ -121,11 +121,11 @@ const projectPlaceholders = [
     group: "concepts",
     displayOrder: 6,
     tags: ["AI UX", "Onboarding", "Automation"],
-    title: "Resume to LinkedIn Profile Generator",
+    title: "Resume to LinkedIn Profile",
     description:
       "Designed an AI onboarding flow that turns an existing resume into a reviewable LinkedIn profile instead of making users rebuild it manually.",
     href: "https://superficial-wolf-2a8.notion.site/Resume-to-Linkedin-profile-39500521ab31806382bfe2a0f1cd823a?source=copy_link",
-    cursorLabel: "View concept",
+    cursorLabel: "Explore concept",
   },
   {
     id: "project-09",
@@ -139,7 +139,7 @@ const projectPlaceholders = [
     description:
       "Reimagined photo retrieval around how memories felt—not just when or where they happened—through an emotional organization layer.",
     href: "https://superficial-wolf-2a8.notion.site/Apple-Photos-a-Feelings-reaction-layer-browse-memories-by-emotion-not-just-the-heart-3b900521ab31816facbbc6b50bb04ef9?source=copy_link",
-    cursorLabel: "View concept",
+    cursorLabel: "Explore concept",
   },
 ];
 

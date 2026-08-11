@@ -9,14 +9,17 @@ import "./ExperienceSection.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const WORK_PANEL_PROGRESS = 0.02;
+const COMMUNITY_PANEL_PROGRESS = 0.68;
+
 export default function ExperienceSection() {
   const rootRef = useRef(null);
   const sequenceRef = useRef(null);
   const resumeRef = useRef(null);
   const workListRef = useRef(null);
   const communityListRef = useRef(null);
+  const sequenceTriggerRef = useRef(null);
   const activePanelRef = useRef("work");
-  const manualCommunityRef = useRef(false);
   const [activePanel, setActivePanel] = useState("work");
 
   const switchPanel = useCallback((panel) => {
@@ -26,13 +29,22 @@ export default function ExperienceSection() {
   }, []);
 
   const handlePanelSelect = useCallback((panel) => {
-    manualCommunityRef.current = panel === "community";
     switchPanel(panel);
-  }, [switchPanel]);
 
-  const handleWorkListEnd = useCallback(() => {
-    manualCommunityRef.current = true;
-    switchPanel("community");
+    // The panels are driven by the pinned page-scroll timeline on desktop.
+    // Keep that timeline in sync with a direct tab selection so its next
+    // update cannot immediately override the panel the user just chose.
+    const sequenceTrigger = sequenceTriggerRef.current;
+    if (sequenceTrigger) {
+      const targetProgress = panel === "community"
+        ? COMMUNITY_PANEL_PROGRESS
+        : WORK_PANEL_PROGRESS;
+      const targetScroll = sequenceTrigger.start
+        + (sequenceTrigger.end - sequenceTrigger.start) * targetProgress;
+
+      sequenceTrigger.scroll(targetScroll);
+      ScrollTrigger.update();
+    }
   }, [switchPanel]);
 
   useEffect(() => {
@@ -94,7 +106,7 @@ export default function ExperienceSection() {
       const workEndProgress = 0.56;
       const communityEnterProgress = 0.58;
       const communityExitProgress = 0.52;
-      const communityScrollStartProgress = 0.68;
+      const communityScrollStartProgress = COMMUNITY_PANEL_PROGRESS;
       const communityEndProgress = 0.96;
       const resumeStartProgress = 0.84;
       const resumeEndProgress = 0.96;
@@ -134,25 +146,23 @@ export default function ExperienceSection() {
           resumeReveal.progress(resumeProgress);
           resumeCta.style.pointerEvents = resumeProgress >= 0.85 ? "auto" : "none";
 
-          if (self.direction < 0 && self.progress <= communityExitProgress) {
-            manualCommunityRef.current = false;
-          }
-
-          const nextPanel = manualCommunityRef.current
-            ? "community"
-            : activePanelRef.current === "community"
-              ? self.progress > communityExitProgress
-                ? "community"
-                : "work"
-              : self.progress >= communityEnterProgress
-                ? "community"
-                : "work";
+          const nextPanel = activePanelRef.current === "community"
+            ? self.progress > communityExitProgress
+              ? "community"
+              : "work"
+            : self.progress >= communityEnterProgress
+              ? "community"
+              : "work";
 
           switchPanel(nextPanel);
         },
       });
+      sequenceTriggerRef.current = sequenceTrigger;
 
       return () => {
+        if (sequenceTriggerRef.current === sequenceTrigger) {
+          sequenceTriggerRef.current = null;
+        }
         sequenceTrigger.kill();
         resumeReveal.kill();
         gsap.set(resumeCta, { clearProps: "opacity,visibility,transform,pointerEvents" });
@@ -209,7 +219,7 @@ export default function ExperienceSection() {
               aria-hidden={activePanel !== "work"}
               inert={activePanel !== "work"}
             >
-              <WorkExperienceList ref={workListRef} onReachEnd={handleWorkListEnd} />
+              <WorkExperienceList ref={workListRef} />
             </section>
 
             <section

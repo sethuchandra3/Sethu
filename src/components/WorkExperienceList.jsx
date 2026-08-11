@@ -60,7 +60,7 @@ const workExperiences = [
   },
 ];
 
-const WorkExperienceList = forwardRef(function WorkExperienceList({ onReachEnd }, forwardedRef) {
+const WorkExperienceList = forwardRef(function WorkExperienceList(_, forwardedRef) {
   return (
     <AnimatedList
       ref={forwardedRef}
@@ -69,7 +69,6 @@ const WorkExperienceList = forwardRef(function WorkExperienceList({ onReachEnd }
       enableArrowNavigation
       displayScrollbar={false}
       pageDriven
-      onReachEnd={onReachEnd}
       renderItem={(item) => (
         <>
           <div className={`work-experience__logo work-experience__logo--${item.id}`} aria-hidden="true">

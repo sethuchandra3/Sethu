@@ -242,6 +242,17 @@
   aspect-ratio: 21 / 9;
 }
 
+/* Preserve the complete 16:9 TikTok artwork instead of cropping it into the
+   wider featured-project frame. */
+.projects-group--concepts .project-masonry__item[data-project-key="project-06"] .project-masonry__media {
+  aspect-ratio: 1672 / 941;
+  background: #fff;
+}
+
+.project-masonry__item[data-project-key="project-06"] .project-masonry__media img {
+  object-fit: contain;
+}
+
 .project-masonry__media[data-cursor-label] {
   cursor: none;
 }
@@ -280,6 +291,10 @@
   transform: scale(1.025);
 }
 
+.project-masonry__item[data-project-key="project-06"] .project-masonry__media:focus-visible img {
+  transform: none;
+}
+
 .project-masonry__content {
   min-width: 0;
   flex: 1;
@@ -310,7 +325,7 @@
   padding: 0;
   color: var(--gallery-muted);
   font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(0.6875rem, 0.72vw, 0.75rem);
+  font-size: clamp(0.75rem, 0.78vw, 0.8125rem);
   font-weight: 500;
   letter-spacing: 0.03em;
   line-height: 1.4;
@@ -453,6 +468,10 @@
     aspect-ratio: 16 / 10;
   }
 
+  .projects-group--concepts .project-masonry__item[data-project-key="project-06"] .project-masonry__media {
+    aspect-ratio: 1672 / 941;
+  }
+
   .projects-group--shipped .project-masonry__media {
     aspect-ratio: 16 / 10;
   }
@@ -482,6 +501,10 @@
   .project-masonry__item:hover .project-masonry__media img {
     filter: saturate(1) contrast(1.04);
     transform: scale(1.025);
+  }
+
+  .project-masonry__item[data-project-key="project-06"]:hover .project-masonry__media img {
+    transform: none;
   }
 
   .project-masonry__item:hover .project-masonry__action i {
