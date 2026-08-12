@@ -361,6 +361,44 @@ body[data-theme="dark"] .work-experience__tags li { border-color: rgba(246, 240,
   .work-experience__tags li { padding: 5px 7px; }
 }
 
+/* Stacked panels: Work flows straight into Community on one continuous scroll,
+   and the toggle above tracks whichever section the reader has reached. */
+@media (max-width: 820px) {
+  .experience-panels[data-stacked="true"] {
+    min-height: 0;
+    display: block;
+  }
+
+  .experience-panels[data-stacked="true"] .experience-panel {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition: none;
+    /* html already carries scroll-padding-top for the header dock, so this only
+       adds the small gap that keeps a card from butting against the pill. */
+    scroll-margin-top: 12px;
+  }
+
+  .experience-panels[data-stacked="true"] .experience-panel + .experience-panel {
+    margin-top: clamp(48px, 9vw, 76px);
+  }
+
+  /* The toggle scrolls out of view once the stack starts, so each panel names
+     itself as the reader passes into it. */
+  .experience-panel__label {
+    margin: 0 0 clamp(14px, 3vw, 20px);
+    color: var(--muted);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .specular-button.experience-resume-button:hover {
     transform: none !important;

@@ -11,6 +11,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 const WORK_PANEL_PROGRESS = 0.02;
 const COMMUNITY_PANEL_PROGRESS = 0.68;
+// Below this width the panels stack into one continuous scroll instead of being
+// swapped by a pinned timeline. Mirrors the breakpoint in ExperienceSection.css.
+const STACKED_PANELS_QUERY = "(max-width: 820px)";
 
 export default function ExperienceSection() {
   const rootRef = useRef(null);
@@ -18,9 +21,12 @@ export default function ExperienceSection() {
   const resumeRef = useRef(null);
   const workListRef = useRef(null);
   const communityListRef = useRef(null);
+  const workPanelRef = useRef(null);
+  const communityPanelRef = useRef(null);
   const sequenceTriggerRef = useRef(null);
   const activePanelRef = useRef("work");
   const [activePanel, setActivePanel] = useState("work");
+  const [isStacked, setIsStacked] = useState(false);
 
   const switchPanel = useCallback((panel) => {
     if (activePanelRef.current === panel) return;
@@ -28,8 +34,27 @@ export default function ExperienceSection() {
     setActivePanel(panel);
   }, []);
 
+  useEffect(() => {
+    const query = window.matchMedia(STACKED_PANELS_QUERY);
+    const sync = () => setIsStacked(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
   const handlePanelSelect = useCallback((panel) => {
     switchPanel(panel);
+
+    // Stacked panels are both on the page, so the toggle is a jump link: move
+    // the reader to the section instead of swapping what is rendered.
+    if (isStacked) {
+      const target = panel === "community" ? communityPanelRef.current : workPanelRef.current;
+      target?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start",
+      });
+      return;
+    }
 
     // The panels are driven by the pinned page-scroll timeline on desktop.
     // Keep that timeline in sync with a direct tab selection so its next
@@ -45,7 +70,7 @@ export default function ExperienceSection() {
       sequenceTrigger.scroll(targetScroll);
       ScrollTrigger.update();
     }
-  }, [switchPanel]);
+  }, [isStacked, switchPanel]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -169,6 +194,24 @@ export default function ExperienceSection() {
       };
     }, root);
 
+    media.add(STACKED_PANELS_QUERY, () => {
+      // Both panels are laid out one after the other here, so the toggle
+      // follows the reader rather than gating what is rendered: scrolling off
+      // the end of Work carries you straight into Community.
+      const communityPanel = communityPanelRef.current;
+      if (!communityPanel) return undefined;
+
+      const panelTrigger = ScrollTrigger.create({
+        trigger: communityPanel,
+        start: "top 58%",
+        invalidateOnRefresh: true,
+        onEnter: () => switchPanel("community"),
+        onLeaveBack: () => switchPanel("work"),
+      });
+
+      return () => panelTrigger.kill();
+    }, root);
+
     const refreshFrame = window.requestAnimationFrame(() => ScrollTrigger.refresh());
     return () => {
       window.cancelAnimationFrame(refreshFrame);
@@ -186,7 +229,12 @@ export default function ExperienceSection() {
           "Everything is a win when the goal is to experience."
         </p>
 
-        <div ref={sequenceRef} className="experience-sequence" data-active={activePanel}>
+        <div
+          ref={sequenceRef}
+          className="experience-sequence"
+          data-active={activePanel}
+          data-stacked={isStacked ? "true" : "false"}
+        >
           <nav
             className="experience-island"
             aria-label="Experience categories"
@@ -212,22 +260,30 @@ export default function ExperienceSection() {
             })}
           </nav>
 
-          <div className="experience-panels" data-active={activePanel}>
+          <div className="experience-panels" data-active={activePanel} data-stacked={isStacked ? "true" : "false"}>
             <section
-              className={`experience-panel experience-panel--work${activePanel === "work" ? " is-active" : ""}`}
+              ref={workPanelRef}
+              className={`experience-panel experience-panel--work${isStacked || activePanel === "work" ? " is-active" : ""}`}
               aria-label="Work experience"
-              aria-hidden={activePanel !== "work"}
-              inert={activePanel !== "work"}
+              aria-hidden={!isStacked && activePanel !== "work"}
+              inert={!isStacked && activePanel !== "work"}
             >
+              {isStacked && (
+                <p className="experience-panel__label" aria-hidden="true">Work</p>
+              )}
               <WorkExperienceList ref={workListRef} />
             </section>
 
             <section
-              className={`experience-panel experience-panel--community${activePanel === "community" ? " is-active" : ""}`}
+              ref={communityPanelRef}
+              className={`experience-panel experience-panel--community${isStacked || activePanel === "community" ? " is-active" : ""}`}
               aria-label="Community experience"
-              aria-hidden={activePanel !== "community"}
-              inert={activePanel !== "community"}
+              aria-hidden={!isStacked && activePanel !== "community"}
+              inert={!isStacked && activePanel !== "community"}
             >
+              {isStacked && (
+                <p className="experience-panel__label" aria-hidden="true">Community</p>
+              )}
               <MagicBento
                 ref={communityListRef}
                 textAutoHide={false}

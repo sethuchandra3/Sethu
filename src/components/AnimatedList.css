@@ -54,6 +54,11 @@
   }
 }
 
+/* Untransformed wrapper the reveal observer measures against. */
+.animated-list__item-shell {
+  min-width: 0;
+}
+
 .animated-list__item {
   box-sizing: border-box;
   width: 100%;

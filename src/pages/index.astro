@@ -1392,8 +1392,9 @@ const SHOW_MY_WORLD = true;
     margin: 0;
     padding: 0;
     color: var(--muted);
-    font-size: 0.8rem;
-    font-weight: 750;
+    font-size: clamp(1rem, 1.15vw, 1.2rem);
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     transform: translateX(-50%);
     white-space: nowrap;
@@ -2526,7 +2527,7 @@ const SHOW_MY_WORLD = true;
 
     .opening-pin {
       --landing-statement-size: clamp(2.65rem, 9.4vw, 4rem);
-      --mobile-gif-top: clamp(116px, 15svh, 136px);
+      --mobile-gif-top: clamp(148px, 19svh, 172px);
       --mobile-gif-width: min(50vw, 210px);
       --mobile-gif-height: min(75vw, 45svh, 315px);
       --mobile-deck-gap: 16px;
@@ -2623,10 +2624,17 @@ const SHOW_MY_WORLD = true;
 
     #latest-title {
       position: absolute;
-      top: clamp(76px, 10svh, 92px);
+      /* Clear the fixed header dock (18px offset + 64px pill) with breathing room
+         instead of tucking the heading straight underneath it. */
+      top: clamp(108px, 13.5svh, 128px);
       right: 0;
       left: 0;
       text-align: center;
+    }
+
+    /* BlurText lays its words out in a flex row, so text-align cannot centre it. */
+    #latest-title :global(.latest-title-blur) {
+      justify-content: center;
     }
 
     .latest-deck {

@@ -3,35 +3,40 @@ import { motion, useInView } from "motion/react";
 import "./AnimatedList.css";
 
 function AnimatedItem({ children, index, scrollRoot, selected, onSelect }) {
-  const itemRef = useRef(null);
-  const inView = useInView(itemRef, {
+  const shellRef = useRef(null);
+  // Observe an untransformed shell rather than the animated card itself. The
+  // reveal tween moves and scales the card, which changes its own intersection
+  // ratio, flips the in-view state back, and leaves the card jittering forever
+  // whenever it settles near the visibility threshold.
+  const inView = useInView(shellRef, {
     root: scrollRoot,
     amount: 0.55,
     margin: "-8% 0px -8% 0px",
   });
 
   return (
-    <motion.div
-      ref={itemRef}
-      className={`animated-list__item${selected ? " is-selected" : ""}`}
-      role="option"
-      tabIndex={0}
-      aria-selected={selected}
-      data-index={index}
-      onClick={onSelect}
-      onKeyDown={(event) => {
-        if (event.target !== event.currentTarget) return;
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onSelect();
-        }
-      }}
-      initial={{ opacity: 0, y: 28, scale: 0.96 }}
-      animate={inView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0.35, y: 14, scale: 0.98 }}
-      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
+    <div ref={shellRef} className="animated-list__item-shell" role="presentation">
+      <motion.div
+        className={`animated-list__item${selected ? " is-selected" : ""}`}
+        role="option"
+        tabIndex={0}
+        aria-selected={selected}
+        data-index={index}
+        onClick={onSelect}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onSelect();
+          }
+        }}
+        initial={{ opacity: 0, y: 28, scale: 0.96 }}
+        animate={inView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0.35, y: 14, scale: 0.98 }}
+        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {children}
+      </motion.div>
+    </div>
   );
 }
 
@@ -51,6 +56,7 @@ const AnimatedList = forwardRef(function AnimatedList({
   const listRef = useRef(null);
   const reachedEndRef = useRef(false);
   const programmaticScrollUntilRef = useRef(0);
+  const [selfScrolling, setSelfScrolling] = useState(!pageDriven);
   const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
   const [topGradientOpacity, setTopGradientOpacity] = useState(0);
   const [bottomGradientOpacity, setBottomGradientOpacity] = useState(1);
@@ -68,6 +74,23 @@ const AnimatedList = forwardRef(function AnimatedList({
   useEffect(() => {
     if (listRef.current) updateGradients(listRef.current);
   }, [items, updateGradients]);
+
+  // A page-driven list stops being its own scroll container on small/touch
+  // viewports (see AnimatedList.css), so the reveal observer has to fall back to
+  // the viewport there — otherwise every card is measured against a root that
+  // never moves and the list never animates.
+  useEffect(() => {
+    if (!pageDriven) {
+      setSelfScrolling(true);
+      return undefined;
+    }
+
+    const query = window.matchMedia("(max-width: 820px), (hover: none) and (pointer: coarse)");
+    const sync = () => setSelfScrolling(!query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, [pageDriven]);
 
   useImperativeHandle(
     forwardedRef,
@@ -163,7 +186,7 @@ const AnimatedList = forwardRef(function AnimatedList({
           <AnimatedItem
             key={item.id ?? index}
             index={index}
-            scrollRoot={listRef}
+            scrollRoot={selfScrolling ? listRef : undefined}
             selected={selectedIndex === index}
             onSelect={() => selectItem(index)}
           >

@@ -458,8 +458,12 @@
     gap: 48px;
   }
 
+  /* One project per row on phones: the concepts selectors below outrank the bare
+     `.project-masonry__item` rule, so they have to opt in explicitly. */
   .project-masonry__item,
   .projects-group--shipped .project-masonry__item,
+  .projects-group--concepts .project-masonry__item,
+  .projects-group--concepts .project-masonry__item[data-featured="true"],
   .project-masonry[data-item-count="5"] .project-masonry__item:last-child {
     grid-column: span 6;
   }
