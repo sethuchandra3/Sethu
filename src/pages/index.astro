@@ -42,6 +42,9 @@ const latestEvents = [
 // Temporary launch flag: switch to false if My World needs to be hidden again.
 const SHOW_MY_WORLD = true;
 
+// Social scrapers ignore relative image paths, so resolve against `site`.
+const ogImage = new URL("/assets/og-world-preview.jpg?v=2", Astro.site).href;
+
 ---
 
 <html lang="en">
@@ -78,12 +81,18 @@ const SHOW_MY_WORLD = true;
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Sethu Chandra" />
     <meta property="og:description" content="Creative engineer building thoughtful products, meaningful communities, and unforgettable stories." />
-    <meta property="og:image" content="/assets/og-world-preview.jpg?v=1" />
+    <meta property="og:url" content="https://sethuc.com/" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="The My World photo globe from Sethu Chandra's site, made of travel photos." />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="/assets/og-world-preview.jpg?v=1" />
+    <meta name="twitter:title" content="Sethu Chandra" />
+    <meta name="twitter:description" content="Creative engineer building thoughtful products, meaningful communities, and unforgettable stories." />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="The My World photo globe from Sethu Chandra's site, made of travel photos." />
     <title>Sethu Chandra</title>
     <Analytics />
   </head>
