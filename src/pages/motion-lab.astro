@@ -4,6 +4,7 @@ import TextPressure from "../components/TextPressure.jsx";
 import ScrollFloat from "../components/ScrollFloat.jsx";
 import CurvedLoop from "../components/CurvedLoop.jsx";
 import DomeGallery from "../components/DomeGallery.jsx";
+import Analytics from "@vercel/analytics/astro";
 import geistUrl from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
 import robotoFlexUrl from "@fontsource-variable/roboto-flex/files/roboto-flex-latin-full-normal.woff2?url";
 ---
@@ -19,6 +20,7 @@ import robotoFlexUrl from "@fontsource-variable/roboto-flex/files/roboto-flex-la
     <link rel="preload" href={geistUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="preload" href={robotoFlexUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <title>Motion Lab | Sethu Chandra</title>
+    <Analytics />
   </head>
   <body>
     <main class="motion-lab">
