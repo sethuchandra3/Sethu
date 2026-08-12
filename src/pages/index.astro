@@ -181,7 +181,7 @@ const SHOW_MY_WORLD = true;
 
       {
         SHOW_MY_WORLD && (
-          <section id="world" class="world-section" aria-labelledby="world-title">
+          <section class="world-section" aria-labelledby="world-title">
             <div class="world-heading">
               <h2 id="world-title">
                 <DecryptedText
@@ -212,7 +212,7 @@ const SHOW_MY_WORLD = true;
                 />
               </p>
             </div>
-            <div class="dome-gallery-shell">
+            <div id="dome" class="dome-gallery-shell">
               <DomeGallery
                 client:only="react"
                 fit={0.65}

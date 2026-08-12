@@ -220,7 +220,7 @@ export default function ExperienceSection() {
   }, [switchPanel]);
 
   return (
-    <section ref={rootRef} className="experiences-section" aria-labelledby="experiences-title">
+    <section id="experience" ref={rootRef} className="experiences-section" aria-labelledby="experiences-title">
       <div className="experiences-inner">
         <div className="experiences-title-reveal">
           <TextPressure id="experiences-title" className="experiences-title" text="Experience" />

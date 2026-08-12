@@ -157,8 +157,9 @@ export default function HeaderDock({ showWorld = false }) {
       >
         <a className="site-header__brand" href="#top" tabIndex={fullTabIndex}>Sethu Chandra</a>
         <div className="site-header__navigation">
+          <a href="#experience" tabIndex={fullTabIndex}>Experience</a>
           <a href="#projects" tabIndex={fullTabIndex}>Projects</a>
-          {showWorld && <a href="#world" tabIndex={fullTabIndex}>World</a>}
+          {showWorld && <a href="#dome" tabIndex={fullTabIndex}>World</a>}
           <a href="/resume.pdf" target="_blank" rel="noreferrer" tabIndex={fullTabIndex}>Resume</a>
           <span className="site-header__divider" aria-hidden="true" />
           <div className="site-header__socials" aria-label="Social media">
