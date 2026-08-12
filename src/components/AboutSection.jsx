@@ -29,7 +29,7 @@ export default function AboutSection() {
             </p>
             <p>
               {splitWords(
-                "Drawn to translating user insights into products people love, building meaningful communities and data-driven storytelling.",
+                "Passionate about translating user insights into enhanced products, building meaningful communities, and data-driven storytelling.",
                 "intro-drawn",
               )}
             </p>
