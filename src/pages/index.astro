@@ -55,6 +55,10 @@ const SHOW_MY_WORLD = true;
         } catch {
           document.documentElement.dataset.theme = "light";
         }
+        // Hold the hero lockup back until the intro script owns it, so the
+        // static markup never flashes before the typewriter starts.
+        document.documentElement.classList.add("intro-pending");
+        window.setTimeout(() => document.documentElement.classList.remove("intro-pending"), 2500);
       })();
     </script>
     <link rel="preload" href={geistUrl} as="font" type="font/woff2" crossorigin="anonymous" />
@@ -604,6 +608,9 @@ const SHOW_MY_WORLD = true;
         },
         (context) => {
           const { reduceMotion, isDesktop, isWideDesktop, isLaptop } = context.conditions;
+          // The lockup is emptied and re-typed below in this same synchronous
+          // pass, so it can be unveiled here without ever painting raw markup.
+          document.documentElement.classList.remove("intro-pending");
           const introLines = gsap.utils.toArray(".typed-line");
           const stackGap = isLaptop ? 18 : isDesktop ? 22 : 18;
 
@@ -1418,9 +1425,16 @@ const SHOW_MY_WORLD = true;
     width: max-content;
     max-width: min(92vw, 980px);
     text-align: center;
+    /* Mirrors the GSAP set() that pins the lockup to the viewport centre, so
+       the first paint already sits where the intro timeline expects it. */
+    transform: translate(calc(50vw - 28px - 50%), calc(50svh - 42px - 50%));
     transform-origin: left center;
     will-change: transform;
     z-index: 2;
+  }
+
+  :global(html.intro-pending) .name-lockup {
+    visibility: hidden;
   }
 
   .social-links {
@@ -2528,6 +2542,7 @@ const SHOW_MY_WORLD = true;
       left: 18px;
       align-self: center;
       max-width: calc(100vw - (var(--page-gutter) * 2));
+      transform: translate(calc(50vw - 18px - 50%), calc(50svh - 34px - 50%));
     }
 
     .name-lockup strong,
@@ -2731,6 +2746,8 @@ const SHOW_MY_WORLD = true;
       left: var(--page-gutter);
       width: auto;
       max-width: none;
+      /* Gutter-stretched here, so only the vertical centring offset applies. */
+      transform: translateY(calc(50svh - 34px - 50%));
     }
 
     .identity-line {
@@ -2857,5 +2874,10 @@ const SHOW_MY_WORLD = true;
       scroll-behavior: auto;
     }
 
+    /* No scroll timeline runs here, so the lockup keeps its static placement
+       instead of the viewport-centred offset the intro relies on. */
+    .name-lockup {
+      transform: none;
+    }
   }
 </style>
