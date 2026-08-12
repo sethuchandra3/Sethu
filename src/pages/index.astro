@@ -85,7 +85,7 @@ const SHOW_MY_WORLD = true;
   </head>
   <body>
     <FluidGlassCursor client:load />
-    <HeaderDock client:load />
+    <HeaderDock showWorld={SHOW_MY_WORLD} client:load />
     <main>
       <section id="top" class="opening-stage" aria-labelledby="intro-title">
         <div class="opening-pin">
@@ -181,7 +181,7 @@ const SHOW_MY_WORLD = true;
 
       {
         SHOW_MY_WORLD && (
-          <section class="world-section" aria-labelledby="world-title">
+          <section id="world" class="world-section" aria-labelledby="world-title">
             <div class="world-heading">
               <h2 id="world-title">
                 <DecryptedText

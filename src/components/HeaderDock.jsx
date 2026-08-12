@@ -14,7 +14,9 @@ function SocialIcon({ icon }) {
   return <BrandIcon icon={icon} />;
 }
 
-export default function HeaderDock() {
+// The My World section is behind a flag on the page, so the nav entry follows it
+// rather than leaving a link that scrolls nowhere.
+export default function HeaderDock({ showWorld = false }) {
   const rootRef = useRef(null);
   const fullRef = useRef(null);
   const compactRef = useRef(null);
@@ -156,6 +158,7 @@ export default function HeaderDock() {
         <a className="site-header__brand" href="#top" tabIndex={fullTabIndex}>Sethu Chandra</a>
         <div className="site-header__navigation">
           <a href="#projects" tabIndex={fullTabIndex}>Projects</a>
+          {showWorld && <a href="#world" tabIndex={fullTabIndex}>World</a>}
           <a href="/resume.pdf" target="_blank" rel="noreferrer" tabIndex={fullTabIndex}>Resume</a>
           <span className="site-header__divider" aria-hidden="true" />
           <div className="site-header__socials" aria-label="Social media">
