@@ -49,35 +49,39 @@ export default function FluidGlass({
 
     let cancelled = false;
     let frame = 0;
-    const getCaptureSignature = () => `${String(captureKey ?? 'default')}:${target.offsetWidth}x${target.offsetHeight}`;
-    const captureSignature = getCaptureSignature();
-    const cachedCapture = captureCacheRef.current.get(captureSignature);
+    let captureTimer = 0;
+    let lastStaleCheck = 0;
+    let drawnRects = new Map();
+    const trackedImages = [];
     let resizeObserver;
 
-    setContentCanvas(cachedCapture ?? null);
-    onCaptureReady?.(Boolean(cachedCapture));
+    const getCaptureSignature = () => `${String(captureKey ?? 'default')}:${target.offsetWidth}x${target.offsetHeight}`;
 
-    const waitForImages = () => Promise.all(
-      [...target.querySelectorAll('img')]
-        .filter(image => !image.closest('[aria-hidden="true"]'))
-        .map(image => {
-          if (image.complete) {
-            return typeof image.decode === 'function'
-              ? image.decode().catch(() => undefined)
-              : undefined;
-          }
+    const getCaptureImages = () => [...target.querySelectorAll('.project-masonry__media img')]
+      .filter(image => !image.closest('[aria-hidden="true"]'));
 
-          return new Promise(resolve => {
-            const timeout = window.setTimeout(resolve, 1800);
-            const finish = () => {
-              window.clearTimeout(timeout);
-              resolve();
-            };
-            image.addEventListener('load', finish, { once: true });
-            image.addEventListener('error', finish, { once: true });
-          });
-        })
-    );
+    const isDrawable = image => image.complete && image.naturalWidth > 0;
+
+    const setCaptured = (media, captured) => {
+      const value = captured ? 'true' : 'false';
+      if (media.dataset.glassCaptured !== value) media.dataset.glassCaptured = value;
+    };
+
+    const getRectSignature = (image, targetRect) => {
+      const rect = image.getBoundingClientRect();
+      return [
+        Math.round(rect.left - targetRect.left),
+        Math.round(rect.top - targetRect.top),
+        Math.round(rect.width),
+        Math.round(rect.height)
+      ].join(',');
+    };
+
+    const getOpaqueColor = value => {
+      if (!value) return null;
+      const alpha = value.startsWith('rgba') ? Number.parseFloat(value.split(',')[3]) : 1;
+      return Number.isFinite(alpha) && alpha === 0 ? null : value;
+    };
 
     const parseObjectPosition = value => {
       const tokens = value.trim().split(/\s+/);
@@ -94,10 +98,40 @@ export default function FluidGlass({
       };
     };
 
-    const drawImageCover = (context, image, x, y, width, height) => {
+    const clipToMedia = (context, media, x, y, width, height) => {
+      const radius = Number.parseFloat(getComputedStyle(media).borderRadius) || 0;
+      context.beginPath();
+      if (radius > 0 && typeof context.roundRect === 'function') {
+        context.roundRect(x, y, width, height, radius);
+      } else {
+        context.rect(x, y, width, height);
+      }
+      context.clip();
+    };
+
+    const drawImageContent = (context, image, x, y, width, height) => {
       const sourceWidth = image.naturalWidth;
       const sourceHeight = image.naturalHeight;
       if (!sourceWidth || !sourceHeight || width <= 0 || height <= 0) return;
+
+      const style = getComputedStyle(image);
+      const position = parseObjectPosition(style.objectPosition || '50% 50%');
+
+      // `contain` letterboxes the artwork instead of cropping it. Drawing it as
+      // `cover` would make the lens magnify a frame the page never shows.
+      if (style.objectFit === 'contain') {
+        const fit = Math.min(width / sourceWidth, height / sourceHeight);
+        const drawWidth = sourceWidth * fit;
+        const drawHeight = sourceHeight * fit;
+        context.drawImage(
+          image,
+          x + (width - drawWidth) * position.x,
+          y + (height - drawHeight) * position.y,
+          drawWidth,
+          drawHeight
+        );
+        return;
+      }
 
       const sourceRatio = sourceWidth / sourceHeight;
       const destinationRatio = width / height;
@@ -106,7 +140,6 @@ export default function FluidGlass({
       if (sourceRatio > destinationRatio) cropWidth = sourceHeight * destinationRatio;
       else cropHeight = sourceWidth / destinationRatio;
 
-      const position = parseObjectPosition(getComputedStyle(image).objectPosition || '50% 50%');
       const sourceX = (sourceWidth - cropWidth) * position.x;
       const sourceY = (sourceHeight - cropHeight) * position.y;
       context.drawImage(
@@ -122,41 +155,107 @@ export default function FluidGlass({
       );
     };
 
-    const captureProjectImages = async () => {
-      await waitForImages();
+    const renderCapture = () => {
+      frame = 0;
       if (cancelled || !target.isConnected || !target.offsetWidth || !target.offsetHeight) return;
 
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
+      const scale = 0.75;
+      const snapshot = document.createElement('canvas');
+      snapshot.width = Math.max(1, Math.round(target.offsetWidth * scale));
+      snapshot.height = Math.max(1, Math.round(target.offsetHeight * scale));
+      const context = snapshot.getContext('2d', { alpha: false });
+      const targetRect = target.getBoundingClientRect();
+      context.scale(scale, scale);
+      context.fillStyle = getOpaqueColor(getComputedStyle(target).backgroundColor) || '#0d0d0d';
+      context.fillRect(0, 0, target.offsetWidth, target.offsetHeight);
+
+      const rects = new Map();
+      let everyImageDrawn = true;
+
+      // Tiles in the hidden tab are not part of this snapshot.
+      target.querySelectorAll('.project-masonry__media').forEach(media => setCaptured(media, false));
+
+      getCaptureImages().forEach(image => {
+        const media = image.closest('.project-masonry__media');
+        const rect = image.getBoundingClientRect();
+        const x = rect.left - targetRect.left;
+        const y = rect.top - targetRect.top;
+        const drawable = isDrawable(image);
+
+        context.save();
+        if (media) clipToMedia(context, media, x, y, rect.width, rect.height);
+        const mediaBackground = media && getOpaqueColor(getComputedStyle(media).backgroundColor);
+        if (mediaBackground) {
+          context.fillStyle = mediaBackground;
+          context.fillRect(x, y, rect.width, rect.height);
+        }
+        if (drawable) drawImageContent(context, image, x, y, rect.width, rect.height);
+        context.restore();
+
+        // A lens over a tile that is missing from the snapshot magnifies an
+        // empty rectangle, which reads as a black hole. Flag readiness per tile
+        // so the lens only activates over artwork that was actually captured.
+        if (media) setCaptured(media, drawable);
+        if (!drawable) everyImageDrawn = false;
+        rects.set(image, getRectSignature(image, targetRect));
+      });
+
+      drawnRects = rects;
+      const signature = getCaptureSignature();
+      // Only a complete snapshot is worth replaying for this tab, otherwise a
+      // half-loaded capture would be restored forever.
+      if (everyImageDrawn) captureCacheRef.current.set(signature, { canvas: snapshot, rects });
+      else captureCacheRef.current.delete(signature);
+
+      setContentCanvas(snapshot);
+      onCaptureReady?.(true);
+    };
+
+    const scheduleCapture = (delay = 0) => {
+      window.clearTimeout(captureTimer);
+      captureTimer = window.setTimeout(() => {
         if (cancelled) return;
-        const scale = 0.75;
-        const snapshot = document.createElement('canvas');
-        snapshot.width = Math.max(1, Math.round(target.offsetWidth * scale));
-        snapshot.height = Math.max(1, Math.round(target.offsetHeight * scale));
-        const context = snapshot.getContext('2d', { alpha: false });
-        const targetRect = target.getBoundingClientRect();
-        context.scale(scale, scale);
-        context.fillStyle = getComputedStyle(target).backgroundColor || '#0d0d0d';
-        context.fillRect(0, 0, target.offsetWidth, target.offsetHeight);
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(renderCapture);
+      }, delay);
+    };
 
-        target.querySelectorAll('.project-masonry__media img').forEach(image => {
-          if (image.closest('[aria-hidden="true"]') || !image.complete) return;
-          const rect = image.getBoundingClientRect();
-          drawImageCover(
-            context,
-            image,
-            rect.left - targetRect.left,
-            rect.top - targetRect.top,
-            rect.width,
-            rect.height
-          );
-        });
-
-        captureCacheRef.current.set(getCaptureSignature(), snapshot);
-        setContentCanvas(snapshot);
-        onCaptureReady?.(true);
+    // Lazy-loaded tiles decode long after the first capture, and the reveal
+    // tween shifts every tile while it runs, so the snapshot has to be able to
+    // notice it no longer matches the page.
+    const isCaptureStale = () => {
+      if (!target.isConnected) return false;
+      const images = getCaptureImages();
+      if (images.length !== drawnRects.size) return true;
+      const targetRect = target.getBoundingClientRect();
+      return images.some(image => {
+        if (isDrawable(image) && image.closest('.project-masonry__media')?.dataset.glassCaptured !== 'true') {
+          return true;
+        }
+        return drawnRects.get(image) !== getRectSignature(image, targetRect);
       });
     };
+
+    const checkCaptureStale = () => {
+      const now = performance.now();
+      if (now - lastStaleCheck < 250) return;
+      lastStaleCheck = now;
+      trackImages();
+      if (isCaptureStale()) scheduleCapture(80);
+    };
+
+    // Tiles rarely finish decoding alone, so coalesce a burst of loads into a
+    // single redraw of the snapshot.
+    const handleImageSettled = () => scheduleCapture(150);
+
+    function trackImages() {
+      getCaptureImages().forEach(image => {
+        if (trackedImages.includes(image)) return;
+        trackedImages.push(image);
+        image.addEventListener('load', handleImageSettled);
+        image.addEventListener('error', handleImageSettled);
+      });
+    }
 
     let observedWidth = target.offsetWidth;
     let observedHeight = target.offsetHeight;
@@ -167,18 +266,41 @@ export default function FluidGlass({
       observedWidth = nextWidth;
       observedHeight = nextHeight;
       captureCacheRef.current.clear();
-      captureProjectImages().catch(() => onCaptureReady?.(false));
+      scheduleCapture(0);
     });
     resizeObserver.observe(target);
 
-    if (!cachedCapture) {
-      captureProjectImages().catch(() => onCaptureReady?.(false));
+    const cachedCapture = captureCacheRef.current.get(getCaptureSignature());
+    if (cachedCapture) {
+      drawnRects = cachedCapture.rects;
+      setContentCanvas(cachedCapture.canvas);
+      onCaptureReady?.(true);
+    } else {
+      setContentCanvas(null);
+      onCaptureReady?.(false);
     }
+
+    trackImages();
+    scheduleCapture(cachedCapture ? 250 : 0);
+
+    window.addEventListener('pointermove', checkCaptureStale, { passive: true });
+    window.addEventListener('scroll', checkCaptureStale, { passive: true });
+    window.addEventListener('pageshow', checkCaptureStale);
+    window.addEventListener('focus', checkCaptureStale);
 
     return () => {
       cancelled = true;
+      window.clearTimeout(captureTimer);
       window.cancelAnimationFrame(frame);
       resizeObserver?.disconnect();
+      trackedImages.forEach(image => {
+        image.removeEventListener('load', handleImageSettled);
+        image.removeEventListener('error', handleImageSettled);
+      });
+      window.removeEventListener('pointermove', checkCaptureStale);
+      window.removeEventListener('scroll', checkCaptureStale);
+      window.removeEventListener('pageshow', checkCaptureStale);
+      window.removeEventListener('focus', checkCaptureStale);
     };
   }, [captureTargetRef, captureKey, onCaptureReady]);
 

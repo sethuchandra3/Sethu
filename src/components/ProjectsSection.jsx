@@ -453,7 +453,7 @@ export default function ProjectsSection() {
                 captureTargetRef={galleryRef}
                 trackingTargetRef={galleryRef}
                 activeTargetRef={galleryRef}
-                activeSelector=".project-masonry__media"
+                activeSelector=".project-masonry__media[data-glass-captured='true']"
                 captureKey={`${activeGroup}:${activeProjectCaptureKey}`}
                 onCaptureReady={setGlassReady}
                 onResolvedScreenSize={activeGroup === "concepts" ? setConceptLensScreenSize : undefined}

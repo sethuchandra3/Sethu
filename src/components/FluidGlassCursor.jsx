@@ -42,8 +42,12 @@ export default function FluidGlassCursor() {
     const syncCursorMode = target => {
       const projectMedia = target?.closest(".project-masonry__media");
       const projectGallery = projectMedia?.closest(".projects-editorial-gallery");
+      // Tiles missing from the FluidGlass snapshot never grow a lens, so the
+      // normal cursor has to stay visible over them.
+      const lensWillRender = projectMedia?.dataset.glassCaptured === "true"
+        && projectGallery?.dataset.glassReady === "true";
       cursor.dataset.header = target?.closest(".site-header") ? "true" : "false";
-      cursor.dataset.glassActive = projectMedia && projectGallery?.dataset.glassReady === "true" ? "true" : "false";
+      cursor.dataset.glassActive = lensWillRender ? "true" : "false";
     };
 
     const handlePointerMove = (event) => {
@@ -121,7 +125,7 @@ export default function FluidGlassCursor() {
       root.classList.add("has-fluid-glass-cursor");
       glassObserver.observe(document.body, {
         attributes: true,
-        attributeFilter: ["data-glass-ready"],
+        attributeFilter: ["data-glass-ready", "data-glass-captured"],
         subtree: true,
       });
       window.addEventListener("pointermove", handlePointerMove, { passive: true });
