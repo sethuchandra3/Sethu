@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
+import Analytics from "@vercel/analytics/astro";
 ---
 
 <html lang="en">
@@ -20,6 +21,7 @@ import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
     <meta property="og:image" content="/assets/sethu-chandra-headshot.jpeg" />
     <meta name="twitter:card" content="summary_large_image" />
     <title>Projects | Sethu Chandra</title>
+    <Analytics />
   </head>
   <body>
     <FluidGlassCursor client:load />

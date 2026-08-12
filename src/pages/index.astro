@@ -11,6 +11,7 @@ import AboutSection from "../components/AboutSection.jsx";
 import HeaderDock from "../components/HeaderDock.jsx";
 import BlurText from "../components/BlurText.jsx";
 import FluidGlassCursor from "../components/FluidGlassCursor.jsx";
+import Analytics from "@vercel/analytics/astro";
 import geistUrl from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
 import robotoFlexUrl from "@fontsource-variable/roboto-flex/files/roboto-flex-latin-full-normal.woff2?url";
 
@@ -78,6 +79,7 @@ const SHOW_MY_WORLD = true;
     <meta property="og:image" content="/assets/sethu-chandra-headshot.jpeg" />
     <meta name="twitter:card" content="summary_large_image" />
     <title>Sethu Chandra</title>
+    <Analytics />
   </head>
   <body>
     <FluidGlassCursor client:load />
