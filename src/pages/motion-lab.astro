@@ -68,4 +68,11 @@ import robotoFlexUrl from "@fontsource-variable/roboto-flex/files/roboto-flex-la
   .curve-panel { padding-inline: 0; background: #111; color: #fbfaf7; }
   :global(.curve-panel .curved-loop-jacket) { width: 100vw; color: #fbfaf7; }
   .dome-panel { height: 100svh; padding: 0; background: #120f17; overflow: hidden; }
+
+  @media (max-width: 560px) {
+    :global(.lab-pressure) {
+      max-width: 100%;
+      font-size: clamp(3.25rem, 14vw, 5rem);
+    }
+  }
 </style>
