@@ -25,9 +25,12 @@ export default function AboutSection() {
         >
           <div className="about-section__copy">
             <p>
+              {splitWords("I'm a creative engineer 🎨👩🏽‍💻", "intro")}
+            </p>
+            <p>
               {splitWords(
-                "I'm a creative engineer 🎨👩🏽‍💻, turning ambitious ideas into thoughtful products, meaningful communities and unforgettable stories.",
-                "intro",
+                "Drawn to translating user insights into products people love, building meaningful communities and data-driven storytelling.",
+                "intro-drawn",
               )}
             </p>
             <p>
