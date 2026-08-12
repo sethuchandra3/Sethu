@@ -51,7 +51,9 @@ const SHOW_MY_WORLD = true;
       (() => {
         try {
           const stored = window.localStorage.getItem("sethu-theme");
-          const theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          // Light is the default regardless of the visitor's OS setting; only an
+          // explicit choice from the header toggle can load the site in dark.
+          const theme = stored === "dark" ? "dark" : "light";
           document.documentElement.dataset.theme = theme;
         } catch {
           document.documentElement.dataset.theme = "light";
